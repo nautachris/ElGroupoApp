@@ -74,7 +74,7 @@ namespace ElGroupo.Web.Controllers
 
 
         [AllowAnonymous]
-        [Route("Login")]
+        [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
         {
             var signedIn = signInManager.IsSignedIn(HttpContext.User);
@@ -120,9 +120,9 @@ namespace ElGroupo.Web.Controllers
 
                     if (!res.Succeeded)
                     {
-                        foreach(var err in res.Errors)
+                        foreach (var err in res.Errors)
                         {
-                            ModelState.AddModelError("", err.Description);                            
+                            ModelState.AddModelError("", err.Description);
                         }
                         return View(model);
                     }
@@ -151,37 +151,33 @@ namespace ElGroupo.Web.Controllers
 
 
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
 
                 }
 
-                
-                
+
+
             }
             return View(model);
         }
 
-        
-        [HttpGet]
-        [Route("Edit")]
-        public async Task<IActionResult> Edit()
-        {
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
-
-            var model = new EditAccountModel();
-            return new EmptyResult();
-        }
         [Authorize]
         [HttpGet]
-        [Route("Contacts")]
-        public async Task<IActionResult> Contacts()
+        [Route("UserPhoto/{id}")]
+        public async Task<IActionResult> UserPhoto([FromRoute]int id)
         {
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include("Contacts.ContactType").First(x => x.Id == user.Id);
+            var user = dbContext.Users.Include("Photo").FirstOrDefault(x => x.Id == id);
+            if (user == null || user.Photo == null) return new EmptyResult();
+            return File(user.Photo.ImageData, user.Photo.ContentType);
+            
+
+        }
+
+        private List<EditContactModel> GetContacts(User user)
+        {
             var model = new List<EditContactModel>();
-            foreach(var c in userRecord.Contacts)
+            foreach (var c in user.Contacts)
             {
                 model.Add(new EditContactModel
                 {
@@ -191,12 +187,125 @@ namespace ElGroupo.Web.Controllers
                     ContactTypeDescription = c.ContactType.Value
                 });
             }
+            return model;
+        }
+        private Dictionary<long, string> GetContactTypes()
+        {
+            var dict = new Dictionary<long, string>();
+            foreach (var c in dbContext.ContactTypes)
+            {
+                dict.Add(c.Id, c.Value);
+            }
+            return dict;
+        }
 
-            return View("_Contacts", model);
+
+        [HttpGet]
+        [Route("Edit")]
+        public async Task<IActionResult> Edit()
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
+
+            var model = new EditAccountModel
+            {
+                Contacts = GetContacts(userRecord),
+                ContactTypes = GetContactTypes(),
+                EmailAddress = userRecord.Email,
+                HasPhoto = userRecord.Photo != null,
+                Id = userRecord.Id,
+                Name = userRecord.Name,
+                PhoneNumber = userRecord.PhoneNumber,
+                ZipCode = userRecord.ZipCode
+            };
+            return View(model);
         }
 
         [HttpPost]
-        [Route("UpdateContact")]
+        [Route("Edit")]
+        public async Task<IActionResult> Edit(EditAccountModel model)
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
+            userRecord.ZipCode = model.ZipCode;
+            userRecord.Email = model.EmailAddress;
+            userRecord.PhoneNumber = model.PhoneNumber;
+            if (model.UpdatedPhoto != null)
+            {
+                //newUser = await userManager.FindByIdAsync(newUser.Id.ToString());
+                //UserPhoto photo = new UserPhoto();
+                byte[] fileBytes = null;
+                using (var imageStream = model.UpdatedPhoto.OpenReadStream())
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await imageStream.CopyToAsync(ms);
+                        fileBytes = ms.ToArray();
+                    }
+                }
+                if (userRecord.Photo == null)
+                {
+                    var newPhoto = new UserPhoto
+                    {
+                        ContentType = model.UpdatedPhoto.ContentType,
+                        ImageData = fileBytes                        
+                    };
+                    dbContext.UserPhotos.Add(newPhoto);
+                    userRecord.Photo = newPhoto;
+                    
+                }
+                else
+                {
+                    userRecord.Photo.ContentType = model.UpdatedPhoto.ContentType;
+                    userRecord.Photo.ImageData = fileBytes;
+                }
+
+
+            }
+
+            dbContext.Users.Update(userRecord);
+            await dbContext.SaveChangesAsync();
+            //var model = new EditAccountModel
+            //{
+            //    Contacts = GetContacts(userRecord),
+            //    ContactTypes = GetContactTypes(),
+            //    EmailAddress = userRecord.Email,
+            //    HasPhoto = userRecord.Photo != null,
+            //    Id = userRecord.Id,
+            //    Name = userRecord.Name,
+            //    PhoneNumber = userRecord.PhoneNumber,
+            //    ZipCode = userRecord.ZipCode
+            //};
+            return RedirectToAction("Edit");
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("Contacts")]
+        public async Task<IActionResult> Contacts()
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var userRecord = dbContext.Set<User>().Include("Contacts.ContactType").First(x => x.Id == user.Id);
+
+
+            return View("_Contacts", GetContacts(userRecord));
+        }
+
+        [HttpPost]
+        [Route("Contacts/Create")]
+        public async Task<IActionResult> CreateContact([FromBody]EditContactModel model)
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var userRecord = dbContext.Set<User>().Include("Contacts.ContactType").First(x => x.Id == user.Id);
+            var ct = dbContext.ContactTypes.First(x => x.Id == model.ContactTypeId);
+            userRecord.AddContact(ct, model.Value);
+            dbContext.Update(userRecord);
+            await dbContext.SaveChangesAsync();
+            return RedirectToAction("Contacts");
+        }
+
+        [HttpPost]
+        [Route("Contacts/Update")]
         public async Task<IActionResult> UpdateContact([FromBody]EditContactModel model)
         {
             var c = dbContext.UserContacts.Include("User").First(x => x.Id == model.Id);
@@ -210,11 +319,11 @@ namespace ElGroupo.Web.Controllers
             return RedirectToAction("Contact");
         }
 
-        [Route("DeleteContact/{id}")]
+        [Route("Contacts/Delete/{id}")]
         [HttpDelete]
         public async Task<IActionResult> DeleteContact([FromRoute]long id)
         {
-            var c = dbContext.UserContacts.Include("User").First(x => x.Id ==id);
+            var c = dbContext.UserContacts.Include("User").First(x => x.Id == id);
             var user = await userManager.GetUserAsync(HttpContext.User);
             if (user.Id != c.User.Id)
             {
@@ -228,7 +337,7 @@ namespace ElGroupo.Web.Controllers
 
 
 
-        [Authorize(Roles ="admin")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Users()
         {
             return new EmptyResult();

@@ -3,11 +3,11 @@
 
 <section class="section-form">
     <div class="row">
-        <h2>Create a new account...</h2>
+        <h2>Edit your account bitch!</h2>
     </div>
     <div class="row">
         <div asp-validation-summary="All" class="text-danger"></div>
-        <form asp-controller="Account" asp-action="Create" enctype="multipart/form-data" method="post" class="contact-form">
+        <form asp-controller="Account" asp-action="Edit" enctype="multipart/form-data" method="post" class="contact-form">
             <div class="row">
                 <div class="col span-1-of-3">
                     <label asp-for="Name">Name:</label>
@@ -22,30 +22,6 @@
                 </div>
                 <div class="col span-2-of-3">
                     <input asp-for="EmailAddress" placeholder="Enter Email...">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label asp-for="EmailAddress">Password:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="Password" placeholder="Enter Password...">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label asp-for="ConfirmPassword">Confirm Password:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="ConfirmPassword" placeholder="Enter Password...">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label asp-for="UserName">Username:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="UserName" placeholder="Enter Username...">
                 </div>
             </div>
             <div class="row">
@@ -67,14 +43,18 @@
             <div class="row">
                 @if (Model.HasPhoto)
                 {
-
-                    <div class="col span-3-of-3">
-                        <img id="imgPhoto" src="/Account/UserPhoto/@Model.Id" alt="Select a Photo" height="300" width="300" />
+                    <div class="col span-1-of-3">
+                        <label>Current Photo:</label>
+                    </div>
+                    <div class="col span-2-of-3">
+                        <img id="imgPhoto" src="/Account/UserPhoto/@Model.Id" alt="Select a Photo" />
                     </div>
                 }
                 else
                 {
-
+                    <div class="col span-3-of-3">
+                        <span>You have not uploaded a photo</span>
+                    </div>
 
                 }
             </div>
@@ -83,9 +63,9 @@
                     <label asp-for="UpdatedPhoto">Update Photo?</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input asp-for="UpdatedPhoto" type="file" id="inputPhoto" placeholder="Select a photo...">
+                    <input asp-for="UpdatedPhoto" type="file" id="inputNewPhoto" placeholder="Select a photo...">
                 </div>
-                <div class="col span-3-of-3">
+                <div style="display:none;" id="divNewPhoto" class="col span-3-of-3">
                     <img id="imgNewPhoto" src="" alt="Select a Photo" height="300" width="300" />
                 </div>
             </div>
@@ -94,7 +74,7 @@
                     <label>&nbsp;</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input type="submit" value="Register!">
+                    <input type="submit" value="Save Account Changes!">
                 </div>
             </div>
         </form>
@@ -103,16 +83,18 @@
 <section>
     <h2>Edit Contacts</h2>
     <div class="row">
-        <span>Select Contact Type</span>
-        <select>
+        <div class="col span-2-of-10">Select Contact Type:</div>
+        
+        <select class="col span-3-of-10" id="selContactType">
             <option selected></option>
-            @foreach(var ct in Model.ContactTypes)
+            @foreach (var ct in Model.ContactTypes)
             {
                 <option value="@ct.Key">@ct.Value</option>
 
             }
         </select>
-        <a class="btn btn-primary" href="#">Add New Contact</a>
+        <input class="col span-4-of-10" type="text" id="txtContactValue" />
+        <a class="btn btn-primary span-1-of-10" id="btnAddNewContact">Add New Contact</a>
     </div>
     <div class="row" id="divContactList">
         @Html.Partial("_Contacts", Model.Contacts)
@@ -120,5 +102,5 @@
 </section>
 
 @section Scripts{
-
+<script type="text/javascript" src="~/content/scripts/account/edit.js"></script>
 }

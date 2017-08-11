@@ -28,6 +28,16 @@ input, select, textarea, a, button{
     color:#fff;
 }
 
+#tblContacts {
+width:90%;
+}
+
+#imgPhoto{
+    width:100%;
+}
+#tblContacts a {
+    color: #3498db;
+}
 .clearfix{
     zoom:1;
     
@@ -619,7 +629,7 @@ cite img{
 }
 
 input[type=text], input[type=email], select, textarea{
-    width: 100%;
+    /*width: 100%;*/
     padding: 7px;
     border-radius: 3px;
     border: 1px solid #d6d6d6;

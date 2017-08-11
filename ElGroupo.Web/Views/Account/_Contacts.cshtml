@@ -1,8 +1,10 @@
 ﻿
 @using ElGroupo.Web.Models.Account
 @model IEnumerable<EditContactModel>
-
-<table>
+@{
+    Layout = null;
+}
+<table id="tblContacts" class="row">
     <thead>
         <tr>
             <th>Contact Type</th>
@@ -17,8 +19,8 @@
             <tr>
                 <td>@m.ContactTypeDescription</td>
                 <td>@m.Value</td>
-                <td><a data-contact-id="@m.Id" data-action-type="edit">Edit</a></td>
-                <td><a data-contact-id="@m.Id" data-action-type="delete">Delete</a></td>
+                <td><a data-contact-id="@m.Id" style="cursor:pointer;" data-action-type="edit">Edit</a></td>
+                <td><a data-contact-id="@m.Id" style="cursor:pointer;" data-action-type="delete">Delete</a></td>
             </tr>
         }
     </tbody>
