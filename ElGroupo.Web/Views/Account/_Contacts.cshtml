@@ -2,14 +2,25 @@
 @using ElGroupo.Web.Models.Account
 @model IEnumerable<EditContactModel>
 
-<section>
-    <div class="row">
-        <span>Select Contact Type</span>
-    </div>
-</section>
+<table>
+    <thead>
+        <tr>
+            <th>Contact Type</th>
+            <th>Contact Value</th>
+            <th style="width:100px;"></th>
+            <th style="width:100px;"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var m in Model)
+        {
+            <tr>
+                <td>@m.ContactTypeDescription</td>
+                <td>@m.Value</td>
+                <td><a data-contact-id="@m.Id" data-action-type="edit">Edit</a></td>
+                <td><a data-contact-id="@m.Id" data-action-type="delete">Delete</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
 
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}

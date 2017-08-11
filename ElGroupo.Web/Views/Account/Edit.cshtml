@@ -65,14 +65,28 @@
                 </div>
             </div>
             <div class="row">
+                @if (Model.HasPhoto)
+                {
+
+                    <div class="col span-3-of-3">
+                        <img id="imgPhoto" src="/Account/UserPhoto/@Model.Id" alt="Select a Photo" height="300" width="300" />
+                    </div>
+                }
+                else
+                {
+
+
+                }
+            </div>
+            <div class="row">
                 <div class="col span-1-of-3">
-                    <label asp-for="Photo">Photo/Avatar:</label>
+                    <label asp-for="UpdatedPhoto">Update Photo?</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input asp-for="Photo" type="file" id="inputPhoto" placeholder="Select a photo...">
+                    <input asp-for="UpdatedPhoto" type="file" id="inputPhoto" placeholder="Select a photo...">
                 </div>
                 <div class="col span-3-of-3">
-                    <img id="imgPhoto" src="" alt="Select a Photo" height="300" width="300" />
+                    <img id="imgNewPhoto" src="" alt="Select a Photo" height="300" width="300" />
                 </div>
             </div>
             <div class="row">

@@ -14,6 +14,7 @@ using System.IO;
 namespace ElGroupo.Web.Controllers
 {
     [Authorize]
+    [Route("Account")]
     public class AccountController : Controller
     {
         private UserManager<User> userManager;
@@ -73,6 +74,7 @@ namespace ElGroupo.Web.Controllers
 
 
         [AllowAnonymous]
+        [Route("Login")]
         public async Task<IActionResult> Login(string returnUrl)
         {
             var signedIn = signInManager.IsSignedIn(HttpContext.User);
@@ -89,6 +91,7 @@ namespace ElGroupo.Web.Controllers
         }
 
         [AllowAnonymous]
+        [Route("Create")]
         public IActionResult Create()
         {
             return View();
@@ -97,6 +100,7 @@ namespace ElGroupo.Web.Controllers
 
         [HttpPost]
         [AllowAnonymous]
+        [Route("Create")]
         public async Task<IActionResult> Create([FromForm]CreateAccountModel model)
         {
             if (ModelState.IsValid)
@@ -160,16 +164,69 @@ namespace ElGroupo.Web.Controllers
 
         
         [HttpGet]
+        [Route("Edit")]
         public async Task<IActionResult> Edit()
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts").First(x => x.Id == user.Id);
+            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
 
             var model = new EditAccountModel();
             return new EmptyResult();
         }
+        [Authorize]
+        [HttpGet]
+        [Route("Contacts")]
+        public async Task<IActionResult> Contacts()
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var userRecord = dbContext.Set<User>().Include("Contacts.ContactType").First(x => x.Id == user.Id);
+            var model = new List<EditContactModel>();
+            foreach(var c in userRecord.Contacts)
+            {
+                model.Add(new EditContactModel
+                {
+                    Id = c.Id,
+                    Value = c.Value,
+                    ContactTypeId = c.ContactType.Id,
+                    ContactTypeDescription = c.ContactType.Value
+                });
+            }
 
-        public async Task<IActionResult> EditContacts
+            return View("_Contacts", model);
+        }
+
+        [HttpPost]
+        [Route("UpdateContact")]
+        public async Task<IActionResult> UpdateContact([FromBody]EditContactModel model)
+        {
+            var c = dbContext.UserContacts.Include("User").First(x => x.Id == model.Id);
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            if (user.Id != c.User.Id)
+            {
+                return View("../Shared/AccessDenied");
+            }
+            c.Value = model.Value;
+            await dbContext.SaveChangesAsync();
+            return RedirectToAction("Contact");
+        }
+
+        [Route("DeleteContact/{id}")]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteContact([FromRoute]long id)
+        {
+            var c = dbContext.UserContacts.Include("User").First(x => x.Id ==id);
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            if (user.Id != c.User.Id)
+            {
+                return View("../Shared/AccessDenied");
+            }
+            dbContext.UserContacts.Remove(c);
+            await dbContext.SaveChangesAsync();
+            return RedirectToAction("Contacts");
+        }
+
+
+
 
         [Authorize(Roles ="admin")]
         public async Task<IActionResult> Users()
