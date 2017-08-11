@@ -1,0 +1,59 @@
+﻿@using ElGroupo.Web.Models.Shared
+@using Microsoft.AspNetCore.Identity
+
+
+@model HeaderViewModel
+
+
+
+<header>
+    <nav>
+        <div class="row">
+            @if (Model.IsSignedIn)
+            {
+                <div style="float:left">
+                    <a asp-controller="Account" asp-action="Edit">My Account</a>
+                    <a asp-controller="Home" asp-action="Dashboard">Home</a>
+                    <span style="float:left; font-size:2em; color:#fff;">Welcome to ElGroupo, @Model.ActiveUser.Name</span>
+                    <span>Search</span>
+                    <input type="text" placeholder="Enter Event Name or Username..." style="width:150px" />
+                    <input type="button" class="btn btn-primary" value="Search" />
+                </div>
+                <ul class="main-nav">
+                    <li>
+                        <a href="#cities">View Drafts</a>
+                    </li>
+                    <li>
+                        <a href="#sign-up">Create New</a>
+                    </li>
+                    <li>
+                        <a href="#cities">Contact</a>
+                    </li>
+                    <li>
+                        <a href="#sign-up">About</a>
+                    </li>
+                </ul>
+                <a asp-controller="Account" asp-action="Logout" class="btn btn-primary">Sign Out</a>
+
+            }
+            else
+            {
+                <span style="float:left; font-size:2em; color:#fff;">ElGroupo!</span>
+                <ul class="main-nav">
+                    <li>
+                        <a href="#cities">Contact</a>
+                    </li>
+                    <li>
+                        <a href="#sign-up">About</a>
+                    </li>
+                </ul>
+                @*<a class="mobile-nav-icon"><i class="ion-navicon-round js--nav-icon"></i></a>*@
+            }
+
+
+
+
+
+        </div>
+    </nav>
+</header>

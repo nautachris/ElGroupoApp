@@ -1,0 +1,90 @@
+﻿@using ElGroupo.Web.Models.Account
+@model CreateAccountModel
+<section class="section-form">
+    <div class="row">
+        <h2>Create a new account...</h2>
+    </div>
+    <div class="row">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <form asp-controller="Account" asp-action="Create" enctype="multipart/form-data" method="post" class="contact-form">
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="Name">Name:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="Name" placeholder="Enter Name...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="EmailAddress">Email:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="EmailAddress" placeholder="Enter Email...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="EmailAddress">Password:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="Password" placeholder="Enter Password...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="ConfirmPassword">Confirm Password:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="ConfirmPassword" placeholder="Enter Password...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="UserName">Username:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="UserName" placeholder="Enter Username...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="PhoneNumber">Phone Number:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="PhoneNumber" placeholder="Enter Phone Number...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="ZipCode">ZIP Code:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="ZipCode" placeholder="Enter Zip Code...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="Photo">Photo/Avatar:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="Photo" type="file" id="inputPhoto" placeholder="Select a photo...">
+                </div>
+                <div class="col span-3-of-3">
+                    <img id="imgPhoto" src="" alt="Select a Photo" height="300" width="300" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label>&nbsp;</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input type="submit" value="Register!">
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/account/create.js"></script>
+}

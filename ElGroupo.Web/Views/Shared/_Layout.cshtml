@@ -1,0 +1,27 @@
+﻿<html>
+<head>
+    <title>El Groupo!</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="~/content/vendors/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="~/content/vendors/css/Grid.css">
+    <link rel="stylesheet" type="text/css" href="~/content/vendors/css/ionicons.min.css">
+    <link rel="stylesheet" type="text/css" href="~/content/vendors/css/animate.css">
+    <link href="~/content/resources/css/style.css" rel="stylesheet" />
+    <link href="~/content/resources/css/queries.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,300i,400" rel="stylesheet">
+</head>
+<body class="panel-body">
+    @await Component.InvokeAsync("HeaderComponent");
+    @*@await Html.PartialAsync("_LoginHeader")*@
+    @RenderBody()
+    @await  Html.PartialAsync("_Footer")
+
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+            asp-fallback-src="~/content/libljquery.js"
+            asp-fallback-test="window.jQuery">
+    </script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>
