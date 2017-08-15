@@ -29,7 +29,7 @@
 
     });
 
-    $("#tblContacts").on("click", "a", function () {
+    $("#divContactList").on("click", " #tblContacts a", function () {
         var id = Number($(this).attr('data-contact-id'));
         if ($(this).attr('data-action-type') === 'edit') {
 
@@ -42,10 +42,13 @@
                 async: true,
                 cache: false,
                 success: function success(results) {
+                    console.log('delete success');
+                    console.log(results);
                     $("#divContactList").html(results);
                 },
                 error: function error(err) {
                     alert('fuck me');
+                    console.log(err);
                 }
             });
         }

@@ -38,6 +38,7 @@
     <Content Include="wwwroot\content\resources\js\scripts.js" />
     <Content Include="wwwroot\content\scripts\account\create.js" />
     <Content Include="wwwroot\content\scripts\account\edit.js" />
+    <Content Include="wwwroot\content\scripts\shared\maps.js" />
     <Content Include="wwwroot\content\vendors\css\animate.css" />
     <Content Include="wwwroot\content\vendors\css\Grid.css" />
     <Content Include="wwwroot\content\vendors\css\ionicons.min.css" />

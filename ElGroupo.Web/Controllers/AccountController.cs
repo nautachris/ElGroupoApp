@@ -280,7 +280,7 @@ namespace ElGroupo.Web.Controllers
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpGet, HttpDelete]
         [Route("Contacts")]
         public async Task<IActionResult> Contacts()
         {
