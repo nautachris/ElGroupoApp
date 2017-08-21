@@ -7,25 +7,70 @@ using Microsoft.AspNetCore.Authorization;
 using ElGroupo.Domain;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using ElGroupo.Web.Models.Home;
+using ElGroupo.Domain.Data;
+using Microsoft.EntityFrameworkCore;
+using ElGroupo.Web.Models.Events;
 
 namespace ElGroupo.Web.Controllers
 {
+    [Route("Home")]
     [Authorize]
     public class HomeController : Controller
     {
-
+        private ElGroupoDbContext dbContext;
         private UserManager<User> _userManager;
 
-        public HomeController(UserManager<User> userManager)
+        public HomeController(UserManager<User> userManager, ElGroupoDbContext ctx)
         {
             this._userManager = userManager;
+            dbContext = ctx;
         }
 
 
-         
-        
-        public async Task<IActionResult> Dashboard() => View();
+        [HttpGet, HttpPost]
+        [Route("Dashboard")]
+        public async Task<IActionResult> Dashboard()
+        {
+            var model = new DashboardModel();
+            var allEvents = new List<EventInformationModel>();
+            //do we want a third "tab" for events I'm organizing?
+            var user = await this.CurrentUser;
 
+            var organizedEvents = dbContext.EventOrganizers.Include("User").Include("Event").Where(x => x.User.Id == user.Id).Select(x => x.Event);
+            var invitedEvents = dbContext.EventAttendees.Include("User").Include("Event").Where(x => x.User.Id == user.Id);
+            foreach(var ev in organizedEvents)
+            {
+                allEvents.Add(new EventInformationModel {
+                    EndDate = ev.EndTime,
+                    StartDate = ev.StartTime,
+                    Id = ev.Id,
+                    OrganizedByUser = true,
+                    IsNew = false,
+                    Name = ev.Name,
+                    Draft = ev.SavedAsDraft
+                });
+            }
+            foreach (var ev in invitedEvents)
+            {
+                allEvents.Add(new EventInformationModel
+                {
+                    EndDate = ev.Event.EndTime,
+                    StartDate = ev.Event.StartTime,
+                    Id = ev.Event.Id,
+                    OrganizedByUser = false,
+                    IsNew = !ev.Viewed,
+                    Name = ev.Event.Name
+                });
+            }
+
+            model.Drafts = allEvents.Where(x => x.OrganizedByUser && x.Draft).OrderBy(x => x.StartDate).ToList();
+            model.PastEvents = allEvents.Where(x => x.StartDate < DateTime.Now).OrderBy(x => x.StartDate).ToList();
+            model.FutureEvents = allEvents.Where(x => x.StartDate >= DateTime.Now).OrderBy(x => x.StartDate).ToList();
+            return View(model);
+        }
+
+        [Route("Index")]
         [AllowAnonymous]
         public async Task<IActionResult> Index() => RedirectToAction("Login", "Account");
         //public async Task<IActionResult> Index() => View(await this.CurrentUser);
@@ -72,7 +117,7 @@ namespace ElGroupo.Web.Controllers
         //    return View(await this.CurrentUser);
         //}
 
-        private Task<User> CurrentUser => _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
+        private Task<User> CurrentUser => _userManager.GetUserAsync(HttpContext.User);
 
     }
 }

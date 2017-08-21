@@ -75,11 +75,18 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Address");
+                    b.Property<string>("Address1")
+                        .HasMaxLength(100);
+
+                    b.Property<string>("Address2")
+                        .HasMaxLength(100);
 
                     b.Property<double>("CheckInLocationTolerance");
 
                     b.Property<int>("CheckInTimeTolerance");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100);
 
                     b.Property<double>("CoordinateX");
 
@@ -93,7 +100,12 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<DateTime>("EndTime");
 
+                    b.Property<string>("GooglePlaceId")
+                        .HasMaxLength(50);
+
                     b.Property<long?>("GroupId");
+
+                    b.Property<string>("LocationName");
 
                     b.Property<string>("Name");
 
@@ -101,9 +113,15 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<DateTime>("StartTime");
 
+                    b.Property<string>("State")
+                        .HasMaxLength(10);
+
                     b.Property<string>("UserCreated");
 
                     b.Property<string>("UserUpdated");
+
+                    b.Property<string>("Zip")
+                        .HasMaxLength(10);
 
                     b.HasKey("Id");
 
@@ -344,6 +362,34 @@ namespace ElGroupo.Domain.Migrations
                     b.HasIndex("MessageBoardItemId");
 
                     b.ToTable("MessageBoardItemAttendees");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.UnregisteredEventAttendee", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateCreated");
+
+                    b.Property<DateTime>("DateUpdated");
+
+                    b.Property<string>("Email");
+
+                    b.Property<long>("EventId");
+
+                    b.Property<string>("Name");
+
+                    b.Property<Guid>("RegisterToken");
+
+                    b.Property<string>("UserCreated");
+
+                    b.Property<string>("UserUpdated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("UnregisteredEventAttendees","dbo");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.User", b =>
@@ -666,6 +712,13 @@ namespace ElGroupo.Domain.Migrations
                     b.HasOne("ElGroupo.Domain.MessageBoardItem", "MessageBoardItem")
                         .WithMany("Attendees")
                         .HasForeignKey("MessageBoardItemId");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.UnregisteredEventAttendee", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Event", "Event")
+                        .WithMany("UnregisteredAttendees")
+                        .HasForeignKey("EventId");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.User", b =>

@@ -1,0 +1,95 @@
+﻿@using ElGroupo.Web.Models.Events
+@model EventContactsModel
+
+<style type="text/css">
+
+    .row.manual-search {
+        display: none;
+    }
+</style>
+<section>
+    <div class="row">
+        <h2>@Model.Event.Name</h2>
+        <input type="hidden" asp-for="@Model.Event.Id" />
+    </div>
+    <div class="row">
+        <span>@Model.Event.StartDate.ToString() - @Model.Event.EndDate.ToString()</span>
+    </div>
+</section>
+<section>
+    <h2>Edit Organizers</h2>
+    <div class="row">
+        <div class="col span-2-of-10"><label>Select Organizer:</label></div>
+        <div class="col span-5-of-10">
+            <input id="txtOrganizers" class="width-100" />
+        </div>
+        <div class="col span-1-of-10">
+            <label for="owner">Owner?</label>
+            <input name="owner" type="checkbox" id="chkOwner" />
+        </div>
+        <div class="col span-2-of-10">
+            <a class="btn btn-primary" disabled id="btnAddOrganizer">Add as Organizer</a>
+        </div>
+    </div>
+    <div class="row" id="divOrganizers">
+        
+        @Html.Partial("_Organizers", Model.Organizers)
+    </div>
+    
+</section>
+
+<section>
+    <h2>Edit Attendees</h2>
+    <div class="row">
+        <div class="col span-1-of-3">
+            <label>Select People to Invite:</label>
+        </div>
+        <div class="col span-1-of-3">
+            <input id="rbExistingContacts" class="contact-search-rb" name="selection" checked type="radio" /> Search for ElGroupo Members
+        </div>
+        <div class="col span-1-of-3">
+            <input id="rbNewContact" class="contact-search-rb"  name="selection" type="radio" /> Enter Name and Email
+        </div>
+
+    </div>
+    <div class="row select-existing-contacts">
+        <div class="col span-3-of-10"><label>Enter Name or Email Address:</label></div>
+        <div class="col span-5-of-10">
+            <input id="txtAttendees" class="width-100" />
+        </div>
+        <div class="col span-2-of-10">
+            <a class="btn btn-primary" disabled id="btnAddAttendee">Add Attendee</a>
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-4">
+            <label for="new-user-name">Name:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input class="width-100" name="new-user-name" id="txtNewUserName">
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-4">
+            <label for="new-user-email">Email:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input class="width-100" name="new-user-email" id="txtNewUserEmail" type="email">
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-4">
+            <a id="btnAddNewUser" class="btn btn-primary">Invite New User!</a>
+        </div>
+
+    </div>
+    <div class="row" id="divAttendees">
+        @Html.Partial("_Attendees", Model.Attendees)
+    </div>
+        
+</section>
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/events/contacts.js"></script>
+
+}

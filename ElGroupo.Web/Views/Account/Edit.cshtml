@@ -5,9 +5,18 @@
     <div class="row">
         <h2>Edit your account bitch!</h2>
     </div>
+    @if (Model.IsAdminEditing)
+    {
+        <h2>Admin Tools</h2>
+        <div class="row" style="text-align:center;">
+            <a asp-controller="Account" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-primary">Delete this account?</a>
+        </div>
+
+    }
     <div class="row">
         <div asp-validation-summary="All" class="text-danger"></div>
         <form asp-controller="Account" asp-action="Edit" enctype="multipart/form-data" method="post" class="contact-form">
+            <input asp-for="Id" type="hidden" />
             <div class="row">
                 <div class="col span-1-of-3">
                     <label asp-for="Name">Name:</label>
@@ -47,7 +56,7 @@
                         <label>Current Photo:</label>
                     </div>
                     <div class="col span-2-of-3">
-                        <img id="imgPhoto" src="/Account/UserPhoto/@Model.Id" alt="Select a Photo" />
+                        <img id="imgPhoto" src="/Users/UserPhoto/@Model.Id" alt="Select a Photo" />
                     </div>
                 }
                 else

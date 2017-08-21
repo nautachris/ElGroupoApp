@@ -9,5 +9,7 @@ namespace ElGroupo.Web.Models.Shared
     {
         public bool IsSignedIn { get; set; }
         public User ActiveUser { get; set; }
+
+        public bool IsAdmin { get; set; }
     }
 }

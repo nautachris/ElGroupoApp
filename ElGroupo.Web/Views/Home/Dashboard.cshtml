@@ -1,3 +1,104 @@
-﻿<section>
-    Hi I'm a dashboard!!
+﻿@using ElGroupo.Web.Models.Home
+@model DashboardModel
+
+<style type="text/css">
+    .row.past-events, .row.draft-events {
+        display: none;
+    }
+    a.no-decoration {
+        color:#808080;
+        padding-bottom:0px;
+        border-bottom:none;
+    
+    }
+
+    li.new-event {
+        background-color: aquamarine;
+        border-radius:25px;
+        font-weight: 300;
+    }
+    .row li {
+        cursor:pointer;
+    }
+    li span {
+        display: inline-block;
+        width:100%;
+    }
+    a {
+    color:blue;
+    }
+    .page-nav{
+        text-align:center;
+        list-style:none;
+    }
+    .page-nav a{
+        margin-left:60px;
+    }
+
+    .bold{
+        font-weight:bold;
+    }
+</style>
+<section>
+
+    <h2>My Fuckin' Bitchin' Events</h2>
+    <div class="page-nav">
+
+            <a class="links bold" data-link-type="future-events" href="#">Upcoming Events (@Model.FutureEvents.Count.ToString())</a>
+
+            <a class="links" data-link-type="past-events" href="#">Past Events (@Model.PastEvents.Count.ToString())</a>
+
+            <a class="links" data-link-type="draft-events" href="#">Drafts  (@Model.Drafts.Count.ToString())</a>
+
+    </div>
+    <div class="row tab future-events">
+        <ul>
+            @foreach (var e in Model.FutureEvents)
+            {
+                <li class="@(e.IsNew ? "new-event": "")">
+                    <a asp-controller="Events" asp-action="@(e.OrganizedByUser ? "Edit" : "View")" asp-route-eid="@e.Id">
+                        <span style="font-weight:bold">
+                            @if (e.OrganizedByUser)
+                            {
+                                @:*&nbsp;
+                        }
+                            @e.Name
+                        </span>
+                        <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
+                    </a>
+                   
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="row tab past-events">
+        <ul>
+            @foreach (var e in Model.PastEvents)
+            {
+                <li>
+                    <span style="font-weight:bold">@e.Name</span>
+                    <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="row tab draft-events">
+        <ul>
+            @foreach (var e in Model.Drafts)
+            {
+                <li>
+                    <a class="no-decoration" asp-route="editevent" asp-route-eid="@e.Id">
+                        <span style="font-weight:bold">@e.Name</span>
+                        <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
+                    </a>
+                    
+                </li>
+            }
+        </ul>
+    </div>
 </section>
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/home/dashboard.js"></script>
+
+}

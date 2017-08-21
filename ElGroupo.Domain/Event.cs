@@ -1,14 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace ElGroupo.Domain
 {
     public class Event:ClassBase
     {
+        public Event()
+        {
+            this.Organizers = new HashSet<EventOrganizer>();
+            this.UnregisteredAttendees = new HashSet<UnregisteredEventAttendee>();
+        }
         public string Name { get; set; }
         public string Description { get; set; }
-        public string Address { get; set; }
+
+        public string LocationName { get; set; }
+
+        [MaxLength(50)]
+        public string GooglePlaceId { get; set; }
+
+        [MaxLength(100)]
+        public string Address1 { get; set; }
+        [MaxLength(100)]
+        public string Address2 { get; set; }
+        [MaxLength(100)]
+        public string City { get; set; }
+
+        [MaxLength(10)]
+        public string State { get; set; }
+
+        [MaxLength(10)]
+        public string Zip { get; set; }
         
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
@@ -26,5 +49,7 @@ namespace ElGroupo.Domain
         public virtual ICollection<MessageBoardItem> MessageBoardItems { get; set; }
 
         public virtual ICollection<EventNotification> Notifications { get; set; }
+
+        public virtual ICollection<UnregisteredEventAttendee> UnregisteredAttendees { get; set; }
     }
 }

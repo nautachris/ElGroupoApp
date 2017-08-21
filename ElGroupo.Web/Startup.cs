@@ -9,12 +9,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-
+using ElGroupo.Web.Models.Configuration;
 using Microsoft.Extensions.Configuration;
 
 using ElGroupo.Domain.Data;
 using ElGroupo.Domain;
-
+using ElGroupo.Web.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.FileProviders;
 
 namespace ElGroupo.Web
 {
@@ -25,6 +27,7 @@ namespace ElGroupo.Web
         {
             var builder = new ConfigurationBuilder().SetBasePath(env.ContentRootPath).AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
             builder.AddEnvironmentVariables();
+            builder.AddUserSecrets<Startup>();
             Configuration = builder.Build();
 
         }
@@ -40,8 +43,12 @@ namespace ElGroupo.Web
                 opts.Password.RequireNonAlphanumeric = false;
                 opts.Password.RequireLowercase = false;
                 opts.Password.RequireUppercase = false;
+                opts.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             }).AddEntityFrameworkStores<ElGroupoDbContext, int>();
             services.AddMvc();
+            //services.AddTransient<IEmailSender, SendGridEmailSender>();
+            services.AddTransient<IEmailSender, MailgunEmailSender>();
+            services.Configure<EmailConfigOptions>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,8 +64,20 @@ namespace ElGroupo.Web
 
             app.UseStaticFiles();
 
+            app.UseStaticFiles(new StaticFileOptions() {
+                FileProvider = new PhysicalFileProvider(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(),"wwwroot", "content", "resources", "images")),
+                RequestPath = new PathString("/Images")
+            });
+
             app.UseIdentity();
             app.UseMvcWithDefaultRoute();
+
+
+            //var sm = app.ApplicationServices.GetRequiredService<SignInManager<User>>();
+
+            
+            //Models.Configuration.EmailConfigOptions.SendTestEmail().Wait();
+            //ElGroupoDbContext.CreateUsers(app.ApplicationServices).Wait();
             //ElGroupoDbContext.PopulateUserContacts(app.ApplicationServices).Wait();
             //ElGroupoDbContext.CreateAdminAccount(app.ApplicationServices, Configuration).Wait();
             //ElGroupoDbContext.CreateContactTypes(app.ApplicationServices).Wait();

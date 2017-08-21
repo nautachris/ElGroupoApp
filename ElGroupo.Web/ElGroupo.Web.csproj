@@ -2,9 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <UserSecretsId>66b48c5a-f028-4f21-bdce-2ab2df7a1ea4</UserSecretsId>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
+    <Content Include="wwwroot\content\lib\css\jquery-ui.css" />
     <Content Include="wwwroot\content\lib\jquery.js" />
     <Content Include="wwwroot\content\resources\css\img\back-customers.jpg" />
     <Content Include="wwwroot\content\resources\css\img\hero.jpg" />
@@ -38,6 +40,8 @@
     <Content Include="wwwroot\content\resources\js\scripts.js" />
     <Content Include="wwwroot\content\scripts\account\create.js" />
     <Content Include="wwwroot\content\scripts\account\edit.js" />
+    <Content Include="wwwroot\content\scripts\events\contacts.js" />
+    <Content Include="wwwroot\content\scripts\events\Create.js" />
     <Content Include="wwwroot\content\scripts\shared\maps.js" />
     <Content Include="wwwroot\content\vendors\css\animate.css" />
     <Content Include="wwwroot\content\vendors\css\Grid.css" />
@@ -49,13 +53,16 @@
     <Content Include="wwwroot\content\vendors\fonts\ionicons.woff" />
     <Content Include="wwwroot\content\vendors\js\jquery.waypoints.min.js" />
     <Content Include="wwwroot\content\vendors\js\zepto.waypoints.min.js" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
+    <Folder Include="Models\NewFolder\" />
+    <Folder Include="NewFolder\" />
+    <Folder Include="wwwroot\content\lib\css\images\" />
     <Folder Include="wwwroot\content\resources\data\" />
-    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="1.1.2" />
@@ -67,9 +74,15 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.0.1" />
+    <PackageReference Include="RestSharp.NetCore" Version="105.2.4-rc4-24214-01" />
+    <PackageReference Include="SendGrid" Version="9.8.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ElGroupo.Domain\ElGroupo.Domain.csproj" />
+  </ItemGroup>
+    <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.0-msbuild3-final" />
   </ItemGroup>
 
 </Project>

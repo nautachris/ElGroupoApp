@@ -16,13 +16,14 @@ using ElGroupo.Domain.Data.Configurations;
 namespace ElGroupo.Domain.Data
 {
 
-    
-    public class ElGroupoDbContext:IdentityDbContext<User, IdentityRole<int>, int>
+
+    public class ElGroupoDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public DbSet<Lookups.ContactType> ContactTypes { get; set; }
         public DbSet<ContactGroup> ContactGroups { get; set; }
 
         public DbSet<ContactGroupUser> ContactGroupUsers { get; set; }
+        public DbSet<UnregisteredEventAttendee> UnregisteredEventAttendees { get; set; }
 
 
         public DbSet<Event> Events { get; set; }
@@ -38,7 +39,7 @@ namespace ElGroupo.Domain.Data
         public DbSet<UserPhoto> UserPhotos { get; set; }
 
 
-        public ElGroupoDbContext(DbContextOptions<ElGroupoDbContext> options):base(options)
+        public ElGroupoDbContext(DbContextOptions<ElGroupoDbContext> options) : base(options)
         {
 
         }
@@ -49,7 +50,7 @@ namespace ElGroupo.Domain.Data
             builder.AddConfiguration<UserConfiguration>();
             builder.AddConfiguration<ContactTypeConfiguration>();
             builder.AddConfiguration<ContactGroupUserConfiguration>();
-
+            builder.AddConfiguration<UnregisteredEventAttendeeConfiguration>();
 
             builder.Entity<UserPhoto>().ToTable("UserPhoto");
 
@@ -78,6 +79,43 @@ namespace ElGroupo.Domain.Data
             }
         }
 
+
+        public static async Task CreateUsers(IServiceProvider provider)
+        {
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+            //UserManager<User> userManager = provider.GetRequiredService<UserManager<User>>();
+            //RoleManager<IdentityRole<int>> roleManager = provider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+            //for (var x = 0; x < 25; x++)
+            //{
+            //    string name = "user" + x.ToString();
+            //    string email = name + "@email.com";
+            //    var newUser = new User { UserName = name, Email = email };
+            //    var createResult = await userManager.CreateAsync(newUser, "cS!102381");
+
+
+            //}
+            //foreach (var u in ctx.Users.Include("Contacts").Where(x=>x.Contacts.Count == 0))
+            //{
+            //    foreach (var ct in ctx.ContactTypes)
+            //    {
+            //        u.AddContact(ct, "contact");
+
+            //    }
+            //    ctx.Update(u);
+            //}
+
+            foreach(var u in ctx.Users.Where(x=>x.Name == null))
+            {
+                u.Name = u.UserName;
+                u.ZipCode = "87111";
+                ctx.Update(u);
+            }
+            await ctx.SaveChangesAsync();
+
+
+        }
+
+
         public static async Task PopulateUserContacts(IServiceProvider provider)
         {
             try
@@ -94,12 +132,12 @@ namespace ElGroupo.Domain.Data
                 }
                 await ctx.SaveChangesAsync();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
 
-           
+
         }
 
 

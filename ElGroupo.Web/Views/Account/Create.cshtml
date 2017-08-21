@@ -1,12 +1,24 @@
 ﻿@using ElGroupo.Web.Models.Account
 @model CreateAccountModel
 <section class="section-form">
+    
     <div class="row">
         <h2>Create a new account...</h2>
     </div>
     <div class="row">
         <div asp-validation-summary="All" class="text-danger"></div>
         <form asp-controller="Account" asp-action="Create" enctype="multipart/form-data" method="post" class="contact-form">
+            <input asp-for="InviteId" type="hidden" />
+            @if (Model.InvitedFromEvent)
+            {
+                <div class="row">
+                    <span>Welcome @Model.InviteName !!</span>
+                </div>
+                <div class="row">
+                    <span>You've been invited to @Model.EventName !!</span>
+                </div>
+            }
+
             <div class="row">
                 <div class="col span-1-of-3">
                     <label asp-for="Name">Name:</label>
@@ -20,7 +32,17 @@
                     <label asp-for="EmailAddress">Email:</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input asp-for="EmailAddress" placeholder="Enter Email...">
+                    @if (Model.InvitedFromEvent)
+                    {
+                        <input asp-for="InvitedEmail" type="hidden" placeholder="Enter Email...">
+                        <label>@Model.InvitedEmail</label>
+                    }
+                    else
+                    {
+                        <input asp-for="EmailAddress" placeholder="Enter Email...">
+
+                    }
+                    
                 </div>
             </div>
             <div class="row">

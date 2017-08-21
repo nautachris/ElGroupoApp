@@ -1,0 +1,33 @@
+﻿@using ElGroupo.Web.Models.Account
+@model IEnumerable<UserInformationModel>
+
+<section>
+    <div class="row">
+        <h2>Account Administration</h2>
+    </div>
+    <div class="row" style="text-align:center;">
+        <a asp-controller="Account" asp-action="Create" class="btn btn-primary">Create New User</a>
+    </div>
+    <div class="row">
+        <h3>Search for Existing Users</h3>
+    </div>
+    <div class="row">
+        <div class="col span-2-of-8">
+            Search by Name or Email
+        </div>
+        <div class="col span-4-of-8">
+            <input class="width-100" type="text" id="txtSearch" />
+        </div>
+        <div class="col span-2-of-8">
+            <input type="button" id="btnSearch" class="btn btn-primary width-100" value="Search" />
+        </div>
+    </div>
+    <div class="row" id="divUserList">
+        @await Html.PartialAsync("_UserList", Model)
+    </div>
+
+</section>
+@section Scripts{ 
+    <script type="text/javascript" src="~/content/scripts/account/admin.js"></script>
+
+}

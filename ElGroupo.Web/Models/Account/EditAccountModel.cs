@@ -9,7 +9,7 @@ namespace ElGroupo.Web.Models.Account
 {
     public class EditAccountModel
     {
-
+        public bool IsAdminEditing { get; set; }
         public List<EditContactModel> Contacts { get; set; }
         public int Id { get; set; }
 

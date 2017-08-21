@@ -1,0 +1,36 @@
+﻿@using ElGroupo.Web.Models.Events
+@model IEnumerable<EventAttendeeModel>
+@{
+    Layout = null;
+}
+
+@if (Model.Count() > 0)
+{
+    <table id="tblAttendees" class="row width-100">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th style="width:100px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td>@m.Name</td>
+                    <td>@m.PhoneNumber</td>
+                    <td>@m.RSVPStatus.ToString()</td>
+                    <td><a data-contact-id="@m.Id" style="cursor:pointer;" data-action-type="delete">Uninvite</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+else
+{
+    <h3 style="text-align:center;">You haven't invited anyone dumbass!</h3>
+
+}

@@ -9,6 +9,16 @@ namespace ElGroupo.Web.Models.Account
 {
     public class CreateAccountModel
     {
+        public bool InvitedFromEvent { get; set; }
+        public string InviteName { get; set; }
+        public string EventName { get; set; }
+
+        public string InvitedEmail { get; set; }
+        public Guid? InviteId { get; set; }
+
+
+
+
         [Display(Description = "User Name")]
         public string UserName { get; set; }
         public string Name { get; set; }

@@ -9,6 +9,7 @@ namespace ElGroupo.Domain.Enums
         None = 0,
         No = 1,
         Yes = 2,
-        Maybe = 3
+        Maybe = 3,
+        PendingRegistration = 4
     }
 }

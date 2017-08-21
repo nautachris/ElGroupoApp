@@ -32,6 +32,7 @@ namespace ElGroupo.Web.Components
                 {
                     model.IsSignedIn = true;
                     model.ActiveUser = user;
+                    model.IsAdmin = await this._userManager.IsInRoleAsync(user, "admin");
                 }
             }                     
             return View(model);

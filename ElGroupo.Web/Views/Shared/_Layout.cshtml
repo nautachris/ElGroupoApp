@@ -8,20 +8,37 @@
     <link rel="stylesheet" type="text/css" href="~/content/vendors/css/animate.css">
     <link href="~/content/resources/css/style.css" rel="stylesheet" />
     <link href="~/content/resources/css/queries.css" rel="stylesheet" />
+    <link href="~/content/lib/css/jquery-ui.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,300i,400" rel="stylesheet">
 </head>
 <body class="panel-body">
-    @await Component.InvokeAsync("HeaderComponent");
-    @*@await Html.PartialAsync("_LoginHeader")*@
-    @RenderBody()
+    @await Component.InvokeAsync("HeaderComponent")
+    <div id="main">
+        @RenderBody()
+    </div>
+
+
+
+
     @await  Html.PartialAsync("_Footer")
 
-
+    <div id="divDialog" style="display:none;"></div>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
             asp-fallback-src="~/content/libljquery.js"
             asp-fallback-test="window.jQuery">
     </script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     @RenderSection("scripts", required: false)
+    <script type="text/javascript">
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "250px";
+            //document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+            //document.getElementById("main").style.marginLeft = "0";
+        }
+    </script>
 </body>
 </html>

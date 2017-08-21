@@ -9,8 +9,9 @@ using Microsoft.AspNetCore.Identity;
 using ElGroupo.Web.Models.Account;
 using Microsoft.EntityFrameworkCore;
 using ElGroupo.Domain.Data;
+using System.Drawing.Imaging;
 using System.IO;
-
+using System.Drawing;
 namespace ElGroupo.Web.Controllers
 {
     [Authorize]
@@ -72,7 +73,26 @@ namespace ElGroupo.Web.Controllers
         //    }
         //}
 
+        [Authorize(Roles = ("admin"))]
+        [HttpGet("Admin")]
+        public async Task<IActionResult> Admin()
+        {
+            //var modelList = new List<UserInformationModel>();
+            //foreach(var u in dbContext.Users)
+            //{
+            //    modelList.Add(new UserInformationModel
+            //    {
+            //        Name = u.Name,
+            //        Email = u.Email,
+            //        UserName = u.UserName,
+            //        Id = u.Id
+            //    });
+            //}
+            return View(null);
+        }
 
+        [Route("Login")]
+        [Route("/")]
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
@@ -84,6 +104,7 @@ namespace ElGroupo.Web.Controllers
             return View();
         }
 
+        [Route("AccessDenied")]
         [AllowAnonymous]
         public IActionResult AccessDenied()
         {
@@ -94,7 +115,17 @@ namespace ElGroupo.Web.Controllers
         [Route("Create")]
         public IActionResult Create()
         {
-            return View();
+            return View(new CreateAccountModel());
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("Create/{id}")]
+        public async Task<IActionResult> CreateFromInvite(Guid id)
+        {
+            var invite = dbContext.UnregisteredEventAttendees.Include("Event").FirstOrDefault(x => x.RegisterToken == id);
+            if (invite == null) return BadRequest();
+            return View("Create", new CreateAccountModel { InvitedFromEvent = true, InviteName = invite.Name, EventName = invite.Event.Name, InvitedEmail = invite.Email, InviteId = invite.RegisterToken });
         }
 
 
@@ -103,10 +134,12 @@ namespace ElGroupo.Web.Controllers
         [Route("Create")]
         public async Task<IActionResult> Create([FromForm]CreateAccountModel model)
         {
+            if (model.InviteId.HasValue) model.EmailAddress = model.InvitedEmail;
             if (ModelState.IsValid)
             {
                 try
                 {
+
                     User newUser = new User
                     {
                         Email = model.EmailAddress,
@@ -150,6 +183,26 @@ namespace ElGroupo.Web.Controllers
                     }
 
 
+                    if (model.InviteId.HasValue)
+                    {
+                        //add new user to this eevent
+                        //remove EventUregisteredAttendee record
+                        var uea = dbContext.UnregisteredEventAttendees.Include("Event").FirstOrDefault(x => x.RegisterToken == model.InviteId);
+                        var ea = new EventAttendee
+                        {
+                            Event = uea.Event,
+                            User = newUser,
+                            Viewed = false,
+                            ResponseStatus = Domain.Enums.RSVPTypes.None
+                        };
+
+                        dbContext.UnregisteredEventAttendees.Remove(uea);
+                        dbContext.EventAttendees.Add(ea);
+                        await dbContext.SaveChangesAsync();
+
+
+                    }
+
                 }
                 catch (Exception ex)
                 {
@@ -162,17 +215,7 @@ namespace ElGroupo.Web.Controllers
             return View(model);
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("UserPhoto/{id}")]
-        public async Task<IActionResult> UserPhoto([FromRoute]int id)
-        {
-            var user = dbContext.Users.Include("Photo").FirstOrDefault(x => x.Id == id);
-            if (user == null || user.Photo == null) return new EmptyResult();
-            return File(user.Photo.ImageData, user.Photo.ContentType);
-            
 
-        }
 
         private List<EditContactModel> GetContacts(User user)
         {
@@ -221,38 +264,108 @@ namespace ElGroupo.Web.Controllers
             return View(model);
         }
 
+        public bool ThumbnailCallback()
+        {
+            return false;
+        }
+        private byte[] CreateThumbnail(Stream s, string contentType)
+        {
+            //all images will now be 300 px wide
+            int width = 300;
+            Image i = new Bitmap(s);
+            double dx = 300d / (double)i.Width;
+            
+            Image.GetThumbnailImageAbort callback = new Image.GetThumbnailImageAbort(ThumbnailCallback);
+            Image thumbnail = i.GetThumbnailImage(width, Convert.ToInt32(i.Height * dx), callback, IntPtr.Zero);
+            var ms = new MemoryStream();
+            ImageFormat format = ImageFormat.Jpeg;
+            switch (contentType)
+            {
+                case "image/jpeg":
+                case "image/jpg":
+                    format = ImageFormat.Jpeg;
+                    break;
+                case "image/png":
+                    format = ImageFormat.Png;
+                    break;
+                case "image/gif":
+                    format = ImageFormat.Gif;
+                    break;
+            }
+            thumbnail.Save(ms, format);
+            return ms.ToArray();
+        }
+
+
+
+        [HttpGet]
+        [Authorize(Roles = "admin")]
+        [Route("Edit/{id}", Name = "editadmin")]
+        public async Task<IActionResult> EditAdmin([FromRoute]int id)
+        {
+
+            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == id);
+
+            var model = new EditAccountModel
+            {
+                Contacts = GetContacts(userRecord),
+                ContactTypes = GetContactTypes(),
+                EmailAddress = userRecord.Email,
+                HasPhoto = userRecord.Photo != null,
+                Id = userRecord.Id,
+                Name = userRecord.Name,
+                PhoneNumber = userRecord.PhoneNumber,
+                ZipCode = userRecord.ZipCode,
+                IsAdminEditing = true
+            };
+            return View("Edit", model);
+        }
+
+
+        [HttpPost]
+        [Route("Delete/{id}")]
+        [Authorize(Roles ="admin")]
+        public async Task<IActionResult> Delete([FromRoute]int id)
+        {
+            var user = await userManager.FindByIdAsync(id.ToString());
+            await userManager.DeleteAsync(user);
+            return View("Admin", null);
+        }
+
         [HttpPost]
         [Route("Edit")]
         public async Task<IActionResult> Edit(EditAccountModel model)
         {
-            var user = await userManager.GetUserAsync(HttpContext.User);
+            User user = await userManager.GetUserAsync(HttpContext.User);
+            var isAdmin = await userManager.IsInRoleAsync(user, "admin");
+            if (isAdmin) user = await userManager.FindByIdAsync(model.Id.ToString());
+            
             var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
             userRecord.ZipCode = model.ZipCode;
             userRecord.Email = model.EmailAddress;
             userRecord.PhoneNumber = model.PhoneNumber;
             if (model.UpdatedPhoto != null)
             {
-                //newUser = await userManager.FindByIdAsync(newUser.Id.ToString());
-                //UserPhoto photo = new UserPhoto();
-                byte[] fileBytes = null;
-                using (var imageStream = model.UpdatedPhoto.OpenReadStream())
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        await imageStream.CopyToAsync(ms);
-                        fileBytes = ms.ToArray();
-                    }
-                }
+                byte[] fileBytes = CreateThumbnail(model.UpdatedPhoto.OpenReadStream(), model.UpdatedPhoto.ContentType);
+                //byte[] fileBytes = null;
+                //using (var imageStream = model.UpdatedPhoto.OpenReadStream())
+                //{
+                //    using (var ms = new MemoryStream())
+                //    {
+                //        await imageStream.CopyToAsync(ms);
+                //        fileBytes = ms.ToArray();
+                //    }
+                //}
                 if (userRecord.Photo == null)
                 {
                     var newPhoto = new UserPhoto
                     {
                         ContentType = model.UpdatedPhoto.ContentType,
-                        ImageData = fileBytes                        
+                        ImageData = fileBytes
                     };
                     dbContext.UserPhotos.Add(newPhoto);
                     userRecord.Photo = newPhoto;
-                    
+
                 }
                 else
                 {
@@ -276,7 +389,16 @@ namespace ElGroupo.Web.Controllers
             //    PhoneNumber = userRecord.PhoneNumber,
             //    ZipCode = userRecord.ZipCode
             //};
-            return RedirectToAction("Edit");
+
+            if (isAdmin)
+            {
+                return RedirectToAction("EditAdmin", new { id = model.Id });
+            }
+            else
+            {
+                return RedirectToAction("Edit");
+            }
+            
         }
 
         [Authorize]
@@ -345,7 +467,7 @@ namespace ElGroupo.Web.Controllers
 
 
 
-        [HttpPost]
+        [HttpPost("Login")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel details,
@@ -377,7 +499,7 @@ namespace ElGroupo.Web.Controllers
             }
             return View(details);
         }
-
+        [Route("Logout")]
         [Authorize]
         public async Task<IActionResult> Logout()
         {
