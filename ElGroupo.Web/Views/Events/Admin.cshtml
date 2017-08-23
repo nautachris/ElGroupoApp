@@ -1,0 +1,36 @@
+﻿@using ElGroupo.Web.Models.Events
+@model IEnumerable<EventInformationModel>
+
+<section>
+    <div class="row">
+        <h2>Event Administration</h2>
+    </div>
+    <div class="row" style="text-align:center;">
+        <a asp-controller="Events" asp-action="Create" class="btn btn-primary">Create New Event</a>
+    </div>
+    <div class="row">
+        <h3>Search for Existing Events</h3>
+    </div>
+    <div class="row">
+        <div class="col span-2-of-9">
+            Search by Name or Organizer
+        </div>
+        <div class="col span-4-of-9">
+            <input class="width-100" type="text" id="txtSearch" />
+        </div>
+        <div class="col span-1-of-9">
+            <input type="button" id="btnShowAll" class="btn btn-ghost width-100" value="Show All" />
+        </div>
+        <div class="col span-2-of-9">
+            <input type="button" id="btnSearch" class="btn btn-primary width-100" value="Search" />
+        </div>
+    </div>
+    <div class="row" id="divEventList">
+        @await Html.PartialAsync("_EventList", Model)
+    </div>
+
+</section>
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/events/admin.js"></script>
+
+}

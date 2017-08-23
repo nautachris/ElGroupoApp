@@ -17,5 +17,7 @@ namespace ElGroupo.Web.Models.Events
         public bool OrganizedByUser { get; set; }
         public bool Draft { get; set; }
 
+        public string OrganizerName { get; set; }
+
     }
 }

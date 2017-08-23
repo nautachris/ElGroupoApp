@@ -5,38 +5,43 @@
     .row.past-events, .row.draft-events {
         display: none;
     }
+
     a.no-decoration {
-        color:#808080;
-        padding-bottom:0px;
-        border-bottom:none;
-    
+        color: #808080;
+        padding-bottom: 0px;
+        border-bottom: none;
     }
 
     li.new-event {
         background-color: aquamarine;
-        border-radius:25px;
+        border-radius: 25px;
         font-weight: 300;
     }
+
     .row li {
-        cursor:pointer;
-    }
-    li span {
-        display: inline-block;
-        width:100%;
-    }
-    a {
-    color:blue;
-    }
-    .page-nav{
-        text-align:center;
-        list-style:none;
-    }
-    .page-nav a{
-        margin-left:60px;
+        cursor: pointer;
     }
 
-    .bold{
-        font-weight:bold;
+    li span {
+        display: inline-block;
+        width: 100%;
+    }
+
+    a {
+        color: blue;
+    }
+
+    .page-nav {
+        text-align: center;
+        list-style: none;
+    }
+
+        .page-nav a {
+            margin-left: 60px;
+        }
+
+    .bold {
+        font-weight: bold;
     }
 </style>
 <section>
@@ -44,11 +49,11 @@
     <h2>My Fuckin' Bitchin' Events</h2>
     <div class="page-nav">
 
-            <a class="links bold" data-link-type="future-events" href="#">Upcoming Events (@Model.FutureEvents.Count.ToString())</a>
+        <a class="links bold" data-link-type="future-events" href="#">Upcoming Events (@Model.FutureEvents.Count.ToString())</a>
 
-            <a class="links" data-link-type="past-events" href="#">Past Events (@Model.PastEvents.Count.ToString())</a>
+        <a class="links" data-link-type="past-events" href="#">Past Events (@Model.PastEvents.Count.ToString())</a>
 
-            <a class="links" data-link-type="draft-events" href="#">Drafts  (@Model.Drafts.Count.ToString())</a>
+        <a class="links" data-link-type="draft-events" href="#">Drafts  (@Model.Drafts.Count.ToString())</a>
 
     </div>
     <div class="row tab future-events">
@@ -66,7 +71,7 @@
                         </span>
                         <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
                     </a>
-                   
+
                 </li>
             }
         </ul>
@@ -76,8 +81,12 @@
             @foreach (var e in Model.PastEvents)
             {
                 <li>
-                    <span style="font-weight:bold">@e.Name</span>
-                    <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
+                    <a class="no-decoration" asp-controller="Events" asp-action="View" asp-route-eid="@e.Id">
+
+
+                        <span style="font-weight:bold">@e.Name</span>
+                        <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
+                    </a>
                 </li>
             }
         </ul>
@@ -91,7 +100,7 @@
                         <span style="font-weight:bold">@e.Name</span>
                         <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
                     </a>
-                    
+
                 </li>
             }
         </ul>

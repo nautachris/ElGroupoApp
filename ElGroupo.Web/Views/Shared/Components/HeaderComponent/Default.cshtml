@@ -84,6 +84,7 @@ body {
                         @if (Model.IsAdmin)
                         {
                             <a asp-controller="Account" class="no-decoration" asp-action="Admin">Acct. Admin</a>
+                            <a asp-controller="Events" class="no-decoration" asp-action="Admin">Event Admin</a>
 
                         }
                         <a href="#" class="no-decoration">View Drafts</a>
@@ -91,15 +92,6 @@ body {
                         <a class="no-decoration" asp-controller="Account" asp-action="Logout">Sign Out</a>
                     </div>
                     
-
-
-                    @*<div style="float:right;">
-                        <a href="#cities">View Drafts</a>
-                        <a asp-controller="Events" asp-action="Create">Create New</a>
-                        <a href="#cities">Contact</a>
-                        <a href="#sign-up">About</a>
-                        <a asp-controller="Account" asp-action="Logout" class="btn btn-primary">Sign Out</a>
-                    </div>*@
 
 
             }

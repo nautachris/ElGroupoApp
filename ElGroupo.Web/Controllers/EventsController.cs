@@ -106,7 +106,49 @@ namespace ElGroupo.Web.Controllers
 
         }
 
+        [Authorize(Roles = ("admin"))]
+        [HttpGet("Admin")]
+        public async Task<IActionResult> Admin()
+        {
+            //var modelList = new List<UserInformationModel>();
+            //foreach(var u in dbContext.Users)
+            //{
+            //    modelList.Add(new UserInformationModel
+            //    {
+            //        Name = u.Name,
+            //        Email = u.Email,
+            //        UserName = u.UserName,
+            //        Id = u.Id
+            //    });
+            //}
+            return View(null);
+        }
 
+        [Authorize]
+        [HttpGet]
+        [Route("Search/{search}")]
+        public async Task<IActionResult> Search([FromRoute]string search)
+        {
+            IQueryable<Event> events = null;
+            if (search == "*")
+            {
+                events = dbContext.Events.Include("Organizers.User");
+            }
+            else
+            {
+                events = dbContext.Events.Include("Organizers.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
+            }
+
+            var list = new List<EventInformationModel>();
+            await events.ForEachAsync(x => list.Add(new EventInformationModel {
+                Draft = x.SavedAsDraft,
+                StartDate = x.StartTime,
+                EndDate = x.EndTime,
+                Id = x.Id,
+                Name = x.Name,
+                OrganizerName = x.Organizers.First(y => y.Owner).User.Name }));
+            return PartialView("_EventList", list.OrderBy(x => x.Name));
+        }
         private async Task SendEventOrganizerEmail(User u, Event e)
         {
             var url = Url.Action("Edit", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
@@ -142,7 +184,7 @@ namespace ElGroupo.Web.Controllers
 
         private async Task SendUnregisteredEventAttendeeEmail(string name, string email, string fromName, Guid token, Event e)
         {
-            var url = Url.Action("Create", "Account", new { id =token }, HttpContext.Request.Scheme);
+            var url = Url.Action("Create", "Account", new { id = token }, HttpContext.Request.Scheme);
 
             var msg = "Hi " + name + ",";
             msg += "<br/>";
@@ -156,14 +198,29 @@ namespace ElGroupo.Web.Controllers
             await emailSender.SendEmailAsync(email, "You've been invited to a new event!", msg);
         }
 
+
+        [Authorize]
+        [HttpPost]
+        [Route("Edit")]
+        public async Task<IActionResult> SaveEdits([FromForm]EditEventModel model)
+        {
+            return RedirectToAction("Contacts", new { id = model.Id });
+            //return RedirectToAction("Edit", new { eid = model.Id });
+        }
+
         [Authorize]
         [HttpGet]
         [Route("{eid}/Edit", Name = "editevent")]
         public async Task<IActionResult> Edit([FromRoute]long eid)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eid);
-            if (e == null) return new BadRequestResult();
-
+            var user = this.userManager.GetUserAsync(HttpContext.User);
+            var e = await dbContext.Events.Include("Organizers.User").FirstOrDefaultAsync(x => x.Id == eid);
+            if (e == null) return View("../Shared/NotFound");
+            if (!e.Organizers.Any(x => x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
+            {
+                //illegal access
+                return View("../Shared/AccessDenied");
+            }
             var model = new EditEventModel();
             model.Id = e.Id;
             model.Address1 = e.Address1;
@@ -193,7 +250,30 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/View")]
         public async Task<IActionResult> View([FromRoute]long eid)
         {
-            return View();
+            var user = await this.userManager.GetUserAsync(HttpContext.User);
+            var e = await dbContext.Events.Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == eid);
+            if (e == null) return View("../Shared/NotFound");
+            if (!e.Attendees.Any(x => x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
+            {
+                //illegal access
+                return View("../Shared/AccessDenied");
+            }
+            var model = new ViewEventModel();
+
+            model.Address1 = e.Address1;
+            model.Address2 = e.Address2;
+            model.City = e.City;
+            model.Description = e.Description;
+            model.StartDateText = e.StartTime.ToString("d") + " " + e.StartTime.ToString("t");
+            model.EndDateText = e.EndTime.ToString("d") + " " + e.EndTime.ToString("t");
+            model.GooglePlaceId = e.GooglePlaceId;
+            model.LocationName = e.LocationName;
+            model.Name = e.Name;
+            model.State = e.State;
+            model.ZipCode = e.Zip;
+
+
+            return View(model);
         }
 
 
@@ -313,8 +393,8 @@ namespace ElGroupo.Web.Controllers
             if (atts == null) return BadRequest("bears");
             var model = new List<EventAttendeeModel>();
             atts.Attendees.ToList().ForEach(x => model.Add(new EventAttendeeModel { Id = x.Id, Name = x.User.Name, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id, RSVPStatus = x.ResponseStatus }));
-            atts.UnregisteredAttendees.ToList().ForEach(x => model.Add(new EventAttendeeModel { Name = x.Name, Email = x.Email, RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration }));   
-            return View("_Attendees", model.OrderBy(x=>x.Name));
+            atts.UnregisteredAttendees.ToList().ForEach(x => model.Add(new EventAttendeeModel { Name = x.Name, Email = x.Email, RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration }));
+            return View("_Attendees", model.OrderBy(x => x.Name));
         }
 
 
@@ -323,9 +403,15 @@ namespace ElGroupo.Web.Controllers
         [Route("Contacts/{id}")]
         public async Task<IActionResult> Contacts([FromRoute]long id)
         {
-            var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var e = dbContext.Events.Include("Organizers.User").Include("Attendees.User").FirstOrDefault(x => x.Id == id);
-            if (e == null) return BadRequest();
+            var user = this.userManager.GetUserAsync(HttpContext.User);
+            var e = await dbContext.Events.Include("Organizers.User").Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == id);
+            if (e == null) return View("../Shared/NotFound");
+            if (!e.Organizers.Any(x => x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
+            {
+                //illegal access
+                return View("../Shared/AccessDenied");
+            }
+
 
             var model = new EventContactsModel();
             model.Event.Name = e.Name;

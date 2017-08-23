@@ -146,6 +146,7 @@ namespace ElGroupo.Web.Controllers
                         UserName = model.UserName,
                         Name = model.Name,
                         ZipCode = model.ZipCode,
+                        PhoneNumber = model.PhoneNumber
                     };
 
                     //need to attempt to add first in case we get any password validation errors or something -
@@ -338,7 +339,12 @@ namespace ElGroupo.Web.Controllers
         {
             User user = await userManager.GetUserAsync(HttpContext.User);
             var isAdmin = await userManager.IsInRoleAsync(user, "admin");
-            if (isAdmin) user = await userManager.FindByIdAsync(model.Id.ToString());
+            var editingOwnAccount = true;
+            if (isAdmin && user.Id != model.Id)
+            {
+                user = await userManager.FindByIdAsync(model.Id.ToString());
+                editingOwnAccount = false;
+            }
             
             var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
             userRecord.ZipCode = model.ZipCode;
@@ -390,7 +396,7 @@ namespace ElGroupo.Web.Controllers
             //    ZipCode = userRecord.ZipCode
             //};
 
-            if (isAdmin)
+            if (isAdmin && !editingOwnAccount)
             {
                 return RedirectToAction("EditAdmin", new { id = model.Id });
             }

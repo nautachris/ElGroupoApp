@@ -12,11 +12,13 @@ Maps = {
     $txtAutocomplete: null,
     placeChangeCallback: null,
     mapLoadedCallback: null,
+    showDrawTools: false,
     Init: function (obj) {
         this.$mapDiv = $('#' + obj.mapDiv);
-        this.$txtAutocomplete = $("#" + obj.txtAutocomplete);
-        this.placeChangeCallback = obj.placeChangeCallback;
-        this.mapLoadedCallback = obj.mapLoadedCallback;
+        if (obj.txtAutocomplete) this.$txtAutocomplete = $("#" + obj.txtAutocomplete);     
+        if (obj.placeChangeCallback) this.placeChangeCallback = obj.placeChangeCallback;
+        if (obj.mapLoadedCallback) this.mapLoadedCallback = obj.mapLoadedCallback;
+        if (obj.showDrawTools) this.showDrawTools = obj.showDrawTools;
         //$("#divContactList").on("click", " #tblContacts a", function () {
         $("#" + obj.mapDiv).on("click", "a.select-link", function () {
             alert('place selected!');
@@ -27,35 +29,37 @@ Maps = {
             zoom: 10,
             center: { lat: 35.11, lng: -106.62 }
         });
+        if (this.showDrawTools) {
+            this.drawingManager = new google.maps.drawing.DrawingManager({
+                drawingMode: google.maps.drawing.OverlayType.MARKER,
+                drawingControl: true,
+                drawingControlOptions: {
+                    position: google.maps.ControlPosition.TOP_CENTER,
+                    drawingModes: ['marker', 'circle']
+                },
+                markerOptions: { icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png' },
+                circleOptions: {
+                    fillColor: '#ffff00',
+                    fillOpacity: 1,
+                    strokeWeight: 5,
+                    clickable: false,
+                    editable: true,
+                    zIndex: 1
+                }
+            });
+            this.drawingManager.setMap(this.map);
+            google.maps.event.addListener(this.drawingManager, 'markercomplete', function (marker) {
+                console.log('marker complete');
+                console.log(marker);
+                console.log(marker.getPosition().lat());
+            });
+            google.maps.event.addListener(this.drawingManager, 'circlecomplete', function (circle) {
+                console.log('circle complete');
+                console.log(circle);
+                console.log(circle.getRadius());
+            });
+        }
 
-        this.drawingManager = new google.maps.drawing.DrawingManager({
-            drawingMode: google.maps.drawing.OverlayType.MARKER,
-            drawingControl: true,
-            drawingControlOptions: {
-                position: google.maps.ControlPosition.TOP_CENTER,
-                drawingModes: ['marker','circle']
-            },
-            markerOptions: { icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png' },
-            circleOptions: {
-                fillColor: '#ffff00',
-                fillOpacity: 1,
-                strokeWeight: 5,
-                clickable: false,
-                editable: true,
-                zIndex: 1
-            }
-        });
-        this.drawingManager.setMap(this.map);
-        google.maps.event.addListener(this.drawingManager, 'markercomplete', function (marker) {
-            console.log('marker complete');
-            console.log(marker);
-            console.log(marker.getPosition().lat());
-        });
-        google.maps.event.addListener(this.drawingManager, 'circlecomplete', function (circle) {
-            console.log('circle complete');
-            console.log(circle);
-            console.log(circle.getRadius());
-        });
 
         this.marker = new google.maps.Marker({
             map: this.map,
@@ -85,7 +89,7 @@ Maps = {
             alert('your browser sucks balls');
         }
 
-        Maps.InitAutocomplete(this.$txtAutocomplete);
+        if (this.$txtAutocomplete) Maps.InitAutocomplete(this.$txtAutocomplete);
 
         console.log('calling mapLoadedCallback');
         if (this.mapLoadedCallback) this.mapLoadedCallback();

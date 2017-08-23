@@ -22,6 +22,7 @@ namespace ElGroupo.Web.Models.Events
 
         [Required]
         [Display(Description = "Event Date")]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime EventDate { get; set; }
         [Required]
         [Display(Description = "Start Hour")]

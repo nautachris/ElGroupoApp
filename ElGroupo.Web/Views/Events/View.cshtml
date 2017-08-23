@@ -1,0 +1,167 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Web.Models.Enums
+@model ViewEventModel
+
+<style type="text/css">
+    #infowindow-content .title {
+        font-weight: bold;
+    }
+
+    #infowindow-content {
+        display: none;
+    }
+
+    #divMap #infowindow-content {
+        display: inline;
+    }
+
+    .row.search-method {
+        display: none;
+    }
+
+
+    input[type=text], input[type=select] {
+        width: 100%;
+    }
+</style>
+
+<section class="section-form">
+    <div class="row">
+        <h2>View your dumb fucking event!</h2>
+    </div>
+    <div class="row">
+        <input asp-for="@Model.GooglePlaceId" type="hidden" />
+            
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="Name">Name:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <span>@Model.Name</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="Description">Description:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <span>@Model.Description</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-3-of-6">
+                    <label>Start:</label>
+                </div>
+                <div class="col span-3-of-6">
+                    <span>@Model.StartDateText</span>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col span-3-of-6">
+                    <label>End:</label>
+                </div>
+                <div class="col span-3-of-6">
+                    <span>@Model.EndDateText</span>
+                </div>
+
+            </div>
+            <div class="row search-method">
+                <div class="col span-1-of-4">
+                    <label asp-for="LocationName">Location:</label>
+                </div>
+                <div class="col span-3-of-4">
+                    <span>@Model.LocationName</span>
+                </div>
+            </div>
+
+            <div class="row business-name">
+                <div class="col span-1-of-4">
+                    <label for="BusinessName">Business Name:</label>
+                </div>
+                <div class="col span-3-of-4">
+                    <span class="width-100" id="spanBusinessName"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-4">
+                    <label asp-for="Address1">Address 1:</label>
+                </div>
+                <div class="col span-3-of-4">
+                    <span>@Model.Address1</span>
+                </div>
+            </div>
+            <div class="row manual-search">
+                <div class="col span-1-of-4">
+                    <label asp-for="Address2">Address 2:</label>
+                </div>
+                <div class="col span-3-of-4">
+                    <span>@Model.Address2</span>
+                </div>
+            </div>
+            <div class="row manual-search">
+                <div class="col span-1-of-4">
+                    <label asp-for="City">City:</label>
+                </div>
+                <div class="col span-3-of-4">
+                    <span>@Model.City</span>
+                </div>
+            </div>
+            <div class="row manual-search">
+                <div class="col span-1-of-8">
+                    <label asp-for="State">State:</label>
+                </div>
+                <div class="col span-3-of-8">
+                    <span>@Model.State</span>
+                </div>
+                <div class="col span-1-of-8">
+                    <label asp-for="ZipCode">Zip:</label>
+                </div>
+                <div class="col span-3-of-8">
+                    <span>@Model.ZipCode</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-7-of-7">
+                    <div id="divMap" style="width:100%;height:300px"></div>
+                    <div id="infowindow-content">
+                        <img src="" width="16" height="16" id="place-icon">
+                        <span id="place-name" class="title"></span><br>
+                        <span id="place-address"></span>
+                        @*<a style="float:left;" class="btn btn-primary select-link">Select Location!</a>*@
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="row">
+
+                <a class="btn btn-primary width-100" asp-controller="Home" asp-action="Dashboard">Return to My Events</a>
+
+            </div>
+
+    </div>
+</section>
+
+
+
+
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/events/view.js"></script>
+    <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            Maps.Init({
+                mapDiv: 'divMap',
+                mapLoadedCallback: ViewEvent.MapLoaded
+            });
+
+        });
+    </script>
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk&libraries=places,drawing&callback=Maps.InitMap">
+    </script>
+
+}

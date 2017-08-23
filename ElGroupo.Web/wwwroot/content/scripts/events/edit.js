@@ -43,6 +43,7 @@
 });
 
 EditEvent = {
+    IsAddress: false,
     MapLoaded: function () {
         var gpid = $("#GooglePlaceId").val();
         if (gpid === '') return false;
@@ -51,21 +52,34 @@ EditEvent = {
             var isAddress = false;
             for (var x = 0; x < place.types.length; x++) {
                 if (place.types[x] === 'street_address') {
-                    isAddress = true;
+                    EditEvent.IsAddress = true;
+                    $(".row.business-name").hide();
+                    break;
+                }
+                if (place.types[x] === 'establishment') {
+                    EditEvent.IsAddress = false;
+                    $(".row.business-name").show();
+                    $("#txtBusinessName").val(place.name);
                     break;
                 }
             }
 
-            if (isAddress === true) {
-                $("#rbMapSelectionAddress").prop('checked', true);
-                $("#rbMapSelectionPlace").prop('checked', false);
-                $("#rbMapSelectionAddress").change();
+            $(".row.manual-search input").prop('disabled', true);
+
+            if (!EditEvent.IsAddress) {
+
             }
-            else {
-                $("#rbMapSelectionAddress").prop('checked', false);
-                $("#rbMapSelectionPlace").prop('checked', true);
-                $("#rbMapSelectionPlace").change();
-            }
+
+            //if (isAddress === true) {
+            //    $("#rbMapSelectionAddress").prop('checked', true);
+            //    $("#rbMapSelectionPlace").prop('checked', false);
+            //    $("#rbMapSelectionAddress").change();
+            //}
+            //else {
+            //    $("#rbMapSelectionAddress").prop('checked', false);
+            //    $("#rbMapSelectionPlace").prop('checked', true);
+            //    $("#rbMapSelectionPlace").change();
+            //}
 
             Maps.SetInfoWindow(place);
 

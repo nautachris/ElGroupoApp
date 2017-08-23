@@ -1,17 +1,9 @@
-﻿@using ElGroupo.Web.Models.Account
-@model IEnumerable<UserInformationModel>
-
+﻿@using ElGroupo.Web.Models.Events
+@model IEnumerable<EventInformationModel>
 @{
     Layout = null;
 }
-@functions{
-    public string GetImageUrl(int id)
-    {
-        var url = Url.Action("UserPhoto", "Users", new { id = id });
-        return url;
-    }
 
-}
 <style type="text/css">
     li:hover {
         background-color: lightblue;
@@ -50,15 +42,17 @@
     <div class="row width-100">
         <ul>
 
-            @foreach (var u in Model)
+            @foreach (var e in Model)
             {
                 <li style="list-style:none;">
-                    <div>
-                        <span class="col span-2-of-8">@u.Name</span>
-                        <span class="col span-2-of-8">@u.UserName</span>
-                        <span class="col span-2-of-8">@u.Email</span>
-                        <span class="col span-1-of-8"><img class="width-100" src="@GetImageUrl(u.Id)" /></span>
-                        <a class="col span-1-of-8 btn btn-primary" asp-route="editadmin" asp-route-id="@u.Id">Edit</a>
+                    <div class="width-100">
+                        <span class="col span-4-of-8">@e.Name</span>
+                        <span class="col span-2-of-8">Created By: @e.OrganizerName</span>
+                        <a class="col span-1-of-8 btn btn-primary" asp-route="editevent" asp-route-eid="@e.Id">Edit</a>
+                    </div>
+                    <div class="width-100">
+                        <span class="col span-4-of-8">@e.StartDate</span>
+                        <span class="col span-4-of-8">@e.EndDate</span>
                     </div>
 
                 </li>
@@ -67,6 +61,7 @@
         </ul>
     </div>
 }
-else{
+else
+{
     <h2>Search results will appear here</h2>
 }
