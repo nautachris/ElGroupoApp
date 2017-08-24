@@ -6,16 +6,10 @@ using System.Threading.Tasks;
 
 namespace ElGroupo.Web.Models.Account
 {
-    public class LoginModel
+    public class ForgotPasswordModel
     {
         [Required]
-        [UIHint("email")]
+        [EmailAddress]
         public string Email { get; set; }
-        [Required]
-        [UIHint("password")]
-        public string Password { get; set; }
-
-        [Display(Description = "Remember Me?")]
-        public bool RememberMe { get; set; }
     }
 }

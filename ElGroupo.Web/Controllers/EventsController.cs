@@ -241,7 +241,7 @@ namespace ElGroupo.Web.Controllers
             model.XCoord = e.CoordinateX;
             model.YCoord = e.CoordinateY;
             model.ZipCode = e.Zip;
-
+            
 
             return View(model);
         }
@@ -271,7 +271,17 @@ namespace ElGroupo.Web.Controllers
             model.Name = e.Name;
             model.State = e.State;
             model.ZipCode = e.Zip;
-
+            model.Attendees = new List<EventAttendeeModel>();
+            foreach(var att in e.Attendees)
+            {
+                model.Attendees.Add(new EventAttendeeModel
+                {
+                    Id = att.Id,
+                    UserId = att.UserId,
+                    RSVPStatus = att.ResponseStatus,
+                    Name = att.User.Name
+                });
+            }
 
             return View(model);
         }

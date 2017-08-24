@@ -12,6 +12,8 @@ using ElGroupo.Domain.Data;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Drawing;
+using ElGroupo.Web.Services;
+
 namespace ElGroupo.Web.Controllers
 {
     [Authorize]
@@ -22,14 +24,15 @@ namespace ElGroupo.Web.Controllers
         private SignInManager<User> signInManager;
         private IPasswordHasher<User> passwordHasher;
         private ElGroupoDbContext dbContext;
-
+        private IEmailSender emailSender;
         public AccountController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, IPasswordHasher<User> hasher, ElGroupoDbContext ctx)
+                SignInManager<User> signinMgr, IPasswordHasher<User> hasher, ElGroupoDbContext ctx, IEmailSender sender)
         {
             userManager = userMgr;
             signInManager = signinMgr;
             passwordHasher = hasher;
             dbContext = ctx;
+            emailSender = sender;
         }
 
         //[AllowAnonymous]
@@ -471,7 +474,111 @@ namespace ElGroupo.Web.Controllers
             return new EmptyResult();
         }
 
+        [HttpGet("ForgotPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword()
+        {
+            return View();
+        }
 
+        [Route("ResetPasswordConfirmation"), HttpGet, AllowAnonymous]
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
+        }
+
+        [Route("ResetPassword"), HttpGet, AllowAnonymous]
+        public IActionResult ResetPassword(string code = null)
+        {
+            return code == null ? View("Error") : View(new ResetPasswordModel { Code = code });
+        }
+        private void AddErrors(IdentityResult result)
+        {
+            foreach (var error in result.Errors)
+                if (error.Code.Contains("Password"))
+                {
+                    ModelState.AddModelError("Password", error.Description);
+                }
+                else if (error.Code.Contains("UserName"))
+                {
+                    ModelState.AddModelError("UserName", error.Description);
+                }
+                else if (error.Code.Contains("Email"))
+                {
+                    ModelState.AddModelError("Email", error.Description);
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+        }
+        [Route("ResetPassword"), HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
+            try
+            {
+                var result = await userManager.ResetPasswordAsync(user, model.Code, model.Password);
+                if (result.Succeeded)
+                {
+                    //TempData["EmailConfirmMessage"] = "The password for " + user.Email + " has been successfully changed.  Please login below";
+                    return RedirectToAction("Login");
+                }
+                AddErrors(result);
+                return View();
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return View();
+
+
+        }
+
+        [Route("ForgotPassword"), HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
+        {
+            if (ModelState.IsValid)
+            {
+
+                var user = await this.userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                    return View("ForgotPasswordConfirmation");
+
+                // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                // Send an email with this link
+                var resetCode = await this.userManager.GeneratePasswordResetTokenAsync(user);
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { code = resetCode },
+                    HttpContext.Request.Scheme);
+                var msg = "Dear " + user.Name + ",";
+                msg += "<br/>";
+                msg = "<a href='" + callbackUrl + "'>Click on this link to reset your ElGroupo password!</a>";
+                msg += "<br/>";
+                msg += "Thanks,";
+                msg += "<br/>";
+                msg += "The ElGroupo Team";
+
+                await emailSender.SendEmailAsync(model.Email, "ElGroupo Password Reset", msg);
+
+                return View("ForgotPasswordConfirmation");
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
+        [HttpGet("ForgotUsername")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotUsername()
+        {
+            return View();
+        }
 
         [HttpPost("Login")]
         [AllowAnonymous]
@@ -487,7 +594,7 @@ namespace ElGroupo.Web.Controllers
                     await signInManager.SignOutAsync();
                     Microsoft.AspNetCore.Identity.SignInResult result =
                             await signInManager.PasswordSignInAsync(
-                                user, details.Password, false, false);
+                                user, details.Password, details.RememberMe, false);
 
                     //to permanently add claims to a user (via database)
                     //await userManager.AddClaimsAsync(user, new Claim[] { new Claim(ClaimTypes.PostalCode, "DC 20050", ClaimValueTypes.String, "RemoteClaims"), new Claim(ClaimTypes.StateOrProvince, "DC", ClaimValueTypes.String, "RemoteClaims") });

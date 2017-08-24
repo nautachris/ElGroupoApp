@@ -1,7 +1,14 @@
 ﻿@using ElGroupo.Web.Models.Account
 @model EditAccountModel
 
-<section class="section-form">
+    <style type="text/css">
+
+        input {
+            border: none transparent;
+        }
+    </style>
+
+<section id="sectionEditAccount" class="section-form">
     <div class="row">
         <h2>Edit your account bitch!</h2>
     </div>
@@ -17,7 +24,12 @@
         <div asp-validation-summary="All" class="text-danger"></div>
         <form asp-controller="Account" asp-action="Edit" enctype="multipart/form-data" method="post" class="contact-form">
             <input asp-for="Id" type="hidden" />
-            <div class="row">
+            <div class="row line-after">
+                <div id="divImg" class="image-circle-250" style="background-image: url('/Users/UserPhoto/@Model.Id')">                 
+                </div>
+                <div id="divChangePhoto" style="text-align:center; font-weight:bold; cursor:pointer;">EDIT</div>
+            </div>
+            <div class="row line-after">
                 <div class="col span-1-of-3">
                     <label asp-for="Name">Name:</label>
                 </div>
@@ -25,7 +37,7 @@
                     <input asp-for="Name" placeholder="Enter Name...">
                 </div>
             </div>
-            <div class="row">
+            <div class="row line-after">
                 <div class="col span-1-of-3">
                     <label asp-for="EmailAddress">Email:</label>
                 </div>
@@ -33,7 +45,7 @@
                     <input asp-for="EmailAddress" placeholder="Enter Email...">
                 </div>
             </div>
-            <div class="row">
+            <div class="row line-after">
                 <div class="col span-1-of-3">
                     <label asp-for="PhoneNumber">Phone Number:</label>
                 </div>
@@ -41,7 +53,7 @@
                     <input asp-for="PhoneNumber" placeholder="Enter Phone Number...">
                 </div>
             </div>
-            <div class="row">
+            <div class="row line-after">
                 <div class="col span-1-of-3">
                     <label asp-for="ZipCode">ZIP Code:</label>
                 </div>
@@ -49,7 +61,7 @@
                     <input asp-for="ZipCode" placeholder="Enter Zip Code...">
                 </div>
             </div>
-            <div class="row">
+            @*<div class="row line-after">
                 @if (Model.HasPhoto)
                 {
                     <div class="col span-1-of-3">
@@ -66,13 +78,13 @@
                     </div>
 
                 }
-            </div>
+            </div>*@
             <div class="row">
-                <div class="col span-1-of-3">
+                @*<div class="col span-1-of-3">
                     <label asp-for="UpdatedPhoto">Update Photo?</label>
-                </div>
+                </div>*@
                 <div class="col span-2-of-3">
-                    <input asp-for="UpdatedPhoto" type="file" id="inputNewPhoto" placeholder="Select a photo...">
+                    <input asp-for="UpdatedPhoto" style="visibility:hidden;" type="file" id="inputNewPhoto" placeholder="Select a photo...">
                 </div>
                 <div style="display:none;" id="divNewPhoto" class="col span-3-of-3">
                     <img id="imgNewPhoto" src="" alt="Select a Photo" height="300" width="300" />

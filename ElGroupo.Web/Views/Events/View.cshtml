@@ -1,7 +1,43 @@
 ﻿@using ElGroupo.Web.Models.Events
+@using System.Collections.Generic
 @using ElGroupo.Web.Models.Enums
 @model ViewEventModel
 
+
+@functions{ 
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+    public string GetImageUrl(int id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+}
 <style type="text/css">
     #infowindow-content .title {
         font-weight: bold;
@@ -144,7 +180,32 @@
     </div>
 </section>
 
+<section>
+    <h2>Who the fuck is going?</h2>
 
+        @foreach(var attGroup in SplitList<EventAttendeeModel>(Model.Attendees, 5))
+        {
+            <div class="row">
+                @foreach(var att in attGroup)
+                {
+                <div class="col span-1-of-5 image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')">
+                    <span class="text-in-image">@att.Name</span>
+                </div>
+                }
+            </div>
+            <div class="row">
+                @foreach (var att in attGroup)
+                {
+
+                        <div class="col span-1-of-5">@att.Name</div>
+
+                }
+            </div>
+
+        }
+
+
+</section>
 
 
 

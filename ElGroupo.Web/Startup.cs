@@ -49,6 +49,11 @@ namespace ElGroupo.Web
             //services.AddTransient<IEmailSender, SendGridEmailSender>();
             services.AddTransient<IEmailSender, MailgunEmailSender>();
             services.Configure<EmailConfigOptions>(Configuration);
+
+
+            var idBuilder = new IdentityBuilder(typeof(User), typeof(IdentityRole<int>), services);
+            idBuilder.AddDefaultTokenProviders();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

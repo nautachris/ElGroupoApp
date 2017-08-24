@@ -1,21 +1,103 @@
 ﻿@using ElGroupo.Web.Models.Account
 @model LoginModel
-<section class="section-features">
-    <div class="bg-primary panel-body"><h4>Log In</h4></div>
+<style type="text/css">
+    .no-margin {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
 
-    <div class="text-danger" asp-validation-summary="All"></div>
+    .top-margin-1 {
+        margin-top: 1%;
+        margin-bottom: 1%;
+    }
+    #divSignUp input {
+        border: none transparent;
+    }
 
-    <form asp-action="Login" method="post">
-        <input type="hidden" name="returnUrl" value="@ViewBag.returnUrl" />
-        <div class="form-group">
-            <label asp-for="Email"></label>
-            <input asp-for="Email" class="form-control" />
-        </div>
-        <div class="form-group">
-            <label asp-for="Password"></label>
-            <input asp-for="Password" class="form-control" />
-        </div>
-        <button class="btn btn-primary" type="submit">Log In</button>
-        <a class="btn btn-info" asp-action="Create">Create New Account</a>
-    </form>
+    div.col{
+        text-align:left;
+    }
+    .larger-text {
+        font-size: 1.4em;
+    }
+
+    .bold {
+        font-weight: bold;
+    }
+
+    #divSignUp {
+        display: none;
+    }
+
+    .pointer{
+        cursor:pointer;
+    }
+</style>
+<section class="section-features" style="text-align:center;">
+
+    <div class="row">
+        <div class="width-100 larger-text sign-up pointer">SIGN UP</div>
+    </div>
+    <div class="row top-margin-1">
+        <div class="col span-5-of-12" style="height:5px; background-color:red; vertical-align:middle;"></div>
+        <div class="col span-2-of-12 no-margin" style="vertical-align:middle; text-align:center;">or</div>
+        <div class="col span-5-of-12" style="height:5px; background-color:red; vertical-align:middle;"></div>
+    </div>
+    <div class="row">
+        <div class="width-100 larger-text bold log-in pointer">LOG IN</div>
+    </div>
+
+
+    <div id="divLogin" class="row">
+
+        <form asp-action="Login" method="post" class="contact-form">
+            <div class="text-danger" asp-validation-summary="All"></div>
+            <input type="hidden" name="returnUrl" value="@ViewBag.returnUrl" />
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="Email">Email:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="Email">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="Password">Password:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="Password">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label asp-for="RememberMe">Remember Me?</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input asp-for="RememberMe">
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col span-1-of-2" style="text-align:center;">
+                    <a asp-controller="Account" asp-action="ForgotPassword">I forgot my password....</a>
+                </div>
+                <div class="col span-1-of-2" style="text-align:center;">
+                    <a  asp-controller="Account" asp-action="ForgotUsername">I forgot my username....</a>
+                </div>
+            </div>
+            <div class="row">
+                <button class="btn btn-primary width-100" type="submit">Log In</button>
+                <div class="ion-checkmark-circled"></div>
+            </div>           
+        </form>
+    </div>
+    <div id="divSignUp">
+        @Html.Partial("_Create", new CreateAccountModel())
+    </div>
+
+
 </section>
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/account/login.js"></script>
+    <script type="text/javascript" src="~/content/scripts/account/create.js"></script>
+}

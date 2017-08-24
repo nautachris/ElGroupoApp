@@ -1,5 +1,5 @@
 ﻿$(document).ready(function () {
-
+    var originalImageUrl = $("#divImg").css('background-image');
     $("#btnAddNewContact").on("click", function () {
         if ($("#selContactType").val() === '') return false;
         if ($("#txtContactValue").val() === '') return false;
@@ -54,17 +54,41 @@
         }
     });
 
+
+    $("#divChangePhoto").on("click", function () {
+        console.log('bears');
+        $("#inputNewPhoto").click();
+    });
+
+
+    //$("#inputNewPhoto").on("change", function () {
+    //    if (this.files && this.files[0]) {
+    //        var reader = new FileReader();
+    //        reader.onload = function (e) {
+    //            $("#imgNewPhoto").attr('src', e.target.result);
+    //            $("#divNewPhoto").show();
+    //        }
+    //        reader.readAsDataURL(this.files[0]);
+    //    }
+    //    else {
+    //        $("#divNewPhoto").hide();
+    //    }
+
+    //});
+
     $("#inputNewPhoto").on("change", function () {
         if (this.files && this.files[0]) {
             var reader = new FileReader();
             reader.onload = function (e) {
-                $("#imgNewPhoto").attr('src', e.target.result);
-                $("#divNewPhoto").show();
+                $("#divImg").css('background-image', 'url(' + e.target.result + ')');
+                //$("#imgNewPhoto").attr('src', e.target.result);
+                //$("#divNewPhoto").show();
             }
             reader.readAsDataURL(this.files[0]);
         }
         else {
-            $("#divNewPhoto").hide();
+            //$("#divNewPhoto").hide();
+            $("#divImg").css('background-image', originalImageUrl);
         }
 
     });

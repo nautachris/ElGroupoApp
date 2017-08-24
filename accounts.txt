@@ -3,7 +3,17 @@ nautachris@gmail.com cS!102381 mailgun
 
 
 elGroupoUser1@gmail.com flyguy23
-elGroupoUser2@gmail.com flyguy23
-elGroupoUser3@gmail.com flyguy23 mailgun
-elGroupoUser4@gmail.com flyguy23 mailgun
-elGroupoUser5@gmail.com flyguy23 mailgun
+elGroupoUser2@gmail.com flyguy23 mailgun authorized
+elGroupoUser3@gmail.com flyguy23 mailgun authorized
+elGroupoUser4@gmail.com flyguy23 mailgun authorized
+elGroupoUser5@gmail.com flyguy23 mailgun authorized
+
+
+
+
+nhibernate mappings
+write scripts to drop all coordinate objects (we can't just drop b/c multiple components use it)
+migrate publich profiles
+sql binaries loading
+identity server issue https://github.com/IdentityServer/IdentityServer4/issues/1055
+launchSettings.json - specify same port as old app for id server stuff

@@ -37,5 +37,8 @@ namespace ElGroupo.Web.Models.Events
 
 
         public string GooglePlaceId { get; set; }
+
+
+        public List<EventAttendeeModel> Attendees { get; set; }
     }
 }

@@ -36,7 +36,7 @@ namespace ElGroupo.Web.Services
             request.AddParameter("html", message);
             request.Method = Method.POST;
 
-            var resp = client.Execute(request);
+            //var resp = client.Execute(request);
 
             return await Task.Run(() =>
              {
