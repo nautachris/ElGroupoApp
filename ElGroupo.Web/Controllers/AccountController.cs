@@ -268,6 +268,26 @@ namespace ElGroupo.Web.Controllers
             return View(model);
         }
 
+                [HttpGet]
+        [Route("View/{userId}")]
+        public async Task<IActionResult> View(int userId)
+        {
+
+            var userRecord = await dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").FirstOrDefaultAsync(x => x.Id == userId);
+
+            var model = new ViewAccountModel
+            {
+                Contacts = GetContacts(userRecord),
+                ContactTypes = GetContactTypes(),
+                EmailAddress = userRecord.Email,
+                Id = userRecord.Id,
+                Name = userRecord.Name,
+                PhoneNumber = userRecord.PhoneNumber,
+                ZipCode = userRecord.ZipCode
+            };
+            return View(model);
+        }
+
         public bool ThumbnailCallback()
         {
             return false;

@@ -1,10 +1,10 @@
 ﻿@using ElGroupo.Web.Models.Events
 @using System.Collections.Generic
 @using ElGroupo.Web.Models.Enums
-@model ViewEventModel
+@model EventViewModel
 
 
-@functions{ 
+@functions{
     public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
     {
         List<List<T>> result = new List<List<T>>();
@@ -37,6 +37,13 @@
         var url = Url.Action("UserPhoto", "Users", new { id = id });
         return url;
     }
+
+    public string GetUserViewLink(int id)
+    {
+        var url = Url.Action("View", "Account", new { id = id });
+        return url;
+
+    }
 }
 <style type="text/css">
     #infowindow-content .title {
@@ -59,155 +66,238 @@
     input[type=text], input[type=select] {
         width: 100%;
     }
-</style>
 
-<section class="section-form">
-    <div class="row">
-        <h2>View your dumb fucking event!</h2>
-    </div>
-    <div class="row">
-        <input asp-for="@Model.GooglePlaceId" type="hidden" />
-            
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label asp-for="Name">Name:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <span>@Model.Name</span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label asp-for="Description">Description:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <span>@Model.Description</span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-3-of-6">
-                    <label>Start:</label>
-                </div>
-                <div class="col span-3-of-6">
-                    <span>@Model.StartDateText</span>
-                </div>
+    .row.attendees, .row.notifications, .row.messages {
+        display: none;
+    }
 
-            </div>
-            <div class="row">
-                <div class="col span-3-of-6">
-                    <label>End:</label>
-                </div>
-                <div class="col span-3-of-6">
-                    <span>@Model.EndDateText</span>
-                </div>
+    a.no-decoration {
+        color: #808080;
+        padding-bottom: 0px;
+        border-bottom: none;
+    }
 
-            </div>
-            <div class="row search-method">
-                <div class="col span-1-of-4">
-                    <label asp-for="LocationName">Location:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <span>@Model.LocationName</span>
-                </div>
-            </div>
+    li.new-event {
+        background-color: aquamarine;
+        border-radius: 25px;
+        font-weight: 300;
+    }
 
-            <div class="row business-name">
-                <div class="col span-1-of-4">
-                    <label for="BusinessName">Business Name:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <span class="width-100" id="spanBusinessName"></span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-4">
-                    <label asp-for="Address1">Address 1:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <span>@Model.Address1</span>
-                </div>
-            </div>
-            <div class="row manual-search">
-                <div class="col span-1-of-4">
-                    <label asp-for="Address2">Address 2:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <span>@Model.Address2</span>
-                </div>
-            </div>
-            <div class="row manual-search">
-                <div class="col span-1-of-4">
-                    <label asp-for="City">City:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <span>@Model.City</span>
-                </div>
-            </div>
-            <div class="row manual-search">
-                <div class="col span-1-of-8">
-                    <label asp-for="State">State:</label>
-                </div>
-                <div class="col span-3-of-8">
-                    <span>@Model.State</span>
-                </div>
-                <div class="col span-1-of-8">
-                    <label asp-for="ZipCode">Zip:</label>
-                </div>
-                <div class="col span-3-of-8">
-                    <span>@Model.ZipCode</span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-7-of-7">
-                    <div id="divMap" style="width:100%;height:300px"></div>
-                    <div id="infowindow-content">
-                        <img src="" width="16" height="16" id="place-icon">
-                        <span id="place-name" class="title"></span><br>
-                        <span id="place-address"></span>
-                        @*<a style="float:left;" class="btn btn-primary select-link">Select Location!</a>*@
-                    </div>
-                </div>
+    .row li {
+        cursor: pointer;
+    }
 
-            </div>
+    li span {
+        display: inline-block;
+        width: 100%;
+    }
 
+    a {
+        color: blue;
+    }
 
-            <div class="row">
+    .page-nav {
+        text-align: center;
+        list-style: none;
+    }
 
-                <a class="btn btn-primary width-100" asp-controller="Home" asp-action="Dashboard">Return to My Events</a>
-
-            </div>
-
-    </div>
-</section>
-
-<section>
-    <h2>Who the fuck is going?</h2>
-
-        @foreach(var attGroup in SplitList<EventAttendeeModel>(Model.Attendees, 5))
-        {
-            <div class="row">
-                @foreach(var att in attGroup)
-                {
-                <div class="col span-1-of-5 image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')">
-                    <span class="text-in-image">@att.Name</span>
-                </div>
-                }
-            </div>
-            <div class="row">
-                @foreach (var att in attGroup)
-                {
-
-                        <div class="col span-1-of-5">@att.Name</div>
-
-                }
-            </div>
-
+        .page-nav a {
+            margin-left: 60px;
         }
 
+    .bold {
+        font-weight: bold;
+    }
+</style>
 
-</section>
+<input type="hidden" asp-for="EventId" />
+<div class="row">
+    <h2>@Model.Name</h2>
+</div>
+<div class="page-nav">
+    <a class="links bold" data-link-type="details" href="#">Event Details</a>
+    <a class="links" data-link-type="attendees" href="#">Who the fuck is coming?</a>
+    <a class="links" data-link-type="notifications" href="#">Spam!</a>
+    <a class="links" data-link-type="messages" href="#">Random musings of social ingrates</a>
+</div>
+<div class="row tab details">
+    <input asp-for="@Model.GooglePlaceId" type="hidden" />
+
+    <div class="row">
+        <div class="col span-1-of-3">
+            <label asp-for="Name">Name:</label>
+        </div>
+        <div class="col span-2-of-3">
+            <span>@Model.Name</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-3">
+            <label asp-for="Description">Description:</label>
+        </div>
+        <div class="col span-2-of-3">
+            <span>@Model.Description</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-3-of-6">
+            <label>Start:</label>
+        </div>
+        <div class="col span-3-of-6">
+            <span>@Model.StartDateText</span>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col span-3-of-6">
+            <label>End:</label>
+        </div>
+        <div class="col span-3-of-6">
+            <span>@Model.EndDateText</span>
+        </div>
+
+    </div>
+    <div class="row search-method">
+        <div class="col span-1-of-4">
+            <label asp-for="LocationName">Location:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <span>@Model.LocationName</span>
+        </div>
+    </div>
+
+    <div class="row business-name">
+        <div class="col span-1-of-4">
+            <label for="BusinessName">Business Name:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <span class="width-100" id="spanBusinessName"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label asp-for="Address1">Address 1:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <span>@Model.Address1</span>
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-4">
+            <label asp-for="Address2">Address 2:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <span>@Model.Address2</span>
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-4">
+            <label asp-for="City">City:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <span>@Model.City</span>
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-8">
+            <label asp-for="State">State:</label>
+        </div>
+        <div class="col span-3-of-8">
+            <span>@Model.State</span>
+        </div>
+        <div class="col span-1-of-8">
+            <label asp-for="ZipCode">Zip:</label>
+        </div>
+        <div class="col span-3-of-8">
+            <span>@Model.ZipCode</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-7-of-7">
+            <div id="divMap" style="width:100%;height:300px"></div>
+            <div id="infowindow-content">
+                <img src="" width="16" height="16" id="place-icon">
+                <span id="place-name" class="title"></span><br>
+                <span id="place-address"></span>
+                @*<a style="float:left;" class="btn btn-primary select-link">Select Location!</a>*@
+            </div>
+        </div>
+
+    </div>
 
 
+    <div class="row">
+
+        <a class="btn btn-primary width-100" asp-controller="Home" asp-action="Dashboard">Return to My Events</a>
+
+    </div>
+
+</div>
+<div class="row tab attendees">
+    <h2>Who the fuck is going?</h2>
+
+    @foreach (var attGroup in SplitList<EventAttendeeModel>(Model.Attendees, 4))
+    {
+    <div class="row">
+        @foreach (var att in attGroup)
+            {
+            <div class="col span-1-of-4" style="text-align:center;">
+                <a href="@GetUserViewLink(att.UserId)">
+                    <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
+                    <span style="font-weight:bold; text-transform:uppercase;">@att.Name</span>
+                </a>
+                
+            </div>
+            }
+    </div>
+    }
+</div>
+<div class="row tab notifications">
+    <h2>Notifications</h2>
+    <div id="divNotifications">
+        @Html.Partial("_NotificationList", Model.Notifications)
+    </div>
+
+    @if (Model.IsOrganizer)
+    {
+        <button>Add Notification</button>
+
+    }
+</div>
+
+<div class="row tab messages">
+    <h2>Message Board</h2>
+    <div id="divMessages">
+        @Html.Partial("_MessageList", Model.Messages)
+    </div>
+    <button id="btnShowMessageDiv" class="btn btn-primary">Add New Message!!</button>
+    <div id="divCreateMessage" style="display:none;">
+        <div class="row">
+            <div class="col span-1-of-3">
+                <label>Subject:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input type="text" id="txtMessageSubject" class="width-100" placeholder="Enter Message Subject...">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col span-1-of-3">
+                <label>Message:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <textarea id="txtMessageText" style="height:300px;" class="width-100" placeholder="Enter Message Subject..."></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col span-1-of-2">
+                <a class="btn btn-ghost" id="btnCancelMessage">Cancel</a>
+            </div>
+            <div class="col span-1-of-2">
+                <a class="btn btn-primary" id="btnPostMessage">Post Message</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts{
     <script type="text/javascript" src="~/content/scripts/events/view.js"></script>

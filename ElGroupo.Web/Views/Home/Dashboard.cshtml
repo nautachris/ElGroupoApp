@@ -83,8 +83,13 @@
                 <li>
                     <a class="no-decoration" asp-controller="Events" asp-action="View" asp-route-eid="@e.Id">
 
-
-                        <span style="font-weight:bold">@e.Name</span>
+                        <span style="font-weight:bold">
+                            @if (e.OrganizedByUser)
+                            {
+                                @:*&nbsp;
+                        }
+                            @e.Name
+                        </span>
                         <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
                     </a>
                 </li>
@@ -97,7 +102,13 @@
             {
                 <li>
                     <a class="no-decoration" asp-route="editevent" asp-route-eid="@e.Id">
-                        <span style="font-weight:bold">@e.Name</span>
+                        <span style="font-weight:bold">
+                            @if (e.OrganizedByUser)
+                            {
+                                @:*&nbsp;
+                        }
+                            @e.Name
+                        </span>
                         <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
                     </a>
 

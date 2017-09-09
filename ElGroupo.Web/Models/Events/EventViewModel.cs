@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using ElGroupo.Web.Models.Messages;
+
 namespace ElGroupo.Web.Models.Events
 {
-    public class ViewEventModel
+    public class EventViewModel
     {
+        public long EventId { get; set; }
 
-
+        public bool IsOrganizer { get; set; }
 
         public string Name { get; set; }
 
@@ -21,7 +24,8 @@ namespace ElGroupo.Web.Models.Events
         public string StartDateText { get; set; }
         public string EndDateText { get; set; }
 
-
+        public List<EventNotificationModel> Notifications { get; set; }
+        public List<EventMessageModel> Messages { get; set; }
 
         [Display(Description = "Address 1")]
         public string Address1 { get; set; }

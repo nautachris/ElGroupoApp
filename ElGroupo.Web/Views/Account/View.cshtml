@@ -1,0 +1,67 @@
+﻿@using ElGroupo.Web.Models.Account
+@model ViewAccountModel
+
+<style type="text/css">
+    input {
+        border: none transparent;
+    }
+</style>
+
+<section id="sectionEditAccount" class="section-form">
+    <div class="row">
+        <h2>@Model.Name's Sketchy Deets</h2>
+    </div>
+
+    <div class="row">
+
+
+
+            <div class="row line-after">
+                <div id="divImg" class="image-circle-250" style="background-image: url('/Users/UserPhoto/@Model.Id')">
+                </div>
+            </div>
+            <div class="row line-after">
+                <div class="col span-1-of-3">
+                    <label asp-for="Name">Name:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <span>@Model.Name</span>
+                </div>
+            </div>
+            <div class="row line-after">
+                <div class="col span-1-of-3">
+                    <label asp-for="EmailAddress">Email:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <span>@Model.EmailAddress</span>
+                </div>
+            </div>
+            <div class="row line-after">
+                <div class="col span-1-of-3">
+                    <label asp-for="PhoneNumber">Phone Number:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <span>@Model.PhoneNumber</span>
+                </div>
+            </div>
+            <div class="row line-after">
+                <div class="col span-1-of-3">
+                    <label asp-for="ZipCode">ZIP Code:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <span>@Model.ZipCode</span>
+                </div>
+            </div>
+
+    </div>
+</section>
+<section>
+    <h2>@Model.Name's Contacts</h2>
+    <div class="row" id="divContactList">
+        @Html.Partial("_ViewContacts", Model.Contacts)
+    </div>
+</section>
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/account/edit.js"></script>
+}

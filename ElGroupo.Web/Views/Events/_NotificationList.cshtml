@@ -1,0 +1,54 @@
+﻿@using ElGroupo.Web.Models.Events
+@model IEnumerable<EventNotificationModel>
+@functions{
+
+    public string GetImageUrl(int id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+}
+
+@{
+    Layout = null;
+}
+
+<table id="tblNotifications" class="row width-100">
+    <thead>
+        <tr>
+            <th>Posted By</th>
+            <th>Posted Date</th>
+            <th>Message</th>
+            @if (Model.Any(x => x.CanEdit))
+            {
+
+                <th style="width:100px;">Remove</th>
+            }
+
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var m in Model)
+        {
+            <tr>
+                <td>
+                    <div class="col span-1-of-4" style="text-align:center;">
+                        <img class="image-circle-200" style="background-image:url('@GetImageUrl(m.OrganizerId)')" />
+                        <span style="font-weight:bold; text-transform:uppercase;">@m.OrganizerName</span>
+                    </div>
+                </td>
+                <td>@m.PostedDate.ToString("dddd")</td>
+                <td>@m.NotificationText</td>
+                @if (m.CanEdit)
+                {
+                    <td><a data-notification-id="@m.Id" style="cursor:pointer; color:blue" class="btn btn-ghost" data-action-type="delete">Delete</a></td>
+                }
+                else if (Model.Any(x => x.CanEdit))
+                {
+                    <td></td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

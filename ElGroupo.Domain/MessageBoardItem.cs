@@ -20,6 +20,8 @@ namespace ElGroupo.Domain
         [Required]
         public string MessageText { get; set; }
 
+        public string Subject { get; set; }
+
         public virtual ICollection<MessageBoardItemAttendee> Attendees { get; set; }
 
     }

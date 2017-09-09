@@ -110,7 +110,7 @@ h1, h2, h3{
     border-radius: 100%;
     background-size: cover;
     height: 200px;
-    width: 200px;
+    width: 100%;
     margin: 0 auto;
     background-position: center;
     background-repeat: no-repeat;
@@ -812,3 +812,20 @@ footer p{
 
     
 }
+
+
+
+.inline-block {
+display:inline-block;
+}
+
+.message-container {
+display:none;
+}
+
+.unread-message-subject{
+    font-weight:bold;
+    font-style:italic;
+}
+
+

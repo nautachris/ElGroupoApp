@@ -17,6 +17,7 @@ namespace ElGroupo.Domain
         public Event Event { get; set; }
         public DateTime PostedDate { get; set; }
         public string MessageText { get; set; }
+        public string Subject { get; set; }
         public Enums.NotificationImportanceTypes Importance { get; set; }
     }
 }

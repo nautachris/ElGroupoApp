@@ -1,0 +1,24 @@
+﻿
+@using ElGroupo.Web.Models.Account
+@model IEnumerable<EditContactModel>
+@{
+    Layout = null;
+}
+<table id="tblContacts" class="row">
+    <thead>
+        <tr>
+            <th>Contact Type</th>
+            <th>Contact Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var m in Model)
+        {
+            <tr>
+                <td>@m.ContactTypeDescription</td>
+                <td>@m.Value</td>
+            </tr>
+        }
+    </tbody>
+</table>
+

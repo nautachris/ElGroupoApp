@@ -10,6 +10,7 @@ namespace ElGroupo.Domain
         public Event()
         {
             this.Organizers = new HashSet<EventOrganizer>();
+            this.Attendees = new HashSet<EventAttendee>();
             this.UnregisteredAttendees = new HashSet<UnregisteredEventAttendee>();
         }
         public string Name { get; set; }

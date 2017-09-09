@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using ElGroupo.Domain.Data;
 using ElGroupo.Web.Services;
 using System.IO;
+using ElGroupo.Web.Models.Messages;
 
 namespace ElGroupo.Web.Controllers
 {
@@ -51,6 +52,13 @@ namespace ElGroupo.Web.Controllers
                 {
                     User = user,
                     Owner = true,
+                    Event = e
+                });
+
+                //we need this for the owners of the event to get messages
+                e.Attendees.Add(new EventAttendee
+                {
+                    User = user,
                     Event = e
                 });
                 e.Name = model.Name;
@@ -202,7 +210,7 @@ namespace ElGroupo.Web.Controllers
         [Authorize]
         [HttpPost]
         [Route("Edit")]
-        public async Task<IActionResult> SaveEdits([FromForm]EditEventModel model)
+        public async Task<IActionResult> SaveEdits([FromForm]EventEditModel model)
         {
             return RedirectToAction("Contacts", new { id = model.Id });
             //return RedirectToAction("Edit", new { eid = model.Id });
@@ -213,7 +221,7 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/Edit", Name = "editevent")]
         public async Task<IActionResult> Edit([FromRoute]long eid)
         {
-            var user = this.userManager.GetUserAsync(HttpContext.User);
+            var user = await this.userManager.GetUserAsync(HttpContext.User);
             var e = await dbContext.Events.Include("Organizers.User").FirstOrDefaultAsync(x => x.Id == eid);
             if (e == null) return View("../Shared/NotFound");
             if (!e.Organizers.Any(x => x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
@@ -221,7 +229,7 @@ namespace ElGroupo.Web.Controllers
                 //illegal access
                 return View("../Shared/AccessDenied");
             }
-            var model = new EditEventModel();
+            var model = new EventEditModel();
             model.Id = e.Id;
             model.Address1 = e.Address1;
             model.Address2 = e.Address2;
@@ -251,15 +259,16 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> View([FromRoute]long eid)
         {
             var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var e = await dbContext.Events.Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == eid);
+            var e = await dbContext.Events.Include("Attendees.User").Include("Attendees.MessageBoardItems.MessageBoardItem.User").Include("Organizers.User").FirstOrDefaultAsync(x => x.Id == eid);
             if (e == null) return View("../Shared/NotFound");
-            if (!e.Attendees.Any(x => x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
+            var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == user.Id);
+            if (thisAttendee == null && !e.Organizers.Any(x=>x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
             {
                 //illegal access
                 return View("../Shared/AccessDenied");
             }
-            var model = new ViewEventModel();
-
+            var model = new EventViewModel();
+            model.EventId = e.Id;
             model.Address1 = e.Address1;
             model.Address2 = e.Address2;
             model.City = e.City;
@@ -271,6 +280,7 @@ namespace ElGroupo.Web.Controllers
             model.Name = e.Name;
             model.State = e.State;
             model.ZipCode = e.Zip;
+            model.IsOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
             model.Attendees = new List<EventAttendeeModel>();
             foreach(var att in e.Attendees)
             {
@@ -282,6 +292,25 @@ namespace ElGroupo.Web.Controllers
                     Name = att.User.Name
                 });
             }
+
+            model.Messages = new List<EventMessageModel>();
+
+            foreach(var mba in thisAttendee.MessageBoardItems)
+            {
+                model.Messages.Add(new EventMessageModel {
+                    PostedBy = mba.MessageBoardItem.User.Name,
+                    PostedById = mba.MessageBoardItem.User.Id,
+                    PostedDate = mba.MessageBoardItem.PostedDate,
+                    Subject = mba.MessageBoardItem.Subject,
+                    MessageText = mba.MessageBoardItem.MessageText,
+                    IsNew = !mba.Viewed,
+                    Id = mba.Id
+                });
+            }
+            model.Messages = model.Messages.OrderByDescending(x => x.PostedBy).ToList();
+
+
+            model.Notifications = new List<EventNotificationModel>();
 
             return View(model);
         }
@@ -413,7 +442,7 @@ namespace ElGroupo.Web.Controllers
         [Route("Contacts/{id}")]
         public async Task<IActionResult> Contacts([FromRoute]long id)
         {
-            var user = this.userManager.GetUserAsync(HttpContext.User);
+            var user = await this.userManager.GetUserAsync(HttpContext.User);
             var e = await dbContext.Events.Include("Organizers.User").Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == id);
             if (e == null) return View("../Shared/NotFound");
             if (!e.Organizers.Any(x => x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))

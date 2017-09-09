@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 namespace ElGroupo.Web.Models.Events
 {
-    public class EditEventModel
+    public class EventEditModel
     {
         public long Id { get; set; }
 
