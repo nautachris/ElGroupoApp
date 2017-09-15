@@ -39,9 +39,10 @@ namespace ElGroupo.Web.Controllers
 
             var organizedEvents = dbContext.EventOrganizers.Include("User").Include("Event").Where(x => x.User.Id == user.Id).Select(x => x.Event);
             var invitedEvents = dbContext.EventAttendees.Include("User").Include("Event").Where(x => x.User.Id == user.Id);
-            foreach(var ev in organizedEvents)
+            foreach (var ev in organizedEvents)
             {
-                allEvents.Add(new EventInformationModel {
+                allEvents.Add(new EventInformationModel
+                {
                     EndDate = ev.EndTime,
                     StartDate = ev.StartTime,
                     Id = ev.Id,
@@ -51,7 +52,7 @@ namespace ElGroupo.Web.Controllers
                     Draft = ev.SavedAsDraft
                 });
             }
-            foreach (var ev in invitedEvents)
+            foreach (var ev in invitedEvents.Where(x => !organizedEvents.Select(y => y.Id).Contains(x.EventId)))
             {
                 allEvents.Add(new EventInformationModel
                 {

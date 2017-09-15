@@ -5,6 +5,12 @@
     <UserSecretsId>66b48c5a-f028-4f21-bdce-2ab2df7a1ea4</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Remove="Mail\Templates\EventCreated.cshtml" />
+    <Content Remove="Mail\Templates\EventOrganizer.cshtml" />
+    <Content Remove="Mail\Templates\EventUnregisteredAttendee.cshtml" />
+  </ItemGroup>
+
   <!--<ItemGroup>
     <Content Include="wwwroot\content\lib\css\jquery-ui.css" />
     <Content Include="wwwroot\content\lib\jquery.js" />
@@ -75,6 +81,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.0.1" />
+    <PackageReference Include="RazorLight.MVC" Version="1.0.4" />
     <PackageReference Include="RestSharp.NetCore" Version="105.2.4-rc4-24214-01" />
     <PackageReference Include="SendGrid" Version="9.8.0" />
   </ItemGroup>
@@ -84,5 +91,10 @@
     <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.0-msbuild3-final" />
   </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="Mail\Templates\EventCreated.cshtml" />
+      <EmbeddedResource Include="Mail\Templates\EventOrganizer.cshtml" />
+      <EmbeddedResource Include="Mail\Templates\EventUnregisteredAttendee.cshtml" />
+    </ItemGroup>
 
 </Project>

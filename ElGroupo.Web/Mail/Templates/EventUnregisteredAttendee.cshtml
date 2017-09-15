@@ -1,0 +1,25 @@
+﻿@using Microsoft.AspNetCore.Html
+@model ElGroupo.Web.Mail.Models.EventUnregisteredAttendeeMailModel
+
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>New Event!</title>
+</head>
+<body>
+    <div>Hello, @Model.Recipient!</div>
+    <div>You have been invited to a new event via ElGroupo by @Model.EventCreatedBy!</div>
+    <ul>
+        <li>What: @Model.EventName</li>
+        <li>Where: @Model.Location</li>
+        <li>When: On @Model.StartTime.ToString("dddd") &nbsp; from  @Model.StartTime.ToString("t") to @Model.EndTime.ToString("t")</li>
+        <li>Who: Organized by @Model.EventCreatedBy</li>
+        <li>How: <a href="@(new HtmlString(Model.CallbackUrl))">Click Here to register with ElGroupo and View the Details!</a></li>
+    </ul>
+    <br />
+    <div>Thanks, The El Groupo Team!!</div>
+</body>
+</html>

@@ -10,6 +10,8 @@ using ElGroupo.Web.Models.Events;
 using Microsoft.EntityFrameworkCore;
 using ElGroupo.Domain.Data;
 using ElGroupo.Web.Services;
+using ElGroupo.Web.Mail.Models;
+using ElGroupo.Web.Mail;
 using System.IO;
 using ElGroupo.Web.Models.Messages;
 using ElGroupo.Web.Models.Notifications;
@@ -22,15 +24,16 @@ namespace ElGroupo.Web.Controllers
         private UserManager<User> userManager;
         private SignInManager<User> signInManager;
         private ElGroupoDbContext dbContext;
-        private IEmailSender emailSender;
+        private MailService mailService;
+        private EventService eventService;
         public EventsController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, ElGroupoDbContext ctx, IEmailSender sndr)
+                SignInManager<User> signinMgr, ElGroupoDbContext ctx, MailService sndr, EventService service)
         {
             userManager = userMgr;
             signInManager = signinMgr;
             dbContext = ctx;
-            emailSender = sndr;
-
+            mailService = sndr;
+            eventService = service;
         }
         [Authorize]
         [HttpGet]
@@ -138,75 +141,120 @@ namespace ElGroupo.Web.Controllers
         [Route("Search/{search}")]
         public async Task<IActionResult> Search([FromRoute]string search)
         {
-            IQueryable<Event> events = null;
-            if (search == "*")
-            {
-                events = dbContext.Events.Include("Organizers.User");
-            }
-            else
-            {
-                events = dbContext.Events.Include("Organizers.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
-            }
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var list = await eventService.SearchEvents(search, user.Id);
+            //IQueryable<Event> events = null;
+            //if (search == "*")
+            //{
+            //    events = dbContext.Events.Include("Organizers.User");
+            //}
+            //else
+            //{
+            //    events = dbContext.Events.Include("Organizers.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
+            //}
 
-            var list = new List<EventInformationModel>();
-            await events.ForEachAsync(x => list.Add(new EventInformationModel
-            {
-                Draft = x.SavedAsDraft,
-                StartDate = x.StartTime,
-                EndDate = x.EndTime,
-                Id = x.Id,
-                Name = x.Name,
-                OrganizerName = x.Organizers.First(y => y.Owner).User.Name
-            }));
+            //var list = new List<EventInformationModel>();
+            //await events.ForEachAsync(x => list.Add(new EventInformationModel
+            //{
+            //    Draft = x.SavedAsDraft,
+            //    StartDate = x.StartTime,
+            //    EndDate = x.EndTime,
+            //    Id = x.Id,
+            //    Name = x.Name,
+            //    OrganizerName = x.Organizers.First(y => y.Owner).User.Name
+            //}));
             return PartialView("_EventList", list.OrderBy(x => x.Name));
         }
         private async Task SendEventOrganizerEmail(User u, Event e)
         {
             var url = Url.Action("Edit", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
 
-            var msg = "Hi " + u.Name + ",";
-            msg += "<br/>";
-            msg += "You've been added as an event organizer to " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
-            msg += "Click on this <a href='" + url + "'>link</a> to access the event details";
-            //<a href='{callbackUrl}'>link</a>
-            msg += "<br/>";
-            msg += "Thanks,";
-            msg += "<br/>";
-            msg += "The ElGroupo Team";
+            var model = new EventOrganizerMailModel
+            {
+                Recipient = u.Name,
+                EventName = e.Name,
+                Location = e.LocationName,
+                StartTime = e.StartTime,
+                EndTime = e.EndTime,
+                CallbackUrl = url
+            };
+            var metadata = new MailMetadata
+            {
+                To = new List<string> { u.Email },
+                Subject = "You'be been added as an event organizer!"
+            };
 
-            await emailSender.SendEmailAsync(u.Email, "You've been added as an event organizer!", msg);
+            await this.mailService.SendEmail(metadata, model);
+
+
+            //var msg = "Hi " + u.Name + ",";
+            //msg += "<br/>";
+            //msg += "You've been added as an event organizer to " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
+            //msg += "Click on this <a href='" + url + "'>link</a> to access the event details";
+            ////<a href='{callbackUrl}'>link</a>
+            //msg += "<br/>";
+            //msg += "Thanks,";
+            //msg += "<br/>";
+            //msg += "The ElGroupo Team";
+
+            //await emailSender.SendEmailAsync(u.Email, "You've been added as an event organizer!", msg);
         }
 
         private async Task SendEventAttendeeEmail(User u, Event e)
         {
             var url = Url.Action("View", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
 
-            var msg = "Hi " + u.Name + ",";
-            msg += "<br/>";
-            msg += "You've been invited to a killer awesome event " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
-            msg += "Click on this <a href='" + url + "'>link</a> to access the event details";
-            msg += "<br/>";
-            msg += "Thanks,";
-            msg += "<br/>";
-            msg += "The ElGroupo Team";
+            var model = new EventCreatedMailModel
+            {
+                Recipient = u.Name,
+                EventName = e.Name,
+                Location = e.LocationName,
+                StartTime = e.StartTime,
+                EndTime = e.EndTime,
+                CallbackUrl = url
+            };
+            var metadata = new MailMetadata
+            {
+                To = new List<string> { u.Email },
+                Subject = "You'be been invited to a new event!"
+            };
 
-            await emailSender.SendEmailAsync(u.Email, "You've been invited to a new event!", msg);
+            await this.mailService.SendEmail(metadata, model);
         }
 
         private async Task SendUnregisteredEventAttendeeEmail(string name, string email, string fromName, Guid token, Event e)
         {
             var url = Url.Action("Create", "Account", new { id = token }, HttpContext.Request.Scheme);
 
-            var msg = "Hi " + name + ",";
-            msg += "<br/>";
-            msg += fromName + " has invited you a killer awesome event " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
-            msg += "<a href='" + url + "'>Click on this link to sign up for ElGroupo and access the event details</a>";
-            msg += "<br/>";
-            msg += "Thanks,";
-            msg += "<br/>";
-            msg += "The ElGroupo Team";
+            var model = new EventUnregisteredAttendeeMailModel
+            {
+                Recipient = name,
+                EventName = e.Name,
+                Location = e.LocationName,
+                StartTime = e.StartTime,
+                EndTime = e.EndTime,
+                CallbackUrl = url
+            };
+            var metadata = new MailMetadata
+            {
+                To = new List<string> { email },
+                Subject = "Welcome to ElGroupo!  You'be been invited to a new event!"
+            };
 
-            await emailSender.SendEmailAsync(email, "You've been invited to a new event!", msg);
+            await this.mailService.SendEmail(metadata, model);
+
+
+
+            //var msg = "Hi " + name + ",";
+            //msg += "<br/>";
+            //msg += fromName + " has invited you a killer awesome event " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
+            //msg += "<a href='" + url + "'>Click on this link to sign up for ElGroupo and access the event details</a>";
+            //msg += "<br/>";
+            //msg += "Thanks,";
+            //msg += "<br/>";
+            //msg += "The ElGroupo Team";
+
+            //await emailSender.SendEmailAsync(email, "You've been invited to a new event!", msg);
         }
 
 

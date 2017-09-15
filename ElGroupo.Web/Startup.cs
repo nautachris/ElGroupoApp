@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using ElGroupo.Web.Models.Configuration;
 using Microsoft.Extensions.Configuration;
-
+using RazorLight;
 using ElGroupo.Domain.Data;
 using ElGroupo.Domain;
 using ElGroupo.Web.Services;
@@ -48,6 +48,10 @@ namespace ElGroupo.Web
             services.AddMvc();
             //services.AddTransient<IEmailSender, SendGridEmailSender>();
             services.AddTransient<IEmailSender, MailgunEmailSender>();
+            services.AddTransient<EventService, EventService>();
+
+            services.AddSingleton(EngineFactory.CreateEmbedded(typeof(Mail.Templates.TemplatePointer)));
+            services.AddSingleton<MailService, MailService>();
             services.Configure<EmailConfigOptions>(Configuration);
 
 

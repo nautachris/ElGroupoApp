@@ -2,8 +2,11 @@
 @model EventContactsModel
 
 <style type="text/css">
-
     .row.manual-search {
+        display: none;
+    }
+
+    .row.attendees {
         display: none;
     }
 </style>
@@ -16,7 +19,11 @@
         <span>@Model.Event.StartDate.ToString() - @Model.Event.EndDate.ToString()</span>
     </div>
 </section>
-<section>
+<div class="page-nav">
+    <a class="links bold" data-link-type="organizers" href="#">Organizers</a>
+    <a class="links" data-link-type="attendees" href="#">Attendees</a>
+</div>
+<div class="row tab organizers">
     <h2>Edit Organizers</h2>
     <div class="row">
         <div class="col span-2-of-10"><label>Select Organizer:</label></div>
@@ -32,13 +39,11 @@
         </div>
     </div>
     <div class="row" id="divOrganizers">
-        
+
         @Html.Partial("_Organizers", Model.Organizers)
     </div>
-    
-</section>
-
-<section>
+</div>
+<div class="row tab attendees">
     <h2>Edit Attendees</h2>
     <div class="row">
         <div class="col span-1-of-3">
@@ -48,7 +53,7 @@
             <input id="rbExistingContacts" class="contact-search-rb" name="selection" checked type="radio" /> Search for ElGroupo Members
         </div>
         <div class="col span-1-of-3">
-            <input id="rbNewContact" class="contact-search-rb"  name="selection" type="radio" /> Enter Name and Email
+            <input id="rbNewContact" class="contact-search-rb" name="selection" type="radio" /> Enter Name and Email
         </div>
 
     </div>
@@ -86,8 +91,8 @@
     <div class="row" id="divAttendees">
         @Html.Partial("_Attendees", Model.Attendees)
     </div>
-        
-</section>
+</div>
+
 
 @section Scripts{
     <script type="text/javascript" src="~/content/scripts/events/contacts.js"></script>
