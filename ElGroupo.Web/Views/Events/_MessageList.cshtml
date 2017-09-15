@@ -14,40 +14,50 @@
     Layout = null;
 }
 
-@foreach (var message in Model)
+@if (Model.Any())
 {
-    <div class="row">
-        <div class="col span-1-of-3" style="text-align:center;">
-            <img class="image-circle-200" style="background-image:url('@GetImageUrl(message.PostedById)')" />
-            <span style="font-weight:bold; text-transform:uppercase;">@message.PostedBy</span>
-        </div>
-        <div class="col span-2-of-3">
-            @if (message.IsNew)
-            {
-                <div class="unread-message-subject" data-message-id="@message.Id">
-                    <span class="width-100 inline-block">@message.PostedDate.ToString("d")</span>
-                    <span class="width-100 inline-block">@message.Subject</span>
-                </div>
-                <span class="message-container" data-message-id="@message.Id">@message.MessageText</span>
-
-            }
-            else
-            {
-                <span class="width-100 inline-block">@message.PostedDate.ToString("d")</span>
-                <span class="width-100 inline-block">@message.Subject</span>
-                <span>@message.MessageText</span>
-            }
-            @if (message.CanEdit)
-            {
-                <div class="row">
-                    <div class="col span-3-of-3">
-                        <a class="btn btn-primary delete-message" data-message-id="@message.Id">Delete Message!</a>
+    foreach (var message in Model)
+    {
+        <div class="row">
+            <div class="col span-1-of-3" style="text-align:center;">
+                <img class="image-circle-100" style="background-image:url('@GetImageUrl(message.PostedById)')" />
+                <span style="font-weight:bold; text-transform:uppercase;">@message.PostedBy</span>
+            </div>
+            <div class="col span-2-of-3">
+                @if (message.IsNew)
+                {
+                    <div class="unread-message-subject" data-message-id="@message.Id">
+                        <span class="width-100 inline-block">@message.PostedDate.ToString("d") &nbsp; @message.PostedDate.ToString("t")</span>
+                        <span class="width-100 inline-block">@message.Subject</span>
                     </div>
-                </div>
+                    <span class="message-container" data-message-id="@message.Id">@message.MessageText</span>
 
-            }
+                }
+                else
+                {
+                    <span class="width-100 inline-block">@message.PostedDate.ToString("d") &nbsp; @message.PostedDate.ToString("t")</span>
+                    <span class="width-100 inline-block">@message.Subject</span>
+                    <span>@message.MessageText</span>
+                }
+                @if (message.CanEdit)
+                {
+                    <div class="row">
+                        <div class="col span-3-of-3">
+                            <a class="btn btn-primary delete-message" data-message-id="@message.Id">Delete Message!</a>
+                        </div>
+                    </div>
+
+                }
+            </div>
         </div>
-    </div>
+    }
+
 }
+else { 
+    <h2>You are such a fucking loser you have no messages!</h2>
+
+}
+
+
 
 

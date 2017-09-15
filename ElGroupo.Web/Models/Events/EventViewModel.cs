@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using ElGroupo.Web.Models.Messages;
+using ElGroupo.Web.Models.Notifications;
 
 namespace ElGroupo.Web.Models.Events
 {

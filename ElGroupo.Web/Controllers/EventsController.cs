@@ -12,6 +12,7 @@ using ElGroupo.Domain.Data;
 using ElGroupo.Web.Services;
 using System.IO;
 using ElGroupo.Web.Models.Messages;
+using ElGroupo.Web.Models.Notifications;
 
 namespace ElGroupo.Web.Controllers
 {
@@ -148,13 +149,15 @@ namespace ElGroupo.Web.Controllers
             }
 
             var list = new List<EventInformationModel>();
-            await events.ForEachAsync(x => list.Add(new EventInformationModel {
+            await events.ForEachAsync(x => list.Add(new EventInformationModel
+            {
                 Draft = x.SavedAsDraft,
                 StartDate = x.StartTime,
                 EndDate = x.EndTime,
                 Id = x.Id,
                 Name = x.Name,
-                OrganizerName = x.Organizers.First(y => y.Owner).User.Name }));
+                OrganizerName = x.Organizers.First(y => y.Owner).User.Name
+            }));
             return PartialView("_EventList", list.OrderBy(x => x.Name));
         }
         private async Task SendEventOrganizerEmail(User u, Event e)
@@ -249,7 +252,7 @@ namespace ElGroupo.Web.Controllers
             model.XCoord = e.CoordinateX;
             model.YCoord = e.CoordinateY;
             model.ZipCode = e.Zip;
-            
+
 
             return View(model);
         }
@@ -262,7 +265,8 @@ namespace ElGroupo.Web.Controllers
             var e = await dbContext.Events.Include("Attendees.User").Include("Attendees.MessageBoardItems.MessageBoardItem.User").Include("Organizers.User").FirstOrDefaultAsync(x => x.Id == eid);
             if (e == null) return View("../Shared/NotFound");
             var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == user.Id);
-            if (thisAttendee == null && !e.Organizers.Any(x=>x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
+            var isOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
+            if (thisAttendee == null && !isOrganizer && !HttpContext.User.IsInRole("admin"))
             {
                 //illegal access
                 return View("../Shared/AccessDenied");
@@ -282,7 +286,7 @@ namespace ElGroupo.Web.Controllers
             model.ZipCode = e.Zip;
             model.IsOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
             model.Attendees = new List<EventAttendeeModel>();
-            foreach(var att in e.Attendees)
+            foreach (var att in e.Attendees)
             {
                 model.Attendees.Add(new EventAttendeeModel
                 {
@@ -295,9 +299,10 @@ namespace ElGroupo.Web.Controllers
 
             model.Messages = new List<EventMessageModel>();
 
-            foreach(var mba in thisAttendee.MessageBoardItems)
+            foreach (var mba in thisAttendee.MessageBoardItems)
             {
-                model.Messages.Add(new EventMessageModel {
+                model.Messages.Add(new EventMessageModel
+                {
                     PostedBy = mba.MessageBoardItem.User.Name,
                     PostedById = mba.MessageBoardItem.User.Id,
                     PostedDate = mba.MessageBoardItem.PostedDate,
@@ -311,6 +316,20 @@ namespace ElGroupo.Web.Controllers
 
 
             model.Notifications = new List<EventNotificationModel>();
+            foreach (var ean in this.dbContext.EventAttendeeNotifications.Include("Notification.PostedBy.User").Where(x => x.AttendeeId == thisAttendee.Id))
+            {
+                model.Notifications.Add(new EventNotificationModel
+                {
+                    OrganizerName = ean.Notification.PostedBy.User.Name,
+                    OrganizerId = ean.Notification.PostedBy.User.Id,
+                    CanEdit = isOrganizer || HttpContext.User.IsInRole("admin"),
+                    PostedDate = ean.Notification.PostedDate,
+                    Subject = ean.Notification.Subject,
+                    NotificationText = ean.Notification.MessageText,
+                    IsNew = !ean.Viewed,
+                    Id = ean.Id
+                });
+            }
 
             return View(model);
         }

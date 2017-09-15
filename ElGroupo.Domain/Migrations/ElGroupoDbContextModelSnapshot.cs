@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ElGroupo.Domain.Data;
-using ElGroupo.Domain.Enums;
 
 namespace ElGroupo.Domain.Migrations
 {

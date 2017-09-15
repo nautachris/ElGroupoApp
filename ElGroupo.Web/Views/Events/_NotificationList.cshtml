@@ -1,4 +1,4 @@
-﻿@using ElGroupo.Web.Models.Events
+﻿@using ElGroupo.Web.Models.Notifications
 @model IEnumerable<EventNotificationModel>
 @functions{
 
@@ -13,42 +13,47 @@
     Layout = null;
 }
 
-<table id="tblNotifications" class="row width-100">
-    <thead>
-        <tr>
-            <th>Posted By</th>
-            <th>Posted Date</th>
-            <th>Message</th>
-            @if (Model.Any(x => x.CanEdit))
-            {
-
-                <th style="width:100px;">Remove</th>
-            }
-
-
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var m in Model)
-        {
-            <tr>
-                <td>
-                    <div class="col span-1-of-4" style="text-align:center;">
-                        <img class="image-circle-200" style="background-image:url('@GetImageUrl(m.OrganizerId)')" />
-                        <span style="font-weight:bold; text-transform:uppercase;">@m.OrganizerName</span>
+@if (Model.Any())
+{
+    foreach (var notification in Model)
+    {
+        <div class="row">
+            <div class="col span-1-of-3" style="text-align:center;">
+                <img class="image-circle-100" style="background-image:url('@GetImageUrl(notification.OrganizerId)')" />
+                <span style="font-weight:bold; text-transform:uppercase;">@notification.OrganizerName</span>
+            </div>
+            <div class="col span-2-of-3">
+                @if (notification.IsNew)
+                {
+                    <div class="unread-notification-subject" data-notification-id="@notification.Id">
+                        <span class="width-100 inline-block">@notification.PostedDate.ToString("d") &nbsp; @notification.PostedDate.ToString("t")</span>
+                        <span class="width-100 inline-block">@notification.Subject</span>
                     </div>
-                </td>
-                <td>@m.PostedDate.ToString("dddd")</td>
-                <td>@m.NotificationText</td>
-                @if (m.CanEdit)
-                {
-                    <td><a data-notification-id="@m.Id" style="cursor:pointer; color:blue" class="btn btn-ghost" data-action-type="delete">Delete</a></td>
+                    <span class="message-container" data-notification-id="@notification.Id">@notification.NotificationText</span>
+
                 }
-                else if (Model.Any(x => x.CanEdit))
+                else
                 {
-                    <td></td>
+                    <span class="width-100 inline-block">@notification.PostedDate.ToString("d") &nbsp; @notification.PostedDate.ToString("t")</span>
+                    <span class="width-100 inline-block">@notification.Subject</span>
+                    <span>@notification.NotificationText</span>
                 }
-            </tr>
-        }
-    </tbody>
-</table>
+                @if (notification.CanEdit)
+                {
+                    <div class="row">
+                        <div class="col span-3-of-3">
+                            <a class="btn btn-primary delete-message" data-notification-id="@notification.Id">Delete Message!</a>
+                        </div>
+                    </div>
+
+                }
+            </div>
+        </div>
+    }
+
+}
+else
+{
+    <h2>You are such a fucking loser you have no messages!</h2>
+
+}

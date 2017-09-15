@@ -116,6 +116,19 @@ h1, h2, h3{
     background-repeat: no-repeat;
     text-align: center;
 }
+.image-circle-100 {
+    border-radius: 100%;
+    background-size: cover;
+    height: 100px;
+    width: 100px;
+    margin: 0 auto;
+    background-position: center;
+    background-repeat: no-repeat;
+    text-align: center;
+}
+.width-100px {
+width:100px;
+}
 
 #sectionEditAccount input {
     border: none transparent;
@@ -823,9 +836,10 @@ display:inline-block;
 display:none;
 }
 
-.unread-message-subject{
+.unread-message-subject, .unread-notification-subject{
     font-weight:bold;
     font-style:italic;
+    cursor:pointer;
 }
 
 

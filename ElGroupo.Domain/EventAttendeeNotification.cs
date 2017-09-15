@@ -7,6 +7,12 @@ namespace ElGroupo.Domain
 {
     public class EventAttendeeNotification: ClassBase
     {
+        public EventAttendeeNotification()
+        {
+
+            
+        }
+
         public long NotificationId { get; set; }
         public long AttendeeId { get; set; }
 

@@ -16,13 +16,13 @@ namespace ElGroupo.Web.Controllers
 {
     [Authorize]
     [Route("Messages")]
-    public class MessageController : Controller
+    public class MessagesController : Controller
     {
         private UserManager<User> userManager;
         private SignInManager<User> signInManager;
         private ElGroupoDbContext dbContext;
         private IEmailSender emailSender;
-        public MessageController(UserManager<User> userMgr,
+        public MessagesController(UserManager<User> userMgr,
                 SignInManager<User> signinMgr, ElGroupoDbContext ctx, IEmailSender sndr)
         {
             userManager = userMgr;
@@ -119,38 +119,7 @@ namespace ElGroupo.Web.Controllers
         }
 
 
-        //private async Task SendEventOrganizerEmail(User u, Event e)
-        //{
-        //    var url = Url.Action("Edit", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
 
-        //    var msg = "Hi " + u.Name + ",";
-        //    msg += "<br/>";
-        //    msg += "You've been added as an event organizer to " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
-        //    msg += "Click on this <a href='" + url + "'>link</a> to access the event details";
-        //    //<a href='{callbackUrl}'>link</a>
-        //    msg += "<br/>";
-        //    msg += "Thanks,";
-        //    msg += "<br/>";
-        //    msg += "The ElGroupo Team";
-
-        //    await emailSender.SendEmailAsync(u.Email, "You've been added as an event organizer!", msg);
-        //}
-
-        //private async Task SendEventAttendeeEmail(User u, Event e)
-        //{
-        //    var url = Url.Action("View", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
-
-        //    var msg = "Hi " + u.Name + ",";
-        //    msg += "<br/>";
-        //    msg += "You've been invited to a killer awesome event " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
-        //    msg += "Click on this <a href='" + url + "'>link</a> to access the event details";
-        //    msg += "<br/>";
-        //    msg += "Thanks,";
-        //    msg += "<br/>";
-        //    msg += "The ElGroupo Team";
-
-        //    await emailSender.SendEmailAsync(u.Email, "You've been invited to a new event!", msg);
-        //}
 
 
 
@@ -169,7 +138,28 @@ namespace ElGroupo.Web.Controllers
 
 
 
+        [Authorize]
+        [HttpDelete]
+        [Route("DeleteForAttendee/{messageId}")]
+        public async Task<IActionResult> DeleteMessageForAttendee([FromRoute]long messageId)
+        {
+            var user = await this.userManager.GetUserAsync(HttpContext.User);
+            var msg = await this.dbContext.MessageBoardItemAttendees.FirstOrDefaultAsync(x => x.Id == messageId);
 
+            if (msg.Attendee.User.Id != user.Id && !HttpContext.User.IsInRole("admin"))
+            {
+                return BadRequest();
+            }
+
+            this.dbContext.Remove(msg);
+            await this.dbContext.SaveChangesAsync();
+            //var eo = dbContext.EventOrganizers.FirstOrDefault(x => x.Id == oid);
+            //if (eo.EventId != eid) return BadRequest();
+            //dbContext.EventOrganizers.Remove(eo);
+            //await dbContext.SaveChangesAsync();
+            //return RedirectToAction("OrganizersList", new { id = eid });
+            return RedirectToRoute("GetMessagesByEventId", new { eid = msg.MessageBoardItem.EventId });
+        }
 
 
 

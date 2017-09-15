@@ -260,7 +260,33 @@
 
     @if (Model.IsOrganizer)
     {
-        <button>Add Notification</button>
+        <button id="btnShowNotificationDiv">Add Notification</button>
+        <div id="divCreateNotification" style="display:none;">
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label>Subject:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input type="text" id="txtNotificationSubject" class="width-100" placeholder="Enter Notification Subject...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label>Message:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <textarea id="txtNotificationText" style="height:300px;" class="width-100" placeholder="Enter Notification Text..."></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-2">
+                    <a class="btn btn-ghost" id="btnCancelNotifcation">Cancel</a>
+                </div>
+                <div class="col span-1-of-2">
+                    <a class="btn btn-primary" id="btnPostNotifcation">Post Notification</a>
+                </div>
+            </div>
+        </div>
 
     }
 </div>

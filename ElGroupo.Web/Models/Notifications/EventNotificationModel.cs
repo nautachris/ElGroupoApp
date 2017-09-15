@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ElGroupo.Domain.Enums;
-namespace ElGroupo.Web.Models.Events
+namespace ElGroupo.Web.Models.Notifications
 {
     public class EventNotificationModel
     {
@@ -15,5 +15,7 @@ namespace ElGroupo.Web.Models.Events
         public string NotificationText { get; set; }
         public string Subject { get; set; }
         public bool CanEdit { get; set; }
+
+        public bool IsNew { get; set; }
     }
 }
