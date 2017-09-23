@@ -4,13 +4,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ElGroupo.Domain.Data;
+using ElGroupo.Domain.Enums;
 
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170920163826_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -56,8 +58,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("LocationName");
 
-                    b.Property<bool>("MustRSVP");
-
                     b.Property<string>("Name");
 
                     b.Property<bool>("SavedAsDraft");
@@ -70,9 +70,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<string>("UserCreated");
 
                     b.Property<string>("UserUpdated");
-
-                    b.Property<string>("VerificationCode")
-                        .HasMaxLength(10);
 
                     b.Property<int>("VerificationMethod");
 
@@ -326,34 +323,6 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("UnregisteredEventAttendees","dbo");
                 });
 
-            modelBuilder.Entity("ElGroupo.Domain.UnregisteredUserConnection", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("Email");
-
-                    b.Property<string>("Name");
-
-                    b.Property<Guid>("RegisterToken");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<int?>("UserId");
-
-                    b.Property<string>("UserUpdated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UnregisteredUserConnections");
-                });
-
             modelBuilder.Entity("ElGroupo.Domain.User", b =>
                 {
                     b.Property<int>("Id")
@@ -464,7 +433,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserContactMethods");
+                    b.ToTable("UserContacts");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.UserPhoto", b =>
@@ -674,13 +643,6 @@ namespace ElGroupo.Domain.Migrations
                     b.HasOne("ElGroupo.Domain.Event", "Event")
                         .WithMany("UnregisteredAttendees")
                         .HasForeignKey("EventId");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.UnregisteredUserConnection", b =>
-                {
-                    b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.User", b =>

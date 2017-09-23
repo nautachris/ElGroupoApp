@@ -37,7 +37,8 @@ namespace ElGroupo.Web
         {
             services.AddDbContext<ElGroupoDbContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddTransient<DbContext>(p => p.GetService<ElGroupoDbContext>());
-            services.AddIdentity<User, IdentityRole<int>>(opts=> {
+            services.AddIdentity<User, IdentityRole<int>>(opts =>
+            {
                 opts.User.RequireUniqueEmail = true;
                 opts.Password.RequiredLength = 6;
                 opts.Password.RequireNonAlphanumeric = false;
@@ -53,7 +54,11 @@ namespace ElGroupo.Web
             services.AddSingleton(EngineFactory.CreateEmbedded(typeof(Mail.Templates.TemplatePointer)));
             services.AddSingleton<MailService, MailService>();
             services.Configure<EmailConfigOptions>(Configuration);
+            services.Configure<GoogleConfigOptions>(Configuration);
 
+            //filters
+
+            services.AddScoped<ElGroupo.Web.Filters.EventOrganizerFilterAttribute>();
 
             var idBuilder = new IdentityBuilder(typeof(User), typeof(IdentityRole<int>), services);
             idBuilder.AddDefaultTokenProviders();
@@ -73,18 +78,25 @@ namespace ElGroupo.Web
 
             app.UseStaticFiles();
 
-            app.UseStaticFiles(new StaticFileOptions() {
-                FileProvider = new PhysicalFileProvider(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(),"wwwroot", "content", "resources", "images")),
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "content", "resources", "images")),
                 RequestPath = new PathString("/Images")
             });
 
             app.UseIdentity();
+            app.UseGoogleAuthentication(new GoogleOptions
+            {
+                ClientId = Configuration["GoogleClientId"],
+                ClientSecret = Configuration["GoogleClientSecret"]
+
+            });
             app.UseMvcWithDefaultRoute();
 
 
             //var sm = app.ApplicationServices.GetRequiredService<SignInManager<User>>();
 
-            
+
             //Models.Configuration.EmailConfigOptions.SendTestEmail().Wait();
             //ElGroupoDbContext.CreateUsers(app.ApplicationServices).Wait();
             //ElGroupoDbContext.PopulateUserContacts(app.ApplicationServices).Wait();

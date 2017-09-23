@@ -1,12 +1,11 @@
 ﻿@using ElGroupo.Web.Models.Account
 @model EditAccountModel
 
-    <style type="text/css">
-
-        input {
-            border: none transparent;
-        }
-    </style>
+<style type="text/css">
+    input {
+        border: none transparent;
+    }
+</style>
 
 <section id="sectionEditAccount" class="section-form">
     <div class="row">
@@ -20,12 +19,18 @@
         </div>
 
     }
-    <div class="row">
+    <div class="page-nav">
+        <a class="links bold" data-link-type="details" href="#">My Details</a>
+        <a class="links" data-link-type="contact-methods" href="#">My Contact Methods</a>
+        <a class="links" data-link-type="connections" href="#">Connections</a>
+
+    </div>
+    <div class="row tab details">
         <div asp-validation-summary="All" class="text-danger"></div>
         <form asp-controller="Account" asp-action="Edit" enctype="multipart/form-data" method="post" class="contact-form">
             <input asp-for="Id" type="hidden" />
             <div class="row line-after">
-                <div id="divImg" class="image-circle-250" style="background-image: url('/Users/UserPhoto/@Model.Id')">                 
+                <div id="divImg" class="image-circle-250" style="background-image: url('/Users/UserPhoto/@Model.Id')">
                 </div>
                 <div id="divChangePhoto" style="text-align:center; font-weight:bold; cursor:pointer;">EDIT</div>
             </div>
@@ -61,28 +66,8 @@
                     <input asp-for="ZipCode" placeholder="Enter Zip Code...">
                 </div>
             </div>
-            @*<div class="row line-after">
-                @if (Model.HasPhoto)
-                {
-                    <div class="col span-1-of-3">
-                        <label>Current Photo:</label>
-                    </div>
-                    <div class="col span-2-of-3">
-                        <img id="imgPhoto" src="/Users/UserPhoto/@Model.Id" alt="Select a Photo" />
-                    </div>
-                }
-                else
-                {
-                    <div class="col span-3-of-3">
-                        <span>You have not uploaded a photo</span>
-                    </div>
 
-                }
-            </div>*@
             <div class="row">
-                @*<div class="col span-1-of-3">
-                    <label asp-for="UpdatedPhoto">Update Photo?</label>
-                </div>*@
                 <div class="col span-2-of-3">
                     <input asp-for="UpdatedPhoto" style="visibility:hidden;" type="file" id="inputNewPhoto" placeholder="Select a photo...">
                 </div>
@@ -91,37 +76,49 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col span-1-of-3">
+                <div class="col span-1-of-4">
                     <label>&nbsp;</label>
                 </div>
-                <div class="col span-2-of-3">
+                <div class="col span-2-of-4">
                     <input type="submit" value="Save Account Changes!">
+                </div>
+                <div class="col span-1-of-4">
+                    <label>&nbsp;</label>
                 </div>
             </div>
         </form>
     </div>
-</section>
-<section>
-    <h2>Edit Contacts</h2>
-    <div class="row">
-        <div class="col span-2-of-10">Select Contact Type:</div>
-        
-        <select class="col span-3-of-10" id="selContactType">
-            <option selected></option>
-            @foreach (var ct in Model.ContactTypes)
-            {
-                <option value="@ct.Key">@ct.Value</option>
+    <div style="display:none;" class="row tab contact-methods">
+        <h2>My Contact Information</h2>
+        <div class="row">
+            <div class="col span-2-of-10">Select Contact Type:</div>
 
-            }
-        </select>
-        <input class="col span-4-of-10" type="text" id="txtContactValue" />
-        <a class="btn btn-primary span-1-of-10" id="btnAddNewContact">Add New Contact</a>
+            <select class="col span-3-of-10" id="selContactType">
+                <option selected></option>
+                @foreach (var ct in Model.ContactTypes)
+            {
+                    <option value="@ct.Key">@ct.Value</option>
+
+                }
+            </select>
+            <input class="col span-4-of-10" type="text" id="txtContactValue" />
+            <a class="btn btn-primary span-1-of-10" id="btnAddNewContact">Add New Contact</a>
+        </div>
+        <div class="row" id="divContactList">
+            @Html.Partial("_ContactMethods", Model.Contacts)
+        </div>
     </div>
-    <div class="row" id="divContactList">
-        @Html.Partial("_EditContacts", Model.Contacts)
+    <div style="display:none;" class="row tab connections">
+        <h2>My Connections</h2>
+
     </div>
 </section>
+<section></section>
 
 @section Scripts{
-<script type="text/javascript" src="~/content/scripts/account/edit.js"></script>
+
+
+
+
+    <script type="text/javascript" src="~/content/scripts/account/edit.js"></script>
 }

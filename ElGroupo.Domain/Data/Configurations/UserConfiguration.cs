@@ -13,6 +13,8 @@ namespace ElGroupo.Domain.Data.Configurations
             HasKey(x => x.Id);
             Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             Property(x => x.Email).HasColumnName("EmailAddress");
+            HasMany(x => x.ConnectedUsers).WithOne(x => x.User);
+           
         }
     }
 }

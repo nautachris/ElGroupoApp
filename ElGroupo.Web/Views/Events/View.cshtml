@@ -45,70 +45,7 @@
 
     }
 }
-<style type="text/css">
-    #infowindow-content .title {
-        font-weight: bold;
-    }
 
-    #infowindow-content {
-        display: none;
-    }
-
-    #divMap #infowindow-content {
-        display: inline;
-    }
-
-    .row.search-method {
-        display: none;
-    }
-
-
-    input[type=text], input[type=select] {
-        width: 100%;
-    }
-
-    .row.attendees, .row.notifications, .row.messages {
-        display: none;
-    }
-
-    a.no-decoration {
-        color: #808080;
-        padding-bottom: 0px;
-        border-bottom: none;
-    }
-
-    li.new-event {
-        background-color: aquamarine;
-        border-radius: 25px;
-        font-weight: 300;
-    }
-
-    .row li {
-        cursor: pointer;
-    }
-
-    li span {
-        display: inline-block;
-        width: 100%;
-    }
-
-    a {
-        color: blue;
-    }
-
-    .page-nav {
-        text-align: center;
-        list-style: none;
-    }
-
-        .page-nav a {
-            margin-left: 60px;
-        }
-
-    .bold {
-        font-weight: bold;
-    }
-</style>
 
 <input type="hidden" asp-for="EventId" />
 <div class="row">
@@ -116,9 +53,9 @@
 </div>
 <div class="page-nav">
     <a class="links bold" data-link-type="details" href="#">Event Details</a>
-    <a class="links" data-link-type="attendees" href="#">Who the fuck is coming?</a>
-    <a class="links" data-link-type="notifications" href="#">Spam!</a>
-    <a class="links" data-link-type="messages" href="#">Random musings of social ingrates</a>
+    <a class="links" data-link-type="attendees" href="#">Attendees</a>
+    <a class="links" data-link-type="notifications" href="#">Event Notifications</a>
+    <a class="links" data-link-type="messages" href="#">Messages</a>
 </div>
 <div class="row tab details">
     <input asp-for="@Model.GooglePlaceId" type="hidden" />

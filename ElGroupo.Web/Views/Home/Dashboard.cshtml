@@ -18,8 +18,10 @@
         font-weight: 300;
     }
 
-    .row li {
-        cursor: pointer;
+
+
+    ul {
+        list-style: none;
     }
 
     li span {
@@ -43,78 +45,93 @@
     .bold {
         font-weight: bold;
     }
+    #secDeleteDialog{
+        display:none;
+    }
+
 </style>
-<section>
+<section id="secDeleteDialog">
+    <div style="text-align:center">
+        <div class="row">
+            <h2><span id="spanDeleteEventName">Do you want to delete the event?</span></h2>
+        </div>
+        <div class="row">
+            <div class="col span-1-of-2">
+                <button class="btn btn-primary width-100" id="btnConfirmDelete">Yes</button>
+            </div>
+            <div class="col span-1-of-2">
+                <button class="btn btn-ghost width-100" id="btnCancelDelete">No</button>
+            </div>
+        </div>
+    </div>
+
+     
+</section>
+<section id="secMain">
 
     <h2>My Fuckin' Bitchin' Events</h2>
     <div class="page-nav">
+        <div class="col span-1-of-3">
+            <a class="links bold" data-link-type="future-events" href="#">Upcoming Events (@Model.FutureEvents.Count.ToString())</a>
+        </div>
+        <div class="col span-1-of-3">
+            <a class="links" data-link-type="past-events" href="#">Past Events (@Model.PastEvents.Count.ToString())</a>
+        </div>
+        <div class="col span-1-of-3">
+            <a class="links" data-link-type="draft-events" href="#">Drafts  (@Model.Drafts.Count.ToString())</a>
+        </div>
+        
 
-        <a class="links bold" data-link-type="future-events" href="#">Upcoming Events (@Model.FutureEvents.Count.ToString())</a>
+       
 
-        <a class="links" data-link-type="past-events" href="#">Past Events (@Model.PastEvents.Count.ToString())</a>
-
-        <a class="links" data-link-type="draft-events" href="#">Drafts  (@Model.Drafts.Count.ToString())</a>
+        
 
     </div>
     <div class="row tab future-events">
-        <ul>
-            @foreach (var e in Model.FutureEvents)
-            {
-                <li class="@(e.IsNew ? "new-event": "")">
-                    <a asp-controller="Events" asp-action="@(e.OrganizedByUser ? "Edit" : "View")" asp-route-eid="@e.Id">
-                        <span style="font-weight:bold">
-                            @if (e.OrganizedByUser)
-                            {
-                                @:*&nbsp;
-                        }
-                            @e.Name
-                        </span>
-                        <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
-                    </a>
+        @if (Model.FutureEvents.Count > 0)
+        {
+            @Html.Partial("_DashboardEventList", Model.FutureEvents)
 
-                </li>
-            }
-        </ul>
+        }
+        else
+        {
+            <div class="col width-100" style="text-align:center;">
+                <h3>You have no upcoming events</h3>
+            </div>
+
+        }
+
     </div>
     <div class="row tab past-events">
-        <ul>
-            @foreach (var e in Model.PastEvents)
-            {
-                <li>
-                    <a class="no-decoration" asp-controller="Events" asp-action="View" asp-route-eid="@e.Id">
+        @if (Model.PastEvents.Count > 0)
+        {
+            @Html.Partial("_DashboardEventList", Model.PastEvents)
 
-                        <span style="font-weight:bold">
-                            @if (e.OrganizedByUser)
-                            {
-                                @:*&nbsp;
-                        }
-                            @e.Name
-                        </span>
-                        <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
-                    </a>
-                </li>
-            }
-        </ul>
+
+        }
+        else
+        {
+            <div class="col width-100" style="text-align:center;">
+                <h3>You have no past events</h3>
+            </div>
+
+        }
+
     </div>
     <div class="row tab draft-events">
-        <ul>
-            @foreach (var e in Model.Drafts)
-            {
-                <li>
-                    <a class="no-decoration" asp-route="editevent" asp-route-eid="@e.Id">
-                        <span style="font-weight:bold">
-                            @if (e.OrganizedByUser)
-                            {
-                                @:*&nbsp;
-                        }
-                            @e.Name
-                        </span>
-                        <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
-                    </a>
+@if (Model.Drafts.Count > 0)
+{
+    @Html.Partial("_DashboardEventList", Model.Drafts)
 
-                </li>
-            }
-        </ul>
+}
+else
+{
+    <div class="col width-100" style="text-align:center;">
+        <h3>You have no draft events</h3>
+    </div>
+
+}
+
     </div>
 </section>
 

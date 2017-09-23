@@ -4,13 +4,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ElGroupo.Domain.Data;
+using ElGroupo.Domain.Enums;
 
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170920164823_unregistereduserconnection")]
+    partial class unregistereduserconnection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -56,8 +58,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("LocationName");
 
-                    b.Property<bool>("MustRSVP");
-
                     b.Property<string>("Name");
 
                     b.Property<bool>("SavedAsDraft");
@@ -70,9 +70,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<string>("UserCreated");
 
                     b.Property<string>("UserUpdated");
-
-                    b.Property<string>("VerificationCode")
-                        .HasMaxLength(10);
 
                     b.Property<int>("VerificationMethod");
 

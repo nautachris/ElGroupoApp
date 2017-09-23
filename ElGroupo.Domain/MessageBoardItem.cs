@@ -11,7 +11,7 @@ namespace ElGroupo.Domain
         public long EventId { get; set; }
 
         [Required]
-        public virtual User User { get; set; }
+        public virtual User PostedBy { get; set; }
 
         [Required]
         public virtual Event Event { get; set; }

@@ -13,6 +13,11 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Drawing;
 using ElGroupo.Web.Services;
+using Microsoft.AspNetCore.Http.Authentication;
+using System.Security.Claims;
+using ElGroupo.Web.Models.Configuration;
+using Microsoft.Extensions.Options;
+
 
 namespace ElGroupo.Web.Controllers
 {
@@ -25,56 +30,118 @@ namespace ElGroupo.Web.Controllers
         private IPasswordHasher<User> passwordHasher;
         private ElGroupoDbContext dbContext;
         private IEmailSender emailSender;
+        private GoogleConfigOptions googleOptions;
         public AccountController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, IPasswordHasher<User> hasher, ElGroupoDbContext ctx, IEmailSender sender)
+                SignInManager<User> signinMgr, IPasswordHasher<User> hasher, ElGroupoDbContext ctx, IEmailSender sender, IOptions<GoogleConfigOptions> googConfig)
         {
             userManager = userMgr;
             signInManager = signinMgr;
             passwordHasher = hasher;
             dbContext = ctx;
             emailSender = sender;
+            googleOptions = googConfig.Value;
         }
 
-        //[AllowAnonymous]
-        //public IActionResult GoogleLogin(string returnUrl)
+
+        //[Route("ImportGoogleContacts")]
+        //public async Task<IActionResult> ImportGoogleContacts()
         //{
-        //    string redirectUrl = Url.Action("GoogleResponse", "Account", new { ReturnUrl = returnUrl });
-        //    AuthenticationProperties props = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
-        //    return new ChallengeResult("Google", props);
+
+        //    UserCredential cred = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+        //        new ClientSecrets
+        //    {
+        //        ClientId = googleOptions.GoogleClientId,
+        //        ClientSecret = googleOptions.GoogleClientSecret
+        //    }, 
+        //    new string[1] { "https://www.googleapis.com/auth/contacts.readonly" },
+        //    "user",
+        //    System.Threading.CancellationToken.None);
 
 
+        //    var oAuthParams = new OAuth2Parameters { AccessToken = cred.Token.AccessToken, RefreshToken = cred.Token.RefreshToken };
+        //    var reqSettings = new RequestSettings("Tribez", oAuthParams);
+        //    ContactsRequest cc = new ContactsRequest(reqSettings);
+        //    cc.Get<>
+
+        //    return BadRequest();
         //}
 
-        //[AllowAnonymous]
-        //public async Task<IActionResult> GoogleResponse(string returnUrl = "/")
-        //{
-        //    ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
-        //    if (info == null)
-        //    {
-        //        return RedirectToAction(nameof(Login));
-        //    }
+        [HttpGet("ImportGoogleContacts")]
+        public IActionResult ImportGoogleContacts()
+        {
+            return View(new GoogleCredModel { ApiKey = googleOptions.GoogleApiKey, ClientId = googleOptions.GoogleClientId });
+        }
 
-        //    var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
-        //    if (result.Succeeded)
-        //    {
-        //        return Redirect(returnUrl);
-        //    }
-        //    else
-        //    {
-        //        AppUser user = new AppUser { Email = info.Principal.FindFirst(ClaimTypes.Email).Value, UserName = info.Principal.FindFirst(ClaimTypes.Email).Value };
-        //        IdentityResult idResult = await userManager.CreateAsync(user);
-        //        if (idResult.Succeeded)
-        //        {
-        //            idResult = await userManager.AddLoginAsync(user, info);
-        //            if (idResult.Succeeded)
-        //            {
-        //                await signInManager.SignInAsync(user, false);
-        //                return Redirect(returnUrl);
-        //            }
-        //        }
-        //        return AccessDenied();
-        //    }
-        //}
+
+        [AllowAnonymous]
+        [Route("/GoogleLogin", Name = "GoogleLogin")]
+        public IActionResult GoogleLogin(string returnUrl)
+        {
+            string redirectUrl = Url.Action("GoogleResponse", "Account", new { ReturnUrl = returnUrl });
+            AuthenticationProperties props = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            return new ChallengeResult("Google", props);
+
+
+        }
+
+        [Authorize]
+        [HttpGet("GoogleCreds")]
+        public IActionResult GetGoogleCreds()
+        {
+            return Json(new { secret = googleOptions.GoogleClientSecret, id = googleOptions.GoogleClientId });
+
+
+        }
+
+        [HttpGet]
+        [Route("GoogleResponse", Name = "GoogleResponse")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GoogleResponse(string returnUrl = "/", string remoteError = null)
+        {
+            try
+            {
+                ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
+                if (info == null)
+                {
+                    return RedirectToAction(nameof(Login));
+                }
+
+                var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
+                if (result.Succeeded)
+                {
+                    return Redirect(returnUrl == "/" ? "/Home/Dashboard" : returnUrl);
+                }
+                else
+                {
+                    User user = new User
+                    {
+                        Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
+                        UserName = info.Principal.FindFirst(ClaimTypes.Email).Value
+                    };
+                    if (info.Principal.HasClaim(x => x.Type == ClaimTypes.GivenName) && info.Principal.HasClaim(x => x.Type == ClaimTypes.Surname))
+                    {
+                        user.Name = info.Principal.FindFirst(ClaimTypes.GivenName).Value + " " + info.Principal.FindFirst(ClaimTypes.Surname).Value;
+                    }
+
+                    IdentityResult idResult = await userManager.CreateAsync(user);
+                    if (idResult.Succeeded)
+                    {
+                        idResult = await userManager.AddLoginAsync(user, info);
+                        if (idResult.Succeeded)
+                        {
+                            await signInManager.SignInAsync(user, false);
+                            return Redirect("/Account/Edit");
+                        }
+                    }
+                    return AccessDenied();
+                }
+            }
+            catch (Exception ex)
+            {
+                return AccessDenied();
+            }
+
+        }
 
         [Authorize(Roles = ("admin"))]
         [HttpGet("Admin")]
@@ -216,22 +283,48 @@ namespace ElGroupo.Web.Controllers
 
 
             }
-            return View(model);
+            return Redirect("/Account/Edit");
+
         }
 
+        private List<UserConnectionModel> GetConnections(User user)
+        {
+            var model = new List<UserConnectionModel>();
+            foreach(var c in user.ConnectedUsers)
+            {
+                model.Add(new UserConnectionModel
+                {
+                    Name = c.ConnectedUser.Name,
+                    Email = c.ConnectedUser.Email,
+                    Phone = c.ConnectedUser.ContactMethods.Any(x=>x.ContactMethod.Value == "Phone")? c.ConnectedUser.ContactMethods.First(x=>x.ContactMethod.Value == "Phone").Value : "",
+                    Status = "Registered"
+                });
+            }
+            foreach(var uc in user.UnregisteredConnections)
+            {
+                model.Add(new UserConnectionModel {
+                    Name = uc.Name,
+                    Email = uc.Email,
+                    Phone = "",
+                    Status = "Not Registered"
+                });
+            }
+
+            return model;
+        }
 
 
         private List<EditContactModel> GetContacts(User user)
         {
             var model = new List<EditContactModel>();
-            foreach (var c in user.Contacts)
+            foreach (var c in user.ContactMethods)
             {
                 model.Add(new EditContactModel
                 {
                     Id = c.Id,
                     Value = c.Value,
-                    ContactTypeId = c.ContactType.Id,
-                    ContactTypeDescription = c.ContactType.Value
+                    ContactTypeId = c.ContactMethod.Id,
+                    ContactTypeDescription = c.ContactMethod.Value
                 });
             }
             return model;
@@ -252,7 +345,7 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> Edit()
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
+            var userRecord = dbContext.Set<User>().Include("Photo").Include("ContactMethods.ContactMethod").Include("ConnectedUsers.ConnectedUser").Include("UnregisteredConnections").First(x => x.Id == user.Id);
 
             var model = new EditAccountModel
             {
@@ -268,7 +361,7 @@ namespace ElGroupo.Web.Controllers
             return View(model);
         }
 
-                [HttpGet]
+        [HttpGet]
         [Route("View/{userId}")]
         public async Task<IActionResult> View(int userId)
         {
@@ -298,7 +391,7 @@ namespace ElGroupo.Web.Controllers
             int width = 300;
             Image i = new Bitmap(s);
             double dx = 300d / (double)i.Width;
-            
+
             Image.GetThumbnailImageAbort callback = new Image.GetThumbnailImageAbort(ThumbnailCallback);
             Image thumbnail = i.GetThumbnailImage(width, Convert.ToInt32(i.Height * dx), callback, IntPtr.Zero);
             var ms = new MemoryStream();
@@ -348,7 +441,7 @@ namespace ElGroupo.Web.Controllers
 
         [HttpPost]
         [Route("Delete/{id}")]
-        [Authorize(Roles ="admin")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete([FromRoute]int id)
         {
             var user = await userManager.FindByIdAsync(id.ToString());
@@ -368,7 +461,7 @@ namespace ElGroupo.Web.Controllers
                 user = await userManager.FindByIdAsync(model.Id.ToString());
                 editingOwnAccount = false;
             }
-            
+
             var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
             userRecord.ZipCode = model.ZipCode;
             userRecord.Email = model.EmailAddress;
@@ -427,7 +520,7 @@ namespace ElGroupo.Web.Controllers
             {
                 return RedirectToAction("Edit");
             }
-            
+
         }
 
         [Authorize]
@@ -439,7 +532,7 @@ namespace ElGroupo.Web.Controllers
             var userRecord = dbContext.Set<User>().Include("Contacts.ContactType").First(x => x.Id == user.Id);
 
 
-            return View("_Contacts", GetContacts(userRecord));
+            return View("_EditContacts", GetContacts(userRecord));
         }
 
         [HttpPost]

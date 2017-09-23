@@ -49,7 +49,7 @@
 
 
     <div id="divLogin" class="row">
-
+        <a asp-route="GoogleLogin">Google</a>
         <form asp-action="Login" method="post" class="contact-form">
             <div class="text-danger" asp-validation-summary="All"></div>
             <input type="hidden" name="returnUrl" value="@ViewBag.returnUrl" />

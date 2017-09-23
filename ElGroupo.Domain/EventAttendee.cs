@@ -17,6 +17,8 @@ namespace ElGroupo.Domain
         public Event Event { get; set; }
         public bool Viewed { get; set; }
 
+        public bool IsOrganizer { get; set; }
+
         public Enums.RSVPTypes ResponseStatus { get; set; }
         public DateTime? ResponseDate { get; set; }
         public string ResponseText { get; set; }
@@ -25,6 +27,8 @@ namespace ElGroupo.Domain
         public DateTime? CheckInTime { get; set; }
         public double? CheckInCoordinateX { get; set; }
         public double? CheckInCoordinateY { get; set; }
+
+        public virtual ICollection<EventNotification> PostedNotifications { get; set; }
 
         public virtual ICollection<EventAttendeeNotification> Notifications { get; set; }
         public virtual ICollection<MessageBoardItemAttendee> MessageBoardItems { get; set; }

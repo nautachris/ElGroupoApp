@@ -4,13 +4,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ElGroupo.Domain.Data;
+using ElGroupo.Domain.Enums;
 
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170920165059_moreproperties")]
+    partial class moreproperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")

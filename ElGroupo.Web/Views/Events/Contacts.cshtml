@@ -2,6 +2,68 @@
 @model EventContactsModel
 
 <style type="text/css">
+    #infowindow-content .title {
+        font-weight: bold;
+    }
+
+    #infowindow-content {
+        display: none;
+    }
+
+    #divMap #infowindow-content {
+        display: inline;
+    }
+
+    .row.search-method {
+        display: none;
+    }
+
+
+    input[type=text], input[type=select] {
+        width: 100%;
+    }
+
+    .row.attendees, .row.notifications, .row.messages {
+        display: none;
+    }
+
+    a.no-decoration {
+        color: #808080;
+        padding-bottom: 0px;
+        border-bottom: none;
+    }
+
+    li.new-event {
+        background-color: aquamarine;
+        border-radius: 25px;
+        font-weight: 300;
+    }
+
+    .row li {
+        cursor: pointer;
+    }
+
+    li span {
+        display: inline-block;
+        width: 100%;
+    }
+
+    a {
+        color: blue;
+    }
+
+    .page-nav {
+        text-align: center;
+        list-style: none;
+    }
+
+        .page-nav a {
+            margin-left: 60px;
+        }
+
+    .bold {
+        font-weight: bold;
+    }
     .row.manual-search {
         display: none;
     }
@@ -11,11 +73,11 @@
     }
 </style>
 <section>
-    <div class="row">
+    <div class="row" style="text-align:center;">
         <h2>@Model.Event.Name</h2>
         <input type="hidden" asp-for="@Model.Event.Id" />
     </div>
-    <div class="row">
+    <div class="row" style="text-align:center;">
         <span>@Model.Event.StartDate.ToString() - @Model.Event.EndDate.ToString()</span>
     </div>
 </section>

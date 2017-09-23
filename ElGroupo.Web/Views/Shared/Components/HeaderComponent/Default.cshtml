@@ -64,13 +64,13 @@ body {
                     <a asp-controller="Home" asp-action="Dashboard">Home</a>
                     
                 </div>
-                <div class="col span-3-of-8">
+                <div class="col span-2-of-8">
                     <span style="color:#fff;">Welcome to ElGroupo, @Model.ActiveUser.Name @if (Model.IsAdmin) { <span style="margin-left:5px; font-weight:bold;">Admin</span> }</span>
                 </div>
-                <div class="col span-3-of-8">
+                <div class="col span-4-of-8">
                     <span>Search</span>
-                    <input id="txtEventSearch" type="text" placeholder="Enter Event Name or Username..." style="width:150px" />
-                    <input id="btnSearchEvents" type="button" class="btn btn-primary" value="Search" />
+                    <input id="txtEventSearch" type="text" placeholder="Enter Event Name or Username..." style="width:60%;" />
+                    <input id="btnSearchEvents" style="width:20%; margin-left:10px;" type="button" class="btn btn-primary" value="Search" />
                 </div>
                 <div class=" col span-1-of-8">
                     <span style="font-size:30px;cursor:pointer; float:right;" onclick="openNav()">&#9776;</span>
@@ -81,6 +81,7 @@ body {
                     <div id="mySidenav" class="sidenav">
                         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
                         <a asp-controller="Account" class="no-decoration" asp-action="Edit">My Account</a>
+                        <a asp-controller="Account" class="no-decoration" asp-action="Edit">My Contacts</a>
                         @if (Model.IsAdmin)
                         {
                             <a asp-controller="Account" class="no-decoration" asp-action="Admin">Acct. Admin</a>

@@ -13,6 +13,7 @@ namespace ElGroupo.Web.Models.Events
         public RSVPTypes RSVPStatus { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
+        public bool IsOrganizer { get; set; }
     }
 
     public class UnregisteredEventAttendeeModel

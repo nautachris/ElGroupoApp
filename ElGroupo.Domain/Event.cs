@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using ElGroupo.Domain.Enums;
 using System.Text;
 
 namespace ElGroupo.Domain
@@ -9,13 +10,18 @@ namespace ElGroupo.Domain
     {
         public Event()
         {
-            this.Organizers = new HashSet<EventOrganizer>();
             this.Attendees = new HashSet<EventAttendee>();
             this.UnregisteredAttendees = new HashSet<UnregisteredEventAttendee>();
         }
         public string Name { get; set; }
         public string Description { get; set; }
 
+        public AttendanceVerificationMethods VerificationMethod { get; set; }
+
+        [MaxLength(10)]
+        public string VerificationCode { get; set; }
+
+        public bool MustRSVP { get; set; }
         public string LocationName { get; set; }
 
         [MaxLength(50)]
@@ -44,7 +50,7 @@ namespace ElGroupo.Domain
 
         public long? GroupId { get; set; }
 
-        public virtual ICollection<EventOrganizer> Organizers { get; set; }
+
         public virtual EventGroup Group { get; set; }
         public virtual ICollection<EventAttendee> Attendees { get; set; }
         public virtual ICollection<MessageBoardItem> MessageBoardItems { get; set; }

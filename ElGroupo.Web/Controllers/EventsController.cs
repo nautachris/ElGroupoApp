@@ -11,25 +11,27 @@ using Microsoft.EntityFrameworkCore;
 using ElGroupo.Domain.Data;
 using ElGroupo.Web.Services;
 using ElGroupo.Web.Mail.Models;
+using ElGroupo.Web.Filters;
 using ElGroupo.Web.Mail;
 using System.IO;
+using ElGroupo.Web.Classes;
 using ElGroupo.Web.Models.Messages;
 using ElGroupo.Web.Models.Notifications;
 
 namespace ElGroupo.Web.Controllers
 {
     [Route("Events")]
-    public class EventsController : Controller
+    public class EventsController : ControllerBase
     {
-        private UserManager<User> userManager;
+
         private SignInManager<User> signInManager;
         private ElGroupoDbContext dbContext;
         private MailService mailService;
         private EventService eventService;
         public EventsController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, ElGroupoDbContext ctx, MailService sndr, EventService service)
+                SignInManager<User> signinMgr, ElGroupoDbContext ctx, MailService sndr, EventService service) : base(userMgr)
         {
-            userManager = userMgr;
+
             signInManager = signinMgr;
             dbContext = ctx;
             mailService = sndr;
@@ -50,69 +52,12 @@ namespace ElGroupo.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await this.userManager.GetUserAsync(HttpContext.User);
-                var e = new Event();
-                e.Organizers.Add(new EventOrganizer
-                {
-                    User = user,
-                    Owner = true,
-                    Event = e
-                });
-
-                //we need this for the owners of the event to get messages
-                e.Attendees.Add(new EventAttendee
-                {
-                    User = user,
-                    Event = e
-                });
-                e.Name = model.Name;
-                e.Description = model.Description;
-                e.LocationName = model.LocationName;
-                e.CheckInTimeTolerance = 30;
-                e.CheckInLocationTolerance = 500;
-                e.CoordinateX = model.XCoord;
-                e.CoordinateY = model.YCoord;
-                e.GooglePlaceId = model.GooglePlaceId;
-                e.Address1 = model.Address1;
-                e.Address2 = model.Address2;
-                e.City = model.City;
-                e.SavedAsDraft = true;
-                e.State = model.State;
-                e.Zip = model.ZipCode;
-
-                int startHour = 0;
-                int endHour = 0;
-
-                if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-                else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
-
-                if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-                else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
-
-
-                if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
-                else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
-                else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
-                else startHour = model.StartHour + 12;
-
-
-                e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
-                e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
-
-                dbContext.Events.Add(e);
-
-                try
-                {
-                    await dbContext.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-                    var fff = 4;
-                }
+                var user = await CurrentUser();
+                var eventId = await this.eventService.CreateEvent(model, user);
 
                 //move on to Contacts
 
-                return RedirectToAction("Contacts", new { id = e.Id });
+                return RedirectToAction("Contacts", new { id = eventId });
             }
             return View(model);
 
@@ -122,17 +67,7 @@ namespace ElGroupo.Web.Controllers
         [HttpGet("Admin")]
         public async Task<IActionResult> Admin()
         {
-            //var modelList = new List<UserInformationModel>();
-            //foreach(var u in dbContext.Users)
-            //{
-            //    modelList.Add(new UserInformationModel
-            //    {
-            //        Name = u.Name,
-            //        Email = u.Email,
-            //        UserName = u.UserName,
-            //        Id = u.Id
-            //    });
-            //}
+
             return View(null);
         }
 
@@ -141,32 +76,14 @@ namespace ElGroupo.Web.Controllers
         [Route("Search/{search}")]
         public async Task<IActionResult> Search([FromRoute]string search)
         {
-            var user = await userManager.GetUserAsync(HttpContext.User);
+            var user = await CurrentUser();
             var list = await eventService.SearchEvents(search, user.Id);
-            //IQueryable<Event> events = null;
-            //if (search == "*")
-            //{
-            //    events = dbContext.Events.Include("Organizers.User");
-            //}
-            //else
-            //{
-            //    events = dbContext.Events.Include("Organizers.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
-            //}
-
-            //var list = new List<EventInformationModel>();
-            //await events.ForEachAsync(x => list.Add(new EventInformationModel
-            //{
-            //    Draft = x.SavedAsDraft,
-            //    StartDate = x.StartTime,
-            //    EndDate = x.EndTime,
-            //    Id = x.Id,
-            //    Name = x.Name,
-            //    OrganizerName = x.Organizers.First(y => y.Owner).User.Name
-            //}));
             return PartialView("_EventList", list.OrderBy(x => x.Name));
         }
-        private async Task SendEventOrganizerEmail(User u, Event e)
+        private async Task SendEventOrganizerEmail(int userId, long eventId)
         {
+            var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
+            var u = dbContext.Users.FirstOrDefault(x => x.Id == userId);
             var url = Url.Action("Edit", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
 
             var model = new EventOrganizerMailModel
@@ -200,8 +117,10 @@ namespace ElGroupo.Web.Controllers
             //await emailSender.SendEmailAsync(u.Email, "You've been added as an event organizer!", msg);
         }
 
-        private async Task SendEventAttendeeEmail(User u, Event e)
+        private async Task SendEventAttendeeEmail(int userId, long eventId)
         {
+            var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
+            var u = dbContext.Users.FirstOrDefault(x => x.Id == userId);
             var url = Url.Action("View", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
 
             var model = new EventCreatedMailModel
@@ -242,19 +161,6 @@ namespace ElGroupo.Web.Controllers
             };
 
             await this.mailService.SendEmail(metadata, model);
-
-
-
-            //var msg = "Hi " + name + ",";
-            //msg += "<br/>";
-            //msg += fromName + " has invited you a killer awesome event " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
-            //msg += "<a href='" + url + "'>Click on this link to sign up for ElGroupo and access the event details</a>";
-            //msg += "<br/>";
-            //msg += "Thanks,";
-            //msg += "<br/>";
-            //msg += "The ElGroupo Team";
-
-            //await emailSender.SendEmailAsync(email, "You've been invited to a new event!", msg);
         }
 
 
@@ -264,42 +170,24 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> SaveEdits([FromForm]EventEditModel model)
         {
             return RedirectToAction("Contacts", new { id = model.Id });
-            //return RedirectToAction("Edit", new { eid = model.Id });
         }
+
+        private Task<bool> CheckEventExists(long eid)
+        {
+            return this.dbContext.Events.AnyAsync(x => x.Id == eid);
+        }
+
+
 
         [Authorize]
         [HttpGet]
+        [ServiceFilter(typeof(EventOrganizerFilterAttribute))]
         [Route("{eid}/Edit", Name = "editevent")]
         public async Task<IActionResult> Edit([FromRoute]long eid)
         {
-            var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var e = await dbContext.Events.Include("Organizers.User").FirstOrDefaultAsync(x => x.Id == eid);
-            if (e == null) return View("../Shared/NotFound");
-            if (!e.Organizers.Any(x => x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
-            {
-                //illegal access
-                return View("../Shared/AccessDenied");
-            }
-            var model = new EventEditModel();
-            model.Id = e.Id;
-            model.Address1 = e.Address1;
-            model.Address2 = e.Address2;
-            model.City = e.City;
-            model.Description = e.Description;
-            model.EndAMPM = e.EndTime.Hour >= 12 ? Models.Enums.AMPM.PM : Models.Enums.AMPM.AM;
-            model.EndHour = e.EndTime.Hour;
-            model.EndMinute = e.EndTime.Minute;
-            model.EventDate = e.StartTime.Date;
-            model.GooglePlaceId = e.GooglePlaceId;
-            model.LocationName = e.LocationName;
-            model.Name = e.Name;
-            model.StartAMPM = e.StartTime.Hour >= 12 ? Models.Enums.AMPM.PM : Models.Enums.AMPM.AM;
-            model.StartHour = e.StartTime.Hour;
-            model.StartMinute = e.StartTime.Minute;
-            model.State = e.State;
-            model.XCoord = e.CoordinateX;
-            model.YCoord = e.CoordinateY;
-            model.ZipCode = e.Zip;
+            if (!await CheckEventExists(eid)) return View("../Shared/NotFound");
+            if (await CheckEventAccess(eid) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
+            var model = await this.eventService.GetEventEditModel(eid);
 
 
             return View(model);
@@ -309,114 +197,41 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/View")]
         public async Task<IActionResult> View([FromRoute]long eid)
         {
-            var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var e = await dbContext.Events.Include("Attendees.User").Include("Attendees.MessageBoardItems.MessageBoardItem.User").Include("Organizers.User").FirstOrDefaultAsync(x => x.Id == eid);
-            if (e == null) return View("../Shared/NotFound");
-            var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == user.Id);
-            var isOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
-            if (thisAttendee == null && !isOrganizer && !HttpContext.User.IsInRole("admin"))
-            {
-                //illegal access
-                return View("../Shared/AccessDenied");
-            }
-            var model = new EventViewModel();
-            model.EventId = e.Id;
-            model.Address1 = e.Address1;
-            model.Address2 = e.Address2;
-            model.City = e.City;
-            model.Description = e.Description;
-            model.StartDateText = e.StartTime.ToString("d") + " " + e.StartTime.ToString("t");
-            model.EndDateText = e.EndTime.ToString("d") + " " + e.EndTime.ToString("t");
-            model.GooglePlaceId = e.GooglePlaceId;
-            model.LocationName = e.LocationName;
-            model.Name = e.Name;
-            model.State = e.State;
-            model.ZipCode = e.Zip;
-            model.IsOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
-            model.Attendees = new List<EventAttendeeModel>();
-            foreach (var att in e.Attendees)
-            {
-                model.Attendees.Add(new EventAttendeeModel
-                {
-                    Id = att.Id,
-                    UserId = att.UserId,
-                    RSVPStatus = att.ResponseStatus,
-                    Name = att.User.Name
-                });
-            }
-
-            model.Messages = new List<EventMessageModel>();
-
-            foreach (var mba in thisAttendee.MessageBoardItems)
-            {
-                model.Messages.Add(new EventMessageModel
-                {
-                    PostedBy = mba.MessageBoardItem.User.Name,
-                    PostedById = mba.MessageBoardItem.User.Id,
-                    PostedDate = mba.MessageBoardItem.PostedDate,
-                    Subject = mba.MessageBoardItem.Subject,
-                    MessageText = mba.MessageBoardItem.MessageText,
-                    IsNew = !mba.Viewed,
-                    Id = mba.Id
-                });
-            }
-            model.Messages = model.Messages.OrderByDescending(x => x.PostedBy).ToList();
-
-
-            model.Notifications = new List<EventNotificationModel>();
-            foreach (var ean in this.dbContext.EventAttendeeNotifications.Include("Notification.PostedBy.User").Where(x => x.AttendeeId == thisAttendee.Id))
-            {
-                model.Notifications.Add(new EventNotificationModel
-                {
-                    OrganizerName = ean.Notification.PostedBy.User.Name,
-                    OrganizerId = ean.Notification.PostedBy.User.Id,
-                    CanEdit = isOrganizer || HttpContext.User.IsInRole("admin"),
-                    PostedDate = ean.Notification.PostedDate,
-                    Subject = ean.Notification.Subject,
-                    NotificationText = ean.Notification.MessageText,
-                    IsNew = !ean.Viewed,
-                    Id = ean.Id
-                });
-            }
-
+            var accessLevel = await CheckEventAccess(eid);
+            var user = await CurrentUser();
+            var model = await this.eventService.GetEventViewModel(eid, user.Id, accessLevel);
             return View(model);
         }
 
 
-        [Authorize]
-        [HttpPost]
-        [Route("Organizers/{eid}/Add")]
-        public async Task<IActionResult> AddEventOrganizer([FromRoute]long eid, [FromBody]AddEventOrganizerModel model)
-        {
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == eid);
-            var u = dbContext.Users.FirstOrDefault(x => x.Id == model.UserId);
-            var eo = new EventOrganizer { User = u, Event = e, Owner = model.Owner };
-            dbContext.EventOrganizers.Add(eo);
-            await dbContext.SaveChangesAsync();
-            await SendEventOrganizerEmail(u, e);
-            return RedirectToAction("OrganizersList", new { id = eid });
-        }
+        //[Authorize]
+        //[HttpPost]
+        //[Route("Organizers/{eid}/Add")]
+        //public async Task<IActionResult> AddEventOrganizer([FromRoute]long eid, [FromBody]AddEventOrganizerModel model)
+        //{
+        //    await this.eventService.AddEventAttendee(eid, model.UserId, model.Owner);
+        //    await SendEventOrganizerEmail(model.UserId, eid);
+        //    return RedirectToAction("OrganizersList", new { id = eid });
+        //}
 
         [Authorize]
         [HttpPost]
         [Route("Attendees/{eid}/Add/{uid}")]
         public async Task<IActionResult> AddEventAttendee([FromRoute]long eid, [FromRoute]int uid)
         {
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == eid);
-            var u = dbContext.Users.FirstOrDefault(x => x.Id == uid);
-            var ea = new EventAttendee
-            {
-                Event = e,
-                User = u,
-                DateCreated = DateTime.Now,
-                UserCreated = u.UserName,
-                AllowEventUpdates = true,
-                Viewed = false
-            };
-            dbContext.EventAttendees.Add(ea);
-            await dbContext.SaveChangesAsync();
-            await SendEventAttendeeEmail(u, e);
+            await this.eventService.AddEventAttendee(eid, uid);
+            await SendEventAttendeeEmail(uid, eid);
             return RedirectToAction("AttendeesList", new { id = eid });
+        }
+
+        private MailMetadata CreateMailMetadata(string toEmailAddress, string subject)
+        {
+            var metadata = new MailMetadata
+            {
+                To = new List<string> { toEmailAddress },
+                Subject = subject
+            };
+            return metadata;
         }
 
         [Authorize]
@@ -434,35 +249,55 @@ namespace ElGroupo.Web.Controllers
                 return RedirectToAction("AddEventAttendee", new { eid = e.Id, uid = userCheck.Id });
             }
 
-            var uea = new UnregisteredEventAttendee
+            var token = await this.eventService.AddUnregisteredAttendee(u, e, model);
+            await this.mailService.SendEmail(CreateMailMetadata(model.Email, "Welcome to ElGroupo!  You'be been invited to a new event!"), new EventUnregisteredAttendeeMailModel
             {
-                Event = e,
-                Name = model.Name,
-                Email = model.Email,
-                DateCreated = DateTime.Now,
-                UserCreated = u.UserName,
-                RegisterToken = Guid.NewGuid(),
-
-            };
-            dbContext.UnregisteredEventAttendees.Add(uea);
-            await dbContext.SaveChangesAsync();
-            await SendUnregisteredEventAttendeeEmail(model.Name, model.Email, u.Name, uea.RegisterToken, e);
+                Recipient = model.Name,
+                EventName = e.Name,
+                Location = e.LocationName,
+                StartTime = e.StartTime,
+                EndTime = e.EndTime,
+                CallbackUrl = Url.Action("Create", "Account", new { id = token }, HttpContext.Request.Scheme)
+            });
             return RedirectToAction("AttendeesList", new { id = eid });
         }
 
 
-
         [Authorize]
-        [HttpPost]
-        [Route("Organizers/{eid}/Delete/{oid}")]
-        public async Task<IActionResult> DeleteEventOrganizer([FromRoute]long eid, [FromRoute]long oid)
+        [ServiceFilter(typeof(EventOrganizerFilterAttribute))]
+        [HttpDelete("{eid}")]
+        public async Task<IActionResult> DeleteEvent([FromRoute]long eid)
         {
-            var eo = dbContext.EventOrganizers.FirstOrDefault(x => x.Id == oid);
-            if (eo.EventId != eid) return BadRequest();
-            dbContext.EventOrganizers.Remove(eo);
-            await dbContext.SaveChangesAsync();
-            return RedirectToAction("OrganizersList", new { id = eid });
+            if (await this.eventService.DeleteEvent(eid))
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+
         }
+
+
+
+        //[Authorize]
+        //[HttpPost]
+        //[Route("Organizers/{eid}/Delete/{oid}")]
+        //public async Task<IActionResult> DeleteEventOrganizer([FromRoute]long eid, [FromRoute]long oid)
+        //{
+        //    if (await CheckEventAccess(eid) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
+        //    if (await this.eventService.DeleteEventOrganizer(oid, eid))
+        //    {
+        //        return RedirectToAction("OrganizersList", new { id = eid });
+        //    }
+        //    else
+        //    {
+        //        return BadRequest();
+        //    }
+
+        //}
 
 
 
@@ -471,37 +306,46 @@ namespace ElGroupo.Web.Controllers
         [Route("Organizers/{eid}/Delete/{oid}")]
         public async Task<IActionResult> DeleteEventAttendee([FromRoute]long eid, [FromRoute]long oid)
         {
-            var eo = dbContext.EventAttendees.FirstOrDefault(x => x.Id == oid);
-            if (eo.EventId != eid) return BadRequest();
-            dbContext.EventAttendees.Remove(eo);
-            await dbContext.SaveChangesAsync();
-            return RedirectToAction("AttendeesList", new { id = eid });
+            if (await CheckEventAccess(eid) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
+            if (await this.eventService.DeleteEventAttendee(oid, eid))
+            {
+                return RedirectToAction("AttendeesList", new { id = eid });
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+
         }
 
-        [Authorize]
-        [HttpGet, HttpPost]
-        [Route("Contacts/{id}/Organizers")]
-        public async Task<IActionResult> OrganizersList([FromRoute]long id)
-        {
-            var orgs = await dbContext.Events.Include("Organizers.User").FirstOrDefaultAsync(x => x.Id == id);
-            if (orgs == null) return BadRequest("bears");
-            var model = new List<EventOrganizerModel>();
-            orgs.Organizers.ToList().ForEach(x => model.Add(new EventOrganizerModel { Id = x.Id, Name = x.User.Name, Owner = x.Owner, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id }));
-            return View("_Organizers", model);
-        }
+        //[Authorize]
+        //[HttpGet, HttpPost]
+        //[Route("Contacts/{id}/Organizers")]
+        //public async Task<IActionResult> OrganizersList([FromRoute]long id)
+        //{
+        //    var model = this.eventService.GetEventOrganizers(id);
+        //    return View("_Organizers", model);
+        //}
 
         [Authorize]
         [HttpGet, HttpPost]
         [Route("Contacts/{id}/Attendees")]
         public async Task<IActionResult> AttendeesList([FromRoute]long id)
         {
-            var atts = await dbContext.Events.Include("Attendees.User").Include("UnregisteredAttendees").FirstOrDefaultAsync(x => x.Id == id);
-            if (atts == null) return BadRequest("bears");
-            var model = new List<EventAttendeeModel>();
-            atts.Attendees.ToList().ForEach(x => model.Add(new EventAttendeeModel { Id = x.Id, Name = x.User.Name, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id, RSVPStatus = x.ResponseStatus }));
-            atts.UnregisteredAttendees.ToList().ForEach(x => model.Add(new EventAttendeeModel { Name = x.Name, Email = x.Email, RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration }));
+            var model = await this.eventService.GetEventAttendees(id);
             return View("_Attendees", model.OrderBy(x => x.Name));
         }
+
+        private async Task<EditAccessTypes> CheckEventAccess(long eventId)
+        {
+            if (HttpContext.User.IsInRole("admin")) return EditAccessTypes.Edit;
+            var user = await this.userManager.GetUserAsync(HttpContext.User);
+            if (await this.dbContext.EventAttendees.AnyAsync(x => x.UserId == user.Id && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
+            if (await this.dbContext.EventAttendees.AnyAsync(x => x.UserId == user.Id && x.EventId == eventId)) return EditAccessTypes.View;
+            return EditAccessTypes.None;
+        }
+
 
 
         [Authorize]
@@ -509,48 +353,9 @@ namespace ElGroupo.Web.Controllers
         [Route("Contacts/{id}")]
         public async Task<IActionResult> Contacts([FromRoute]long id)
         {
-            var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var e = await dbContext.Events.Include("Organizers.User").Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == id);
-            if (e == null) return View("../Shared/NotFound");
-            if (!e.Organizers.Any(x => x.User.Id == user.Id) && !HttpContext.User.IsInRole("admin"))
-            {
-                //illegal access
-                return View("../Shared/AccessDenied");
-            }
-
-
-            var model = new EventContactsModel();
-            model.Event.Name = e.Name;
-            model.Event.EndDate = e.EndTime;
-            model.Event.StartDate = e.StartTime;
-            model.Event.Id = e.Id;
-
-
-            foreach (var att in e.Organizers.Where(x => x.User.Id != user.Id))
-            {
-                model.Organizers.Add(new EventOrganizerModel
-                {
-                    Name = att.User.Name,
-                    Id = att.Id,
-                    Owner = att.Owner,
-                    UserId = att.User.Id,
-                    PhoneNumber = att.User.PhoneNumber
-                });
-            }
-
-            foreach (var att in e.Attendees)
-            {
-                model.Attendees.Add(new EventAttendeeModel
-                {
-                    Name = att.User.Name,
-                    Id = att.Id,
-                    RSVPStatus = att.ResponseStatus,
-                    UserId = att.User.Id,
-                    PhoneNumber = att.User.PhoneNumber
-                });
-            }
-
-            return View(model);
+            if (await CheckEventAccess(id) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
+            var user = await CurrentUser();
+            return View(await this.eventService.GetEventContacts(id, user.Id));
 
         }
 

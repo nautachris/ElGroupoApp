@@ -19,10 +19,8 @@ namespace ElGroupo.Domain.Data
 
     public class ElGroupoDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
-        public DbSet<Lookups.ContactType> ContactTypes { get; set; }
-        public DbSet<ContactGroup> ContactGroups { get; set; }
+        public DbSet<Lookups.ContactMethod> ContactTypes { get; set; }
 
-        public DbSet<ContactGroupUser> ContactGroupUsers { get; set; }
         public DbSet<UnregisteredEventAttendee> UnregisteredEventAttendees { get; set; }
 
 
@@ -32,9 +30,11 @@ namespace ElGroupo.Domain.Data
         public DbSet<MessageBoardItem> MessageBoardItems { get; set; }
         public DbSet<EventAttendeeNotification> EventAttendeeNotifications { get; set; }
         public DbSet<EventNotification> EventNotifications { get; set; }
-        public DbSet<EventOrganizer> EventOrganizers { get; set; }
+
         public DbSet<MessageBoardItemAttendee> MessageBoardItemAttendees { get; set; }
-        public DbSet<UserContact> UserContacts { get; set; }
+        public DbSet<UserContactMethod> UserContacts { get; set; }
+
+        public DbSet<UnregisteredUserConnection> UnregisteredUserConnections { get; set; }
 
         public DbSet<UserPhoto> UserPhotos { get; set; }
 
@@ -47,19 +47,40 @@ namespace ElGroupo.Domain.Data
         {
             base.OnModelCreating(builder);
             builder.AddConfiguration<SequenceConfiguration>();
+
+            builder.Entity<UserConnection>().ToTable("UserConnection");
+            builder.Entity<UserConnection>().HasKey(x => x.Id);
+            builder.Entity<UserConnection>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<UserConnection>().HasOne(x => x.User).WithMany(x => x.ConnectedUsers).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+            builder.Entity<UserConnection>().HasOne(x => x.ConnectedUser);
+
+
             builder.AddConfiguration<UserConfiguration>();
-            builder.AddConfiguration<ContactTypeConfiguration>();
-            builder.AddConfiguration<ContactGroupUserConfiguration>();
+            builder.AddConfiguration<ContactMethodConfiguration>();
             builder.AddConfiguration<UnregisteredEventAttendeeConfiguration>();
 
+
+            builder.Entity<UserContactMethod>().ToTable("UserContactMethods");
             builder.Entity<UserPhoto>().ToTable("UserPhoto");
+            builder.Entity<Event>().HasMany(x => x.Attendees).WithOne(x => x.Event);
+            builder.Entity<Event>().HasMany(x => x.UnregisteredAttendees).WithOne(x => x.Event);
+            builder.Entity<Event>().HasMany(x => x.MessageBoardItems).WithOne(x => x.Event);
+            builder.Entity<Event>().HasMany(x => x.Notifications).WithOne(x => x.Event);
+
+            builder.Entity<EventNotification>().HasOne(x => x.PostedBy).WithMany(x => x.PostedNotifications).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+
+            builder.Entity<MessageBoardItem>().HasMany(x => x.Attendees).WithOne(x => x.MessageBoardItem).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+            builder.Entity<EventAttendee>().HasMany(x => x.MessageBoardItems).WithOne(x => x.Attendee).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+            builder.Entity<EventAttendee>().HasMany(x => x.Notifications).WithOne(x => x.Attendee).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+            
 
 
-            builder.Entity<EventNotification>().HasOne(x => x.Event).WithMany(y => y.Notifications).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
-            builder.Entity<EventOrganizer>().HasOne(x => x.Event).WithMany(y => y.Organizers).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
-            builder.Entity<EventOrganizer>().HasOne(x => x.User).WithMany(y => y.OrganizedEvents).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
-            builder.Entity<MessageBoardItemAttendee>().HasOne(x => x.MessageBoardItem).WithMany(x => x.Attendees).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
-            //builder.Entity<ContactGroup>().HasMany(x => x.Users).WithOne(x => x.Group).HasForeignKey<ContactGroupUser>(y => y.ContactGroupId);
+
+
+            //builder.Entity<EventOrganizer>().HasOne(x => x.Event).WithMany(y => y.Organizers).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Cascade);
+            //builder.Entity<EventOrganizer>().HasOne(x => x.User).WithMany(y => y.OrganizedEvents).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Cascade);
+            builder.Entity<MessageBoardItemAttendee>().HasOne(x => x.MessageBoardItem).WithMany(x => x.Attendees);
+
         }
 
 
@@ -104,7 +125,7 @@ namespace ElGroupo.Domain.Data
             //    ctx.Update(u);
             //}
 
-            foreach(var u in ctx.Users.Where(x=>x.Name == null))
+            foreach (var u in ctx.Users.Where(x => x.Name == null))
             {
                 u.Name = u.UserName;
                 u.ZipCode = "87111";
@@ -144,30 +165,30 @@ namespace ElGroupo.Domain.Data
         public static async Task CreateContactTypes(IServiceProvider provider)
         {
             var ctx = provider.GetRequiredService<ElGroupoDbContext>();
-            if (await ctx.Set<Lookups.ContactType>().CountAsync() > 0) return;
+            if (await ctx.Set<Lookups.ContactMethod>().CountAsync() > 0) return;
 
 
-            var ct = new Lookups.ContactType();
+            var ct = new Lookups.ContactMethod();
             ct.Value = "Home Phone";
             ctx.ContactTypes.Add(ct);
 
-            ct = new Lookups.ContactType();
+            ct = new Lookups.ContactMethod();
             ct.Value = "Mobile Phone";
             ctx.ContactTypes.Add(ct);
 
-            ct = new Lookups.ContactType();
+            ct = new Lookups.ContactMethod();
             ct.Value = "Email";
             ctx.ContactTypes.Add(ct);
 
-            ct = new Lookups.ContactType();
+            ct = new Lookups.ContactMethod();
             ct.Value = "Facebook";
             ctx.ContactTypes.Add(ct);
 
-            ct = new Lookups.ContactType();
+            ct = new Lookups.ContactMethod();
             ct.Value = "Twitter";
             ctx.ContactTypes.Add(ct);
 
-            ct = new Lookups.ContactType();
+            ct = new Lookups.ContactMethod();
             ct.Value = "Instagram";
             ctx.ContactTypes.Add(ct);
 
@@ -180,7 +201,7 @@ namespace ElGroupo.Domain.Data
         public ElGroupoDbContext Create(DbContextFactoryOptions options)
         {
             var builder = new DbContextOptionsBuilder<ElGroupoDbContext>();
-            builder.UseSqlServer("Server=(local);Database=ElGroupo;Trusted_Connection=True;MultipleActiveResultSets=true");
+            builder.UseSqlServer("Server=(local);Database=Tribes;Trusted_Connection=True;MultipleActiveResultSets=true");
             return new ElGroupoDbContext(builder.Options);
         }
     }

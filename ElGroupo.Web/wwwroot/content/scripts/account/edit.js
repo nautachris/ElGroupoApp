@@ -1,4 +1,13 @@
 ﻿$(document).ready(function () {
+
+    $(".links").on("click", function () {
+        $(".links").removeClass('bold');
+        $(this).addClass('bold');
+        $(".row.tab").hide();
+        $(".row." + $(this).attr('data-link-type')).show();
+
+    });
+
     var originalImageUrl = $("#divImg").css('background-image');
     $("#btnAddNewContact").on("click", function () {
         if ($("#selContactType").val() === '') return false;
@@ -61,20 +70,6 @@
     });
 
 
-    //$("#inputNewPhoto").on("change", function () {
-    //    if (this.files && this.files[0]) {
-    //        var reader = new FileReader();
-    //        reader.onload = function (e) {
-    //            $("#imgNewPhoto").attr('src', e.target.result);
-    //            $("#divNewPhoto").show();
-    //        }
-    //        reader.readAsDataURL(this.files[0]);
-    //    }
-    //    else {
-    //        $("#divNewPhoto").hide();
-    //    }
-
-    //});
 
     $("#inputNewPhoto").on("change", function () {
         if (this.files && this.files[0]) {
@@ -92,5 +87,7 @@
         }
 
     });
+
+
 
 });

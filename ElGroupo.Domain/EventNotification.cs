@@ -7,15 +7,13 @@ namespace ElGroupo.Domain
 {
     public class EventNotification : ClassBase
     {
-        public EventNotification(){
-            this.Attendees = new HashSet<EventAttendeeNotification>();
-            }
+        public EventNotification() { }
         public long EventId { get; set; }
-        public long EventOrganizerId { get; set; }
+
         //public long EventId { get; set; }
 
         [Required]
-        public EventOrganizer PostedBy { get; set; }
+        public EventAttendee PostedBy { get; set; }
 
         [Required]
         public Event Event { get; set; }
@@ -24,6 +22,6 @@ namespace ElGroupo.Domain
         public string Subject { get; set; }
         public Enums.NotificationImportanceTypes Importance { get; set; }
 
-        public virtual ICollection<EventAttendeeNotification> Attendees { get; set; }
+        //public virtual ICollection<EventAttendeeNotification> Attendees { get; set; }
     }
 }

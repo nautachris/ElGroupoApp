@@ -9,8 +9,12 @@ namespace ElGroupo.Web.Models.Account
 {
     public class EditAccountModel
     {
+        public string clientId { get; set; }
+        public string clientSecret { get; set; }
         public bool IsAdminEditing { get; set; }
         public List<EditContactModel> Contacts { get; set; }
+
+        public List<UserConnectionModel> Connections { get; set; }
         public int Id { get; set; }
 
         public string Name { get; set; }

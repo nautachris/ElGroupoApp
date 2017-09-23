@@ -37,8 +37,8 @@ namespace ElGroupo.Web.Controllers
             //do we want a third "tab" for events I'm organizing?
             var user = await this.CurrentUser;
 
-            var organizedEvents = dbContext.EventOrganizers.Include("User").Include("Event").Where(x => x.User.Id == user.Id).Select(x => x.Event);
-            var invitedEvents = dbContext.EventAttendees.Include("User").Include("Event").Where(x => x.User.Id == user.Id);
+            var organizedEvents = dbContext.EventAttendees.Include("User").Include("Event").Where(x => x.User.Id == user.Id && x.IsOrganizer).Select(x => x.Event);
+            var invitedEvents = dbContext.EventAttendees.Include("User").Include("Event").Where(x => x.User.Id == user.Id && !x.IsOrganizer);
             foreach (var ev in organizedEvents)
             {
                 allEvents.Add(new EventInformationModel

@@ -10,23 +10,26 @@ namespace ElGroupo.Domain
 
         public User()
         {
-            this.Contacts = new HashSet<UserContact>();
-
+            this.ContactMethods = new HashSet<UserContactMethod>();
+            this.ConnectedUsers = new HashSet<UserConnection>();
+            this.UnregisteredConnections = new HashSet<UnregisteredUserConnection>();
         }
 
-        public void AddContact(Lookups.ContactType type, string value)
+        public void AddContact(Lookups.ContactMethod type, string value)
         {
-            var uc = new UserContact();
+            var uc = new UserContactMethod();
             uc.User = this;
-            uc.ContactType = type;
+            uc.ContactMethod = type;
             uc.Value = value;
-            this.Contacts.Add(uc);
+            this.ContactMethods.Add(uc);
         }
 
+        public virtual ICollection<UnregisteredUserConnection> UnregisteredConnections { get; set; }
+        public virtual ICollection<UserContactMethod> ContactMethods { get; set; }
 
-        public virtual ICollection<UserContact> Contacts { get; set; }
-        public virtual ICollection<ContactGroup> ContactGroups { get; set; }
-        public virtual ICollection<EventOrganizer> OrganizedEvents { get; set; }
+        public virtual ICollection<UserConnection> ConnectedUsers { get; set; }
+
+        //public virtual ICollection<EventOrganizer> OrganizedEvents { get; set; }
         public virtual ICollection<EventAttendee> AttendedEvents { get; set; }
         public virtual ICollection<EventGroup> EventGroups { get; set; }
 

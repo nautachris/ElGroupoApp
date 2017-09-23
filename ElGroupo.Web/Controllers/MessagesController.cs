@@ -44,7 +44,7 @@ namespace ElGroupo.Web.Controllers
                 var e = await this.dbContext.Events.Include("Attendees.User").FirstAsync(x => x.Id == model.EventId);
                 var msg = new MessageBoardItem
                 {
-                    User = user,
+                    PostedBy = user,
                     Event = e,
                     PostedDate = DateTime.Now,
                     MessageText = model.Text,
@@ -92,16 +92,16 @@ namespace ElGroupo.Web.Controllers
             {
                 var user = await this.userManager.GetUserAsync(HttpContext.User);
                 var attendee = await this.dbContext.EventAttendees.FirstOrDefaultAsync(x => x.EventId == eventId && x.UserId == user.Id);
-                var canEdit = HttpContext.User.IsInRole("admin") || this.dbContext.EventOrganizers.Any(x => x.EventId == eventId && x.UserId == user.Id);
+                var canEdit = HttpContext.User.IsInRole("admin") || this.dbContext.EventAttendees.Any(x => x.EventId == eventId && x.UserId == user.Id && x.IsOrganizer);
                 if (attendee == null) return BadRequest();
                 var model = new List<EventMessageModel>();
                 foreach (var mba in this.dbContext.MessageBoardItemAttendees.Include("MessageBoardItem.User").Where(x => x.AttendeeId == attendee.Id))
                 {
                     model.Add(new EventMessageModel
                     {
-                        PostedBy = mba.MessageBoardItem.User.Name,
-                        PostedById = mba.MessageBoardItem.User.Id,
-                        CanEdit = mba.MessageBoardItem.User.Id == user.Id || canEdit,
+                        PostedBy = mba.MessageBoardItem.PostedBy.Name,
+                        PostedById = mba.MessageBoardItem.PostedBy.Id,
+                        CanEdit = mba.MessageBoardItem.PostedBy.Id == user.Id || canEdit,
                         PostedDate = mba.MessageBoardItem.PostedDate,
                         Subject = mba.MessageBoardItem.Subject,
                         MessageText = mba.MessageBoardItem.MessageText,
