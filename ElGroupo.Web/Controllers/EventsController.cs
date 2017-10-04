@@ -204,6 +204,120 @@ namespace ElGroupo.Web.Controllers
         }
 
 
+
+
+
+        /// <summary>
+        /// when user saves detail edits - we refresh with an updated view
+        /// </summary>
+        /// <param name="eid"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        [HttpPost]
+        [Route("{eid}/ViewLocation")]
+        public async Task<IActionResult> ViewLocationDetails([FromRoute]long eid)
+        {
+            var accessLevel = await CheckEventAccess(eid);
+            var model = await this.eventService.ViewEventLocationDetails(eid);
+            return View("_ViewLocationDetails", model);
+        }
+
+        /// <summary>
+        /// when user clicks "edit details" - load the edit form
+        /// </summary>
+        /// <param name="eid"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        [Route("{eid}/EditLocation")]
+        public async Task<IActionResult> EditLocationDetails([FromRoute]long eid)
+        {
+            var accessLevel = await CheckEventAccess(eid);
+            if (accessLevel != EditAccessTypes.Edit) return BadRequest();
+            var model = await this.eventService.EditEventLocation(eid);
+            return View("_EditEventLocation", model);
+        }
+
+        /// <summary>
+        /// when user clicks "edit location details" - load the edit form
+        /// </summary>
+        /// <param name="eid"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        [Route("EditLocation")]
+        public async Task<IActionResult> EditLocationDetails([FromBody]EditEventLocationModel model)
+        {
+            var accessLevel = await CheckEventAccess(model.EventId);
+            if (accessLevel != EditAccessTypes.Edit) return BadRequest();
+            await this.eventService.UpdateEventLocation(model);
+            return RedirectToAction("ViewLocationDetails", new { eid = model.EventId });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// when user saves detail edits - we refresh with an updated view
+        /// </summary>
+        /// <param name="eid"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        [HttpPost]
+        [Route("{eid}/ViewDetails")]
+        public async Task<IActionResult> ViewDetails([FromRoute]long eid)
+        {
+            var accessLevel = await CheckEventAccess(eid);
+            var model = await this.eventService.ViewEventDetails(eid);
+            return View("_ViewEventDetails", model);
+        }
+
+        /// <summary>
+        /// when user clicks "edit details" - load the edit form
+        /// </summary>
+        /// <param name="eid"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        [Route("{eid}/EditDetails")]
+        public async Task<IActionResult> EditDetails([FromRoute]long eid)
+        {
+            var accessLevel = await CheckEventAccess(eid);
+            if (accessLevel != EditAccessTypes.Edit) return BadRequest();
+            var model = await this.eventService.EditEventDetails(eid);
+            return View("_EditEventDetails", model);
+        }
+
+        /// <summary>
+        /// when user clicks "edit details" - load the edit form
+        /// </summary>
+        /// <param name="eid"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        [Route("EditDetails")]
+        public async Task<IActionResult> EditDetails([FromBody]EditEventDetailsModel model)
+        {
+            var accessLevel = await CheckEventAccess(model.EventId);
+            if (accessLevel != EditAccessTypes.Edit) return BadRequest();
+            await this.eventService.UpdateEventDetails(model);
+            return RedirectToAction("ViewDetails", new { eid = model.EventId });
+        }
+
+
         //[Authorize]
         //[HttpPost]
         //[Route("Organizers/{eid}/Add")]

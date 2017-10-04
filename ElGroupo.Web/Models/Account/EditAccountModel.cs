@@ -11,6 +11,7 @@ namespace ElGroupo.Web.Models.Account
     {
         public string clientId { get; set; }
         public string clientSecret { get; set; }
+        public string apiKey { get; set; }
         public bool IsAdminEditing { get; set; }
         public List<EditContactModel> Contacts { get; set; }
 

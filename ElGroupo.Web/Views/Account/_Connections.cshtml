@@ -1,5 +1,141 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@using ElGroupo.Web.Models.Account
+@model IEnumerable<UserConnectionModel>
+
+
+@functions{
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+    public string GetImageUrl(int id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+
+    public string GetUserViewLink(int id)
+    {
+        var url = Url.Action("View", "Account", new { id = id });
+        return url;
+
+    }
+
 }
+
+<div id="divAddConnections">
+
+
+    <div class="row">
+        <div class="col span-1-of-3">
+            <label>Add Connections!</label>
+        </div>
+        <div class="col span-1-of-3">
+            <input id="rbExistingContacts" class="contact-search-rb" name="selection" checked type="radio" /> Search for ElGroupo Members
+        </div>
+        <div class="col span-1-of-3">
+            <input id="rbNewContact" class="contact-search-rb" name="selection" type="radio" /> Enter Name and Email
+        </div>
+
+    </div>
+    <div class="row select-existing-contacts">
+        <div class="col span-2-of-10"><label>Enter Name or Email Address:</label></div>
+        <div class="col span-5-of-10">
+            <input id="txtSelectConnection" class="width-100" />
+        </div>
+        <div class="col span-3-of-10">
+            <a class="btn btn-primary" disabled id="btnAddConnection">Add Connection</a>
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-4">
+            <label for="new-user-name">Name:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input class="width-100" name="new-user-name" id="txtNewUserName">
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-4">
+            <label for="new-user-email">Email:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input class="width-100" name="new-user-email" id="txtNewUserEmail" type="email">
+        </div>
+    </div>
+    <div class="row manual-search">
+        <div class="col span-1-of-4">
+            <a id="btnAddNewUser" class="btn btn-primary">Invite New User!</a>
+        </div>
+
+    </div>
+</div>
+
+<div id="divConnectionList">
+    @Html.Partial("_ConnectionList", Model)
+</div>
+
+<div class="row" style="text-align:center;">
+    <input type="file" id="fileInput" style="display:none;" />
+    <a id="btnImportOutlook" class="btn btn-primary">Import From Outlook</a>
+    <a id="btnImportGoogle" class="btn btn-primary">Import From Google (via csv file)</a>
+    <a id="btnImportGoogleApi" class="btn btn-primary">Import From Google (load via api)</a>
+</div>
+
+
+<div style="display:none;" id="divImportResults">
+    <div style="text-align:center">
+        <a class="btn btn-primary" id="btnImportSelectedContacts">Import Selected</a>
+        <a class="btn btn-primary" id="btnCancelImport">Cancel</a>
+    </div>
+    <div id="divImportTable">
+        <table class="width-100" id="tblImportList">
+            <thead>
+                <tr>
+                    <th><a href="#" data-checked="true">Import?</a></th>
+                    <th data-type="lastname">Last Name</th>
+                    <th data-type="firstname">First Name</th>
+                    <th data-type="email">Email</th>
+                    <th data-type="phone1">Phone 1</th>
+                    <th data-type="phone2">Phone 2</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @*<tr>
+                        <td><input type="checkbox" /></td>
+                        <td>@contact.LastName</td>
+                        <td>@contact.FirstName</td>
+                        <td>@contact.Email</td>
+                        <td>@contact.Phone1</td>
+                        <td>@contact.Phone2</td>
+                    </tr>*@
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+

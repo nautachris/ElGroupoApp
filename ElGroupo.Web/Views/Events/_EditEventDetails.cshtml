@@ -1,0 +1,91 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Web.Models.Enums
+@model ElGroupo.Web.Models.Events.EditEventDetailsModel
+
+@{
+
+    Layout = null;
+}
+<form id="frmEditEventDetails">
+    <input asp-for="EventId" type="hidden" />
+    <div class="row">
+        <div class="col span-1-of-3">
+            <label asp-for="Name">Name:</label>
+        </div>
+        <div class="col span-2-of-3">
+            <input asp-for="Name" placeholder="Enter Event Name...">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-3">
+            <label asp-for="Description">Description:</label>
+        </div>
+        <div class="col span-2-of-3">
+            <input asp-for="Description" placeholder="Enter Event Description...">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-3">
+            <label asp-for="EventDate">Date:</label>
+        </div>
+        <div class="col span-2-of-3">
+            <input asp-for="EventDate" placeholder="Enter Event Date...">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-3-of-6">
+            <label asp-for="StartHour">Start:</label>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="StartHour">
+                <option value="12" selected>12</option>
+                @for (int hour = 1; hour <= 11; hour++)
+            {
+                    <option value="@hour">@hour.ToString()</option>
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="StartMinute">
+                <option value="0" selected>00</option>
+                <option value="15">:15</option>
+                <option value="30">:30</option>
+                <option value="45">:45</option>
+            </select>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="StartAMPM" asp-items="Html.GetEnumSelectList<AMPM>()">
+                <option value="" selected></option>
+            </select>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col span-3-of-6">
+            <label asp-for="EndHour">End:</label>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="EndHour">
+                <option value="12" selected>12</option>
+                @for (int hour = 1; hour <= 11; hour++)
+            {
+                    <option value="@hour">@hour.ToString()</option>
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="EndMinute">
+                <option value="0" selected>00</option>
+                <option value="15">:15</option>
+                <option value="30">:30</option>
+                <option value="45">:45</option>
+            </select>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="EndAMPM" asp-items="Html.GetEnumSelectList<AMPM>()">
+                <option value="" selected></option>
+            </select>
+        </div>
+
+    </div>
+</form>

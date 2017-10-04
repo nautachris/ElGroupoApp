@@ -109,7 +109,7 @@ namespace ElGroupo.Web.Controllers
                         Id = mba.Id
                     });
                 }
-                return View("../Events/_MessageList", model.OrderByDescending(x => x.PostedDate));
+                return View("../Events/_ViewEventMessages", model.OrderByDescending(x => x.PostedDate));
             }
             catch (Exception ex)
             {

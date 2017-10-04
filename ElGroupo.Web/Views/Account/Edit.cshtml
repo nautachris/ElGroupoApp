@@ -108,8 +108,9 @@
             @Html.Partial("_ContactMethods", Model.Contacts)
         </div>
     </div>
-    <div style="display:none;" class="row tab connections">
-        <h2>My Connections</h2>
+    <div style="display:none;" id="divConnections" class="row tab connections">
+        @Html.Partial("_Connections", Model.Connections)
+
 
     </div>
 </section>
@@ -121,4 +122,5 @@
 
 
     <script type="text/javascript" src="~/content/scripts/account/edit.js"></script>
+<script async defer src="https://apis.google.com/js/api.js" onload="GoogleContacts.HandleClientLoad('@Model.apiKey','@Model.clientId');" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
 }

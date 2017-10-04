@@ -126,7 +126,7 @@ namespace ElGroupo.Web.Controllers
                         Id = ean.Id
                     });
                 }
-                return View("../Events/_NotificationList", model.OrderByDescending(x => x.PostedDate));
+                return View("../Events/_ViewEventNotifications", model.OrderByDescending(x => x.PostedDate));
             }
             catch (Exception ex)
             {

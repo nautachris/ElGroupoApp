@@ -1,0 +1,50 @@
+﻿@using ElGroupo.Web.Models.Events
+@model ElGroupo.Web.Models.Events.ViewEventDetailsModel
+@{
+
+    Layout = null;
+}
+
+
+<div class="row">
+    <div class="col span-1-of-3">
+        <label asp-for="Name">Name:</label>
+    </div>
+    <div class="col span-2-of-3">
+        <span>@Model.Name</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col span-1-of-3">
+        <label asp-for="Description">Description:</label>
+    </div>
+    <div class="col span-2-of-3">
+        <span>@Model.Description</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col span-1-of-3">
+        <label asp-for="Location">Location:</label>
+    </div>
+    <div class="col span-2-of-3">
+        <span>@Model.Location</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col span-3-of-6">
+        <label>Start:</label>
+    </div>
+    <div class="col span-3-of-6">
+        <span>@Model.StartTime</span>
+    </div>
+
+</div>
+<div class="row">
+    <div class="col span-3-of-6">
+        <label>End:</label>
+    </div>
+    <div class="col span-3-of-6">
+        <span>@Model.EndTime</span>
+    </div>
+
+</div>

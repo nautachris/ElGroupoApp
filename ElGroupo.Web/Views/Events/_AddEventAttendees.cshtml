@@ -1,40 +1,44 @@
 ﻿@using ElGroupo.Web.Models.Events
-@model EventContactsModel
+@model ViewEventDetailsModel
 
-<style type="text/css">
+@{ 
+    Layout = null;
+}
 
-</style>
-<section>
-    <div class="row" style="text-align:center;">
-        <h2>@Model.Event.Name</h2>
-        <input type="hidden" asp-for="@Model.Event.Id" />
-    </div>
-    <div class="row" style="text-align:center;">
-        <span>@Model.Event.StartDate.ToString() - @Model.Event.EndDate.ToString()</span>
-    </div>
-</section>
-<div class="page-nav">
-    <a class="links bold" data-link-type="organizers" href="#">Organizers</a>
-    <a class="links" data-link-type="attendees" href="#">Attendees</a>
-</div>
-
-<div class="row tab attendees">
-    <h2>Edit Attendees</h2>
+<div class="row">
     <div class="row">
         <div class="col span-1-of-4">
             <label>Select People to Invite:</label>
         </div>
-        <div class="col span-1-of-4">
-            <input id="rbContactsConnections" class="contact-search-rb" name="selection" checked type="radio" /> Search within My Connections
-        </div>
-        <div class="col span-1-of-4">
-            <input id="rbExistingContacts" class="contact-search-rb" name="selection" checked type="radio" /> Search for ElGroupo Members
-        </div>
-        <div class="col span-1-of-4">
-            <input id="rbNewContact" class="contact-search-rb" name="selection" type="radio" /> Enter Name and Email
+
+        <div class="col span-3-of-4 switch-field">
+            <input id="rbMyConnections" class="contact-search-rb" name="selection" checked type="radio" />
+            <label for="rbMyConnections">Search within My Connections</label>
+            <input id="rbExistingContacts" class="contact-search-rb" name="selection" checked type="radio" />
+            <label for="rbExistingContacts">Search for ElGroupo Members</label>
+            <input id="rbNewContact" class="contact-search-rb" name="selection" type="radio" />
+            <label for="rbNewContact">Enter Name and Email</label>
         </div>
 
+
     </div>
+    <div class="row">
+        <div class="switch-container">
+            <div class="switch-selected">Search within My Connections</div>
+            <div>Search for ElGroupo Members</div>
+            <div>Enter Name and Email</div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="switch-container">
+            <span class="switch-selected">Search within My Connections</span>
+            <span>Search for ElGroupo Members</span>
+            <span>Enter Name and Email</span>
+        </div>
+    </div>
+
     <div class="row select-existing-contacts">
         <div class="col span-2-of-10"><label>Enter Name or Email Address:</label></div>
         <div class="col span-5-of-10">
@@ -71,13 +75,5 @@
         </div>
 
     </div>
-    <div class="row" id="divAttendees">
-        @Html.Partial("_Attendees", Model.Attendees)
-    </div>
+
 </div>
-
-
-@section Scripts{
-    <script type="text/javascript" src="~/content/scripts/events/contacts.js"></script>
-
-}

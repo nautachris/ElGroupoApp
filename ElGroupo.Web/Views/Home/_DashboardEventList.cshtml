@@ -6,10 +6,6 @@
     {
         <li data-event-id="@e.Id" class="@(e.IsNew ? "new-event": "")">
             <div class="col span-4-of-7">
-
-
-                    
-
                 <span id="spanEventName" style="font-weight:bold; ">
                     @if (e.OrganizedByUser)
                     {
@@ -17,33 +13,18 @@
                         }
                     @e.Name
                 </span>
-
-
                 <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
-
-
             </div>
             <div class="col span-1-of-7">
                 @if (e.OrganizedByUser)
                 {
-                    <button class="btn btn-primary width-100 event-delete">Delete</button>
+                    <a href="#" class="btn btn-primary width-100 event-delete">Delete</a>
 
                 }
-
-            </div>
-            <div class="col span-1-of-7">
-                @if (e.OrganizedByUser)
-                {
-                    <a asp-controller="Events" asp-action="Edit" asp-route-eid="@e.Id" class="btn btn-primary width-100">Edit</a>
-
-                }
-
             </div>
             <div class="col span-1-of-7">
                 <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="btn btn-primary width-100">View</a>
             </div>
-
-
         </li>
     }
 </ul>

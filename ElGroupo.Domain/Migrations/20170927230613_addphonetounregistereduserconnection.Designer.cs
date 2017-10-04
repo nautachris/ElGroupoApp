@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170927230613_addphonetounregistereduserconnection")]
+    partial class addphonetounregistereduserconnection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -340,13 +341,9 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("Name");
 
-                    b.Property<string>("Phone1Type");
+                    b.Property<string>("Phone");
 
-                    b.Property<string>("Phone1Value");
-
-                    b.Property<string>("Phone2Type");
-
-                    b.Property<string>("Phone2Value");
+                    b.Property<Guid>("RegisterToken");
 
                     b.Property<string>("UserCreated");
 

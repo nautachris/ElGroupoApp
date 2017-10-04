@@ -1,0 +1,65 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Web.Models.Enums
+@model ElGroupo.Web.Models.Events.ViewEventLocationModel
+
+
+@{
+
+    Layout = null;
+}
+
+<input asp-for="@Model.GooglePlaceId" type="hidden" />
+<div class="row">
+    <div class="col span-1-of-4">
+        <label asp-for="LocationName">Location:</label>
+    </div>
+    <div class="col span-3-of-4">
+        <span>@Model.LocationName</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col span-1-of-4">
+        <label for="BusinessName">Business Name:</label>
+    </div>
+    <div class="col span-3-of-4">
+        <span class="width-100" id="spanBusinessName"></span>
+    </div>
+</div>
+<div class="row">
+    <div class="col span-1-of-4">
+        <label asp-for="Address1">Address 1:</label>
+    </div>
+    <div class="col span-3-of-4">
+        <span>@Model.Address1</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col span-1-of-4">
+        <label asp-for="Address2">Address 2:</label>
+    </div>
+    <div class="col span-3-of-4">
+        <span>@Model.Address2</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col span-1-of-4">
+        <label asp-for="City">City:</label>
+    </div>
+    <div class="col span-3-of-4">
+        <span>@Model.City</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col span-1-of-8">
+        <label asp-for="State">State:</label>
+    </div>
+    <div class="col span-3-of-8">
+        <span>@Model.State</span>
+    </div>
+    <div class="col span-1-of-8">
+        <label asp-for="ZipCode">Zip:</label>
+    </div>
+    <div class="col span-3-of-8">
+        <span>@Model.ZipCode</span>
+    </div>
+</div>

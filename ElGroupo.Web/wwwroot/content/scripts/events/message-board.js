@@ -1,27 +1,4 @@
 ﻿$(document).ready(function () {
-
-    //navigation
-    $(".links").on("click", function () {
-        $(".links").removeClass('bold');
-        $(this).addClass('bold');
-        $(".row.tab").hide();
-        $(".row." + $(this).attr('data-link-type')).show();
-
-    });
-
-    //details
-
-
-
-    //attendees
-
-
-
-    //notifications
-
-
-
-    //messages
     $("#btnShowMessageDiv").on("click", function () {
         $("#divCreateMessage").show();
         $(this).hide();
@@ -98,43 +75,5 @@
         });
     });
 
-    //notifications
 
-
-
-
-    //messages
-
-
-    //toggle display add message div
-    //handle submit message button
-    //handle message grid functions
-    //delete (admin), view for first time, hide?
 });
-
-ViewEvent = {
-    IsAddress: false,
-    MapLoaded: function () {
-        var gpid = $("#GooglePlaceId").val();
-        if (gpid === '') return false;
-        Maps.PlaceSearch(gpid, function (place, status) {
-            console.log(place);
-            var isAddress = false;
-            for (var x = 0; x < place.types.length; x++) {
-                if (place.types[x] === 'street_address') {
-                    $(".row.business-name").hide();
-                    break;
-                }
-                if (place.types[x] === 'establishment') {
-                    $(".row.business-name").show();
-                    $("#spanBusinessName").val(place.name);
-                    break;
-                }
-            }
-
-
-            Maps.SetInfoWindow(place);
-
-        });
-    }
-};

@@ -43,6 +43,107 @@ namespace ElGroupo.Web.Controllers
         }
 
 
+
+        [Authorize]
+        [HttpPost("ImportSelectedContacts")]
+        public async Task<IActionResult> ImportContacts([FromBody]ImportSelectContactModel[] contacts)
+        {
+            var fd = 4;
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var registeredUsers = dbContext.Users.Where(x => contacts.Select(y => y.Email).Contains(x.Email)).ToDictionary(z => z.Id, z => z.Email);
+            var connectedEmails = dbContext.UserConnections.Include("ConnectedUser").Include("User").Where(x => x.User.Id == user.Id).Select(x => x.ConnectedUser.Email).ToList();
+            foreach (var c in contacts.Where(x => registeredUsers.Values.Contains(x.Email) && !connectedEmails.Contains(x.Email)))
+            {
+                //these are already in system
+                var uc = new UserConnection
+                {
+                    User = user,
+                    ConnectedUser = dbContext.Users.First(x => x.Email == c.Email)
+                };
+                dbContext.Add(uc);
+            }
+
+            foreach (var c in contacts.Where(x => !registeredUsers.Values.Contains(x.Email)))
+            {
+                //these are not in system
+                var urc = new UnregisteredUserConnection
+                {
+                    User = user,
+                    Email = c.Email,
+                    Name = c.FirstName + " " + c.LastName,
+                    Phone1Type = "",
+                    Phone1Value = c.Phone1,
+                    Phone2Type = "",
+                    Phone2Value = c.Phone2
+                };
+
+                dbContext.Add(urc);
+            }
+
+            await dbContext.SaveChangesAsync();
+            //if email exists in system, add to userconnection
+            //if not, add to userunregisteredcontacts
+            return RedirectToAction("GetConnectionList", new { uid = user.Id });
+        }
+
+        [Authorize]
+        [HttpPost("LoadImportFile")]
+        public async Task<IActionResult> LoadImportFile()
+        {
+            if (Request.Form.Files.Count == 0) return BadRequest();
+            if (!Request.Form.ContainsKey("format")) return BadRequest();
+            var format = Request.Form["format"].ToString();
+            var ms = new MemoryStream();
+            await Request.Form.Files[0].CopyToAsync(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+            //nake configurable!!
+            int idxFirstName = -1;
+            int idxLastName = -1;
+            int idxEmail = -1;
+            int idxPhone1 = -1;
+            int idxPhone2 = -1;
+            if (format == "google")
+            {
+                idxFirstName = 1;
+                idxLastName = 3;
+                idxEmail = 28;
+                idxPhone1 = 32;
+                idxPhone2 = 34;
+            }
+            else
+            {
+                idxFirstName = 0;
+                idxLastName = 2;
+                idxEmail = 14;
+                //outlook has multiple phone columns - these are home and mobile
+                idxPhone1 = 18;
+                idxPhone2 = 20;
+            }
+
+            var outList = new List<ImportSelectContactModel>();
+            var reader = new StreamReader(ms);
+            var line = reader.ReadLine();
+            //skip first line
+            line = reader.ReadLine();
+            while (line != null)
+            {
+                var lineAry = line.Split(',');
+                outList.Add(new ImportSelectContactModel
+                {
+                    FirstName = lineAry[idxFirstName],
+                    LastName = lineAry[idxLastName],
+                    Email = lineAry[idxEmail],
+                    Phone1 = lineAry[idxPhone1],
+                    Phone2 = lineAry[idxPhone2],
+                    Registered = !string.IsNullOrEmpty(lineAry[idxEmail]) && dbContext.Users.Any(x => x.Email == lineAry[idxEmail])
+                });
+                line = reader.ReadLine();
+            }
+
+            return Json(outList);
+            //return View("_ImportContactList", outList);
+        }
+
         //[Route("ImportGoogleContacts")]
         //public async Task<IActionResult> ImportGoogleContacts()
         //{
@@ -168,7 +269,10 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> Login(string returnUrl)
         {
             var signedIn = signInManager.IsSignedIn(HttpContext.User);
-            if (signedIn) await signInManager.SignOutAsync();
+            if (signedIn)
+            {
+                return Redirect("/Home/Dashboard");
+            }
 
             ViewBag.returnUrl = returnUrl;
             return View();
@@ -290,23 +394,24 @@ namespace ElGroupo.Web.Controllers
         private List<UserConnectionModel> GetConnections(User user)
         {
             var model = new List<UserConnectionModel>();
-            foreach(var c in user.ConnectedUsers)
+            foreach (var c in user.ConnectedUsers)
             {
                 model.Add(new UserConnectionModel
                 {
                     Name = c.ConnectedUser.Name,
                     Email = c.ConnectedUser.Email,
-                    Phone = c.ConnectedUser.ContactMethods.Any(x=>x.ContactMethod.Value == "Phone")? c.ConnectedUser.ContactMethods.First(x=>x.ContactMethod.Value == "Phone").Value : "",
-                    Status = "Registered"
+                    Phone = c.ConnectedUser.ContactMethods.Any(x => x.ContactMethod.Value == "Phone") ? c.ConnectedUser.ContactMethods.First(x => x.ContactMethod.Value == "Phone").Value : "",
+                    Registered = true
                 });
             }
-            foreach(var uc in user.UnregisteredConnections)
+            foreach (var uc in user.UnregisteredConnections)
             {
-                model.Add(new UserConnectionModel {
+                model.Add(new UserConnectionModel
+                {
                     Name = uc.Name,
                     Email = uc.Email,
                     Phone = "",
-                    Status = "Not Registered"
+                    Registered = false
                 });
             }
 
@@ -339,6 +444,15 @@ namespace ElGroupo.Web.Controllers
             return dict;
         }
 
+        [HttpGet]
+        [Route("ConnectionList/{uid}")]
+        public async Task<IActionResult> GetConnectionList([FromRoute] int uid)
+        {
+            var user = await dbContext.Set<User>().Include("ConnectedUsers.ConnectedUser").Include("UnregisteredConnections").FirstOrDefaultAsync(x => x.Id == uid);
+            if (user == null) return BadRequest();
+            return View("_ConnectionList", GetConnections(user));
+        }
+
 
         [HttpGet]
         [Route("Edit")]
@@ -351,12 +465,15 @@ namespace ElGroupo.Web.Controllers
             {
                 Contacts = GetContacts(userRecord),
                 ContactTypes = GetContactTypes(),
+                Connections = GetConnections(userRecord),
                 EmailAddress = userRecord.Email,
                 HasPhoto = userRecord.Photo != null,
                 Id = userRecord.Id,
                 Name = userRecord.Name,
                 PhoneNumber = userRecord.PhoneNumber,
-                ZipCode = userRecord.ZipCode
+                ZipCode = userRecord.ZipCode,
+                clientId = this.googleOptions.GoogleClientId,
+                apiKey = this.googleOptions.GoogleApiKey
             };
             return View(model);
         }

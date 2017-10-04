@@ -1,0 +1,42 @@
+﻿@using ElGroupo.Web.Models.Account
+@model IEnumerable<ImportSelectContactModel>
+
+@{
+    Layout = null;
+}
+@if (Model.Count() > 0)
+{
+    <table class="width-100">
+        <thead>
+            <tr>
+                <th>Import?</th>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>Phone 1</th>
+                <th>Phone 2</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in Model)
+            {
+                <tr>
+                    <td><input type="checkbox" /></td>
+                    <td>@contact.LastName</td>
+                    <td>@contact.FirstName</td>
+                    <td>@contact.Email</td>
+                    <td>@contact.Phone1</td>
+                    <td>@contact.Phone2</td>
+                </tr>
+
+
+            }
+        </tbody>
+    </table>
+
+}
+else
+{
+    <h2>No contacts were found!</h2>
+
+}

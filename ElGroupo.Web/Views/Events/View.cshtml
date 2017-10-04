@@ -49,119 +49,55 @@
 
 <input type="hidden" asp-for="EventId" />
 <div class="row">
-    <h2>@Model.Name</h2>
+    <h2>@Model.Details.Name</h2>
 </div>
-<div class="page-nav">
-    <a class="links bold" data-link-type="details" href="#">Event Details</a>
-    <a class="links" data-link-type="attendees" href="#">Attendees</a>
-    <a class="links" data-link-type="notifications" href="#">Event Notifications</a>
-    <a class="links" data-link-type="messages" href="#">Messages</a>
+<div class="page-nav row">
+    <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+    <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
+    <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+    <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+    
+   
+    
+    
 </div>
-<div class="row tab details">
-    <input asp-for="@Model.GooglePlaceId" type="hidden" />
-
-    <div class="row">
-        <div class="col span-1-of-3">
-            <label asp-for="Name">Name:</label>
-        </div>
-        <div class="col span-2-of-3">
-            <span>@Model.Name</span>
-        </div>
+<div class="row tab details contact-form">
+    <div id="divViewDetails">
+        @Html.Partial("_ViewEventDetails", Model.Details)
     </div>
-    <div class="row">
-        <div class="col span-1-of-3">
-            <label asp-for="Description">Description:</label>
-        </div>
-        <div class="col span-2-of-3">
-            <span>@Model.Description</span>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col span-3-of-6">
-            <label>Start:</label>
-        </div>
-        <div class="col span-3-of-6">
-            <span>@Model.StartDateText</span>
+    @if (Model.IsOrganizer)
+    {
+        <div style="display:none;" id="divEditDetails"></div>
+        <div class="row centered">
+            <a id="btnEditDetails" href="#">Edit</a>
+            <a style="display:none;" id="btnCancelEditDetails" href="#">Cancel</a>
+            <a style="display:none;" id="btnSaveEditDetails" href="#">Save</a>
         </div>
 
-    </div>
-    <div class="row">
-        <div class="col span-3-of-6">
-            <label>End:</label>
-        </div>
-        <div class="col span-3-of-6">
-            <span>@Model.EndDateText</span>
-        </div>
-
-    </div>
-    <div class="row search-method">
-        <div class="col span-1-of-4">
-            <label asp-for="LocationName">Location:</label>
-        </div>
-        <div class="col span-3-of-4">
-            <span>@Model.LocationName</span>
-        </div>
-    </div>
-
-    <div class="row business-name">
-        <div class="col span-1-of-4">
-            <label for="BusinessName">Business Name:</label>
-        </div>
-        <div class="col span-3-of-4">
-            <span class="width-100" id="spanBusinessName"></span>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col span-1-of-4">
-            <label asp-for="Address1">Address 1:</label>
-        </div>
-        <div class="col span-3-of-4">
-            <span>@Model.Address1</span>
-        </div>
-    </div>
-    <div class="row manual-search">
-        <div class="col span-1-of-4">
-            <label asp-for="Address2">Address 2:</label>
-        </div>
-        <div class="col span-3-of-4">
-            <span>@Model.Address2</span>
-        </div>
-    </div>
-    <div class="row manual-search">
-        <div class="col span-1-of-4">
-            <label asp-for="City">City:</label>
-        </div>
-        <div class="col span-3-of-4">
-            <span>@Model.City</span>
-        </div>
-    </div>
-    <div class="row manual-search">
-        <div class="col span-1-of-8">
-            <label asp-for="State">State:</label>
-        </div>
-        <div class="col span-3-of-8">
-            <span>@Model.State</span>
-        </div>
-        <div class="col span-1-of-8">
-            <label asp-for="ZipCode">Zip:</label>
-        </div>
-        <div class="col span-3-of-8">
-            <span>@Model.ZipCode</span>
-        </div>
-    </div>
-    <div class="row">
+    }
+    <div class="row map-search">
         <div class="col span-7-of-7">
             <div id="divMap" style="width:100%;height:300px"></div>
             <div id="infowindow-content">
                 <img src="" width="16" height="16" id="place-icon">
                 <span id="place-name" class="title"></span><br>
                 <span id="place-address"></span>
-                @*<a style="float:left;" class="btn btn-primary select-link">Select Location!</a>*@
             </div>
         </div>
 
     </div>
-
+    <div id="divViewLocation">
+        @Html.Partial("_ViewEventLocation", Model.Location)
+    </div>
+    @if (Model.IsOrganizer)
+    {
+        <div style="display:none;" id="divEditLocation"></div>
+        <div class="row centered">
+            <a id="btnEditLocation" href="#">Edit Location</a>
+            <a style="display:none;" id="btnCancelEditLocation" href="#">Cancel Location Changes</a>
+            <a style="display:none;" id="btnSaveEditLocation" href="#">Save Location Changes</a>
+        </div>
+    }
 
     <div class="row">
 
@@ -170,100 +106,50 @@
     </div>
 
 </div>
-<div class="row tab attendees">
+<div class="row tab attendees contact-form">
     <h2>Who the fuck is going?</h2>
-
-    @foreach (var attGroup in SplitList<EventAttendeeModel>(Model.Attendees, 4))
+    @if (Model.IsOrganizer)
     {
-    <div class="row">
-        @foreach (var att in attGroup)
-            {
-            <div class="col span-1-of-4" style="text-align:center;">
-                <a href="@GetUserViewLink(att.UserId)">
-                    <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
-                    <span style="font-weight:bold; text-transform:uppercase;">@att.Name</span>
-                </a>
-                
-            </div>
-            }
-    </div>
+        @Html.Partial("_AddEventAttendees", Model.Details)
+
+
     }
+     <div id="divViewAttendees">
+         @Html.Partial("_ViewEventAttendees", Model.Attendees)
+     </div>
+
 </div>
-<div class="row tab notifications">
+<div class="row tab notifications contact-form">
     <h2>Notifications</h2>
     <div id="divNotifications">
-        @Html.Partial("_NotificationList", Model.Notifications)
+        @Html.Partial("_ViewEventNotifications", Model.Notifications)
     </div>
 
     @if (Model.IsOrganizer)
     {
-        <button id="btnShowNotificationDiv">Add Notification</button>
-        <div id="divCreateNotification" style="display:none;">
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label>Subject:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input type="text" id="txtNotificationSubject" class="width-100" placeholder="Enter Notification Subject...">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label>Message:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <textarea id="txtNotificationText" style="height:300px;" class="width-100" placeholder="Enter Notification Text..."></textarea>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-2">
-                    <a class="btn btn-ghost" id="btnCancelNotifcation">Cancel</a>
-                </div>
-                <div class="col span-1-of-2">
-                    <a class="btn btn-primary" id="btnPostNotifcation">Post Notification</a>
-                </div>
-            </div>
-        </div>
+        @Html.Partial("_AddEventNotification")
 
     }
 </div>
 
-<div class="row tab messages">
+<div class="row tab messages contact-form">
     <h2>Message Board</h2>
     <div id="divMessages">
-        @Html.Partial("_MessageList", Model.Messages)
+        @Html.Partial("_ViewEventMessages", Model.Messages)
     </div>
-    <button id="btnShowMessageDiv" class="btn btn-primary">Add New Message!!</button>
-    <div id="divCreateMessage" style="display:none;">
-        <div class="row">
-            <div class="col span-1-of-3">
-                <label>Subject:</label>
-            </div>
-            <div class="col span-2-of-3">
-                <input type="text" id="txtMessageSubject" class="width-100" placeholder="Enter Message Subject...">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col span-1-of-3">
-                <label>Message:</label>
-            </div>
-            <div class="col span-2-of-3">
-                <textarea id="txtMessageText" style="height:300px;" class="width-100" placeholder="Enter Message Subject..."></textarea>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col span-1-of-2">
-                <a class="btn btn-ghost" id="btnCancelMessage">Cancel</a>
-            </div>
-            <div class="col span-1-of-2">
-                <a class="btn btn-primary" id="btnPostMessage">Post Message</a>
-            </div>
-        </div>
-    </div>
+    @Html.Partial("_AddEventMessage")
 </div>
 
 @section Scripts{
     <script type="text/javascript" src="~/content/scripts/events/view.js"></script>
+<script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
+<script type="text/javascript" src="~/content/scripts/events/view-notifications.js"></script>
+    @if (Model.IsOrganizer)
+    {
+        <script type="text/javascript" src="~/content/scripts/events/edit-notifications.js"></script>
+        <script type="text/javascript" src="~/content/scripts/events/edit.js"></script>
+
+    }
     <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {

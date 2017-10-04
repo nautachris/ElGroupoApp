@@ -1,0 +1,97 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Web.Models.Enums
+@model ElGroupo.Web.Models.Events.EditEventLocationModel
+
+@{
+
+    Layout = null;
+}
+<form id="frmEditEventLocation" asp-controller="Events" asp-action="SaveLocationEdits" method="post">
+
+
+    <div style="text-align:center;">
+        @*<div class="col span-1-of-3">
+            <label>Search Method:</label>
+        </div>*@
+
+        <div class="switch-field">
+            <input type="radio" id="rbMapSelectionAddress" name="selection" value="map" checked />
+            <label for="rbMapSelectionAddress">Search by Address</label>
+            <input id="rbMapSelectionPlace" type="radio"  name="selection" value="place" />
+            <label for="rbMapSelectionPlace">Search by Business</label>
+        </div>
+
+        <div class="row">
+            <div class="switch-container">
+                <div class="switch-selected">Search by Address</div>
+                <div>Search by Business Name</div>
+            </div>
+        </div>
+        @*<div class="col span-1-of-3">
+            <input id="rbMapSelectionAddress" name="selection" value="map" checked type="radio" /> Address
+        </div>
+        <div class="col span-1-of-3">
+            <input id="rbMapSelectionPlace" name="selection" value="place" type="radio" /> Business
+        </div>*@
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label asp-for="LocationName">Search Location:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input style="width:100%;" asp-for="LocationName" type="text" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label for="BusinessName">Business Name:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input class="width-100" id="txtBusinessName" type="text" value="">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label asp-for="Address1">Address 1:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input class="width-100" asp-for="Address1">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label asp-for="Address2">Address 2:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input class="width-100" asp-for="Address2">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label asp-for="City">City:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input class="width-100" asp-for="City">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-8">
+            <label asp-for="State">State:</label>
+        </div>
+        <div class="col span-3-of-8">
+            <input asp-for="State">
+        </div>
+        <div class="col span-1-of-8">
+            <label asp-for="ZipCode">Zip:</label>
+        </div>
+        <div class="col span-3-of-8">
+            <input asp-for="ZipCode">
+        </div>
+    </div>
+
+
+    <input type="hidden" asp-for="XCoord" />
+    <input type="hidden" asp-for="YCoord" />
+    <input type="hidden" asp-for="GooglePlaceId" />
+</form>

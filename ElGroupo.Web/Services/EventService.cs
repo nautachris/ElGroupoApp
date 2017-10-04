@@ -46,7 +46,7 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var e = await dbContext.Set<Event>().Include("Attendees").Include("UnregisteredAttendees").Include("MessageBoardItems.Attendees").Include("Organizers").Include("Notifications.Attendees").FirstOrDefaultAsync();
+                var e = await dbContext.Set<Event>().Include("Attendees").Include("UnregisteredAttendees").Include("MessageBoardItems.Attendees").Include("Notifications.Attendees").FirstOrDefaultAsync();
                 if (e == null) return false;
                 dbContext.Events.Remove(e);
                 await dbContext.SaveChangesAsync();
@@ -72,7 +72,7 @@ namespace ElGroupo.Web.Services
         public async Task<EventContactsModel> GetEventContacts(long eventId, int userId)
         {
 
-            var e = await dbContext.Events.Include("Organizers.User").Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await dbContext.Events.Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == eventId);
             var model = new EventContactsModel();
             model.Event.Name = e.Name;
             model.Event.EndDate = e.EndTime;
@@ -169,7 +169,7 @@ namespace ElGroupo.Web.Services
 
         public async Task<EventEditModel> GetEventEditModel(long eid)
         {
-            var e = await dbContext.Events.Include("Organizers.User").FirstOrDefaultAsync(x => x.Id == eid);
+            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eid);
             var model = new EventEditModel();
             model.Id = e.Id;
             model.Address1 = e.Address1;
@@ -192,7 +192,76 @@ namespace ElGroupo.Web.Services
             model.ZipCode = e.Zip;
             return model;
         }
+        public async Task<ViewEventDetailsModel> ViewEventDetails(long eventId)
+        {
+            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var model = new ViewEventDetailsModel(e);
+            return model;
+        }
+        public async Task<ViewEventLocationModel> ViewEventLocationDetails(long eventId)
+        {
+            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var model = new ViewEventLocationModel(e);
+            return model;
+        }
 
+        public async Task<EditEventDetailsModel> EditEventDetails(long eventId)
+        {
+            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var model = new EditEventDetailsModel(e);
+            return model;
+        }
+
+        public async Task<EditEventLocationModel> EditEventLocation(long eventId)
+        {
+            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var model = new EditEventLocationModel(e);
+            return model;
+        }
+
+        public async Task<bool> UpdateEventDetails(EditEventDetailsModel model)
+        {
+            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
+            e.Name = model.Name;
+            e.Description = model.Description;
+            int startHour = 0;
+            int endHour = 0;
+            if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+            else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
+
+            if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+            else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
+
+
+            if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
+            else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
+            else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
+            else startHour = model.StartHour + 12;
+
+
+            e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
+            e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+
+            dbContext.Update(e);
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateEventLocation(EditEventLocationModel model)
+        {
+            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
+            e.Address1 = model.Address1;
+            e.Address2 = model.Address2;
+            e.City = model.City;
+            e.State = model.State;
+            e.Zip = model.ZipCode;
+            e.GooglePlaceId = model.GooglePlaceId;
+            e.CoordinateX = model.XCoord;
+            e.CoordinateY = model.YCoord;
+            dbContext.Update(e);
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
 
         public async Task<EventViewModel> GetEventViewModel(long eventId, int userId, EditAccessTypes accessLevel)
         {
@@ -200,19 +269,7 @@ namespace ElGroupo.Web.Services
             var e = await dbContext.Events.Include("Attendees.User").Include("Attendees.MessageBoardItems.MessageBoardItem.PostedBy").FirstOrDefaultAsync(x => x.Id == eventId);
             var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == userId);
             //var isOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
-            var model = new EventViewModel();
-            model.EventId = e.Id;
-            model.Address1 = e.Address1;
-            model.Address2 = e.Address2;
-            model.City = e.City;
-            model.Description = e.Description;
-            model.StartDateText = e.StartTime.ToString("d") + " " + e.StartTime.ToString("t");
-            model.EndDateText = e.EndTime.ToString("d") + " " + e.EndTime.ToString("t");
-            model.GooglePlaceId = e.GooglePlaceId;
-            model.LocationName = e.LocationName;
-            model.Name = e.Name;
-            model.State = e.State;
-            model.ZipCode = e.Zip;
+            var model = new EventViewModel(e);
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             model.Attendees = new List<EventAttendeeModel>();
             foreach (var att in e.Attendees)
@@ -314,11 +371,11 @@ namespace ElGroupo.Web.Services
             IQueryable<Event> events = null;
             if (search == "*")
             {
-                events = dbContext.Events.Include("Organizers.User");
+                events = dbContext.Events.Include("Attendees.User");
             }
             else
             {
-                events = dbContext.Events.Include("Organizers.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
+                events = dbContext.Events.Include("Attendees.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
             }
 
             var list = new List<EventInformationModel>();

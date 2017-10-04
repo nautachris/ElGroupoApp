@@ -19,14 +19,16 @@ namespace ElGroupo.Web.Controllers
 
 
     [Route("Users")]
-    public class UsersController:Controller
+    public class UsersController : Controller
     {
         private ElGroupoDbContext dbContext;
         private IHostingEnvironment hostEnv;
-        public UsersController(ElGroupoDbContext ctx, IHostingEnvironment env)
+        private UserManager<User> userManager = null;
+        public UsersController(ElGroupoDbContext ctx, IHostingEnvironment env, UserManager<User> userMgr)
         {
             this.dbContext = ctx;
             this.hostEnv = env;
+            this.userManager = userMgr;
         }
 
         [Authorize]
@@ -40,6 +42,19 @@ namespace ElGroupo.Web.Controllers
             return Json(list);
         }
 
+
+        [Authorize]
+        [HttpGet]
+        [Route("SearchAutocompleteByUser/{search}")]
+        public async Task<IActionResult> SearchAutocompleteByUser([FromRoute]string search)
+        {
+            var user = await this.userManager.GetUserAsync(HttpContext.User);
+            var users = dbContext.UserConnections.Include("ConnectedUser").Where(x => x.User.Id == user.Id && x.ConnectedUser.Name.ToUpper().Contains(search.ToUpper()) || x.ConnectedUser.Email.ToUpper().Contains(search.ToUpper())).Select(x=>x.ConnectedUser);
+            var list = new List<AutoCompleteModel>();
+            await users.ForEachAsync(x => list.Add(new AutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name }));
+            return Json(list);
+        }
+
         [Authorize]
         [HttpGet]
         [Route("Search/{search}")]
@@ -48,7 +63,7 @@ namespace ElGroupo.Web.Controllers
             var users = dbContext.Users.Where(x => x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
             var list = new List<UserInformationModel>();
             await users.ForEachAsync(x => list.Add(new UserInformationModel { Email = x.Email, Id = x.Id, Name = x.Name, UserName = x.UserName }));
-            return PartialView("../Account/_UserList", list.OrderBy(x=>x.UserName));
+            return PartialView("../Account/_UserList", list.OrderBy(x => x.UserName));
         }
 
 
@@ -71,7 +86,7 @@ namespace ElGroupo.Web.Controllers
                 {
                     return new EmptyResult();
                 }
-               
+
                 //reader.wr
 
             }
@@ -79,7 +94,7 @@ namespace ElGroupo.Web.Controllers
             {
                 return File(user.Photo.ImageData, user.Photo.ContentType);
             }
-            
+
 
 
         }

@@ -5,43 +5,87 @@
         console.log('btn submit click');
         $("#frmCreateEvent").submit();
     });
+    $(".switch-container.end-ampm > span").on("click", function () {
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+        $("#StartAMPM").val($(this).attr('data-replace-val'));
 
-    $("#rbMapSelectionAddress").on("change", function () {
-        if ($(this).is(':checked')) {
-            $(".row.map-search").show();
-            $(".row.manual-search").hide();
-            Maps.autocomplete.setTypes(['geocode']);
-            $("#LocationName").val('');
+    });
+    $(".switch-container.start-am-pm > span").on("click", function () {
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+        $("#EndAMPM").val($(this).attr('data-replace-val'));
+
+    });
+    $("html").on("click", ".switch-container.map-select > span", function () {
+        console.log('switch container click');
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+
+        switch ($(this).attr('data-map-select')) {
+            case 'address':
+                $(".row.map-search").show();
+                $(".row.manual-search").hide();
+                Maps.autocomplete.setTypes(['geocode']);
+                $("#LocationName").val('');
+                $(".row.map-search").show();
+                $(".row.manual-search").hide();
+                break;
+            case 'business':
+                $(".row.map-search").show();
+                $(".row.manual-search").hide();
+                Maps.autocomplete.setTypes(['establishment']);
+                $("#LocationName").val('');
+                $(".row.map-search").show();
+                $(".row.manual-search").hide();
+                break;
+            case 'manual':
+                $(".row.map-search").hide();
+                $(".row.manual-search").show();
+                break;
         }
-        else {
-            $(".row.map-search").hide();
-            $(".row.manual-search").show();
-        }
+
     });
 
-    $("#rbMapSelectionPlace").on("change", function () {
-        if ($(this).is(':checked')) {
-            $(".row.map-search").show();
-            $(".row.manual-search").hide();
-            Maps.autocomplete.setTypes(['establishment']);
-            $("#LocationName").val('');
-        }
-        else {
-            $(".row.map-search").hide();
-            $(".row.manual-search").show();
-        }
-    });
 
-    $("#rbManualSelection").on("change", function () {
-        if ($(this).is(':checked')) {
-            $(".row.map-search").hide();
-            $(".row.manual-search").show();
-        }
-        else {
-            $(".row.map-search").show();
-            $(".row.manual-search").hide();
-        }
-    });
+
+
+    //$("#rbMapSelectionAddress").on("change", function () {
+    //    if ($(this).is(':checked')) {
+    //        $(".row.map-search").show();
+    //        $(".row.manual-search").hide();
+    //        Maps.autocomplete.setTypes(['geocode']);
+    //        $("#LocationName").val('');
+    //    }
+    //    else {
+    //        $(".row.map-search").hide();
+    //        $(".row.manual-search").show();
+    //    }
+    //});
+
+    //$("#rbMapSelectionPlace").on("change", function () {
+    //    if ($(this).is(':checked')) {
+    //        $(".row.map-search").show();
+    //        $(".row.manual-search").hide();
+    //        Maps.autocomplete.setTypes(['establishment']);
+    //        $("#LocationName").val('');
+    //    }
+    //    else {
+    //        $(".row.map-search").hide();
+    //        $(".row.manual-search").show();
+    //    }
+    //});
+
+    //$("#rbManualSelection").on("change", function () {
+    //    if ($(this).is(':checked')) {
+    //        $(".row.map-search").hide();
+    //        $(".row.manual-search").show();
+    //    }
+    //    else {
+    //        $(".row.map-search").show();
+    //        $(".row.manual-search").hide();
+    //    }
+    //});
 
 
 
@@ -49,7 +93,7 @@
 });
 
 CreateEvent = {
-    PlaceChange : function (place) {
+    PlaceChange: function (place) {
         console.log('in CreateEvent.PlaceChange');
         console.log(place);
 
@@ -83,7 +127,7 @@ CreateEvent = {
                     case 'administrative_area_level_1':
                         state = place.address_components[x].short_name;
                         break;
-                    
+
                 }
             }
         }

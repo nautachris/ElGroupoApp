@@ -38,6 +38,8 @@ namespace ElGroupo.Domain.Data
 
         public DbSet<UserPhoto> UserPhotos { get; set; }
 
+        public DbSet<UserConnection> UserConnections { get; set; }
+
 
         public ElGroupoDbContext(DbContextOptions<ElGroupoDbContext> options) : base(options)
         {

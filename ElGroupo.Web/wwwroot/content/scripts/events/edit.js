@@ -1,5 +1,111 @@
 ﻿$(document).ready(function () {
-    $("#EventDate").datepicker();
+    //edit details
+    $("#btnEditDetails").on("click", function () {
+        $.ajax({
+            url: "/Events/" + $("#EventId").val() + "/EditDetails",
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            async: true,
+            cache: false,
+            dataType: 'html',
+            success: function success(results) {
+                $("#btnEditDetails").hide();
+                $("#divViewDetails").hide();
+                $("#btnSaveEditDetails").show();
+                $("#btnCancelEditDetails").show();
+                $("#divEditDetails").empty().html(results).show();
+                $("#EventDate").datepicker();
+            },
+            error: function error(err) {
+                alert('fuck me');
+            }
+        });
+    });
+
+    //save details
+    $("#btnSaveEditDetails").on("click", function () {
+        var obj = $("#frmEditEventDetails").serializeArray();
+        var newObj = {};
+        for (var x = 0; x < obj.length; x++) {
+            newObj[obj[x].name] = obj[x].value;
+        }
+        $.ajax({
+            url: "/Events/EditDetails",
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(newObj),
+            async: true,
+            cache: false,
+            dataType: 'html',
+            success: function success(results) {
+                $("#divEditDetails").empty().hide();
+                $("#divViewDetails").html(results).show();
+                $("#btnCancelEditDetails").hide();
+                $("#btnSaveEditDetails").hide();
+                $("#btnEditDetails").show();
+            },
+            error: function error(err) {
+                alert('fuck me');
+            }
+        });
+    });
+    $("#btnCancelEditDetails").on("click", function () {
+        $("#divEditDetails").empty();
+        $(this).hide();
+        $("#btnSaveEditDetails").hide();
+        $("#btnEditDetails").show();
+        $("#divViewDetails").show();
+    });
+    //cancel details
+
+
+    //edit locatiom
+    $("#btnEditLocation").on("click", function () {
+        $.ajax({
+            url: "/Events/" + $("#EventId").val() + "/EditLocation",
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            async: true,
+            cache: false,
+            dataType: 'html',
+            success: function success(results) {
+                console.log(results);
+                $("#btnEditLocation").hide();
+                $("#divViewLocation").hide();
+                $("#btnSaveEditLocation").show();
+                $("#btnCancelEditLocation").show();
+                $("#divEditLocation").empty().html(results).show();
+               
+            },
+            error: function error(err) {
+                alert('fuck me');
+            }
+        });
+    });
+    $("#btnCancelEditLocation").on("click", function () {
+    });
+    $("#btnSaveEditLocation").on("click", function () {
+    });
+    //cancel location
+    //save location
+
+
+    $("html").on("click", ".switch-container > div", function () {
+        console.log('switch container click');
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+    });
+    $("html").on("click", ".switch-container > span", function () {
+        console.log('switch container click');
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+    });
+
+
+
+
+
+    
 
     $("#btnSubmit").on("click", function () {
         $("#frmEditEvent").submit();
