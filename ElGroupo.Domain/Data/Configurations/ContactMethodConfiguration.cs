@@ -13,6 +13,7 @@ namespace ElGroupo.Domain.Data.Configurations
             ToTable("ContactMethods", "dbo");
             HasKey(x => x.Id);
             Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+
         }
     }
 }

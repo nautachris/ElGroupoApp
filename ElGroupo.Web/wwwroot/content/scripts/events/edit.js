@@ -15,6 +15,7 @@
                 $("#btnCancelEditDetails").show();
                 $("#divEditDetails").empty().html(results).show();
                 $("#EventDate").datepicker();
+                SwitchContainer.init("#divEditDetails");
             },
             error: function error(err) {
                 alert('fuck me');
@@ -90,17 +91,25 @@
     //save location
 
 
-    $("html").on("click", ".switch-container > div", function () {
-        console.log('switch container click');
-        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
-        $(this).addClass("switch-selected");
-    });
-    $("html").on("click", ".switch-container > span", function () {
-        console.log('switch container click');
-        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
-        $(this).addClass("switch-selected");
-    });
 
+    $("html").on("click", ".switch-container.checkin-type > span", function () {
+        console.log('$(".switch-container.checkin-type > span").on("click", function () {');
+        console.log($(this).attr('data-replace-val'));
+        switch ($(this).attr('data-replace-val')) {
+            case "None":
+                $(".verification-code").hide();
+                $(".location-tolerance").hide();
+                break;
+            case "PasswordAndLocation":
+                $(".verification-code").show();
+                $(".location-tolerance").show();
+                break;
+            case "PasswordOnly":
+                $(".verification-code").show();
+                $(".location-tolerance").hide();
+                break;
+        }
+    });
 
 
 

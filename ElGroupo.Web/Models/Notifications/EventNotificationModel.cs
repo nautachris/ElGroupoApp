@@ -9,7 +9,7 @@ namespace ElGroupo.Web.Models.Notifications
     {
         public long Id { get; set; }
         public string OrganizerName { get; set; }
-        public int OrganizerId { get; set; }
+        public long OrganizerId { get; set; }
         public NotificationImportanceTypes Importance { get; set; }
         public DateTime PostedDate { get; set; }
         public string NotificationText { get; set; }

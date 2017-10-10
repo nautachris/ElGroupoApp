@@ -34,7 +34,11 @@
     }
 </style>
 <section class="section-features" style="text-align:center;">
+    @if (ViewBag.Message != null)
+    {
+        <h2 class="centered">@ViewBag.Message</h2>
 
+    }
     <div class="row">
         <div class="width-100 larger-text sign-up pointer">SIGN UP</div>
     </div>

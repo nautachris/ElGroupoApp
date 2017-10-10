@@ -13,7 +13,7 @@
             <label asp-for="Name">Name:</label>
         </div>
         <div class="col span-2-of-3">
-            <input asp-for="Name" placeholder="Enter Event Name...">
+            <input class="width-100" asp-for="Name" placeholder="Enter Event Name...">
         </div>
     </div>
     <div class="row">
@@ -21,7 +21,7 @@
             <label asp-for="Description">Description:</label>
         </div>
         <div class="col span-2-of-3">
-            <input asp-for="Description" placeholder="Enter Event Description...">
+            <textarea class="width-100" asp-for="Description" placeholder="Enter Event Description..."></textarea>
         </div>
     </div>
     <div class="row">
@@ -29,63 +29,108 @@
             <label asp-for="EventDate">Date:</label>
         </div>
         <div class="col span-2-of-3">
-            <input asp-for="EventDate" placeholder="Enter Event Date...">
+            <input asp-for="EventDate" type="text" class="width-100" placeholder="Enter Event Date...">
         </div>
     </div>
     <div class="row">
-        <div class="col span-3-of-6">
+        <div class="col span-1-of-6">
             <label asp-for="StartHour">Start:</label>
         </div>
-        <div class="col span-1-of-6">
-            <select asp-for="StartHour">
+        <div class="col span-2-of-6">
+            <select asp-for="StartHour" style="float:right;">
                 <option value="12" selected>12</option>
                 @for (int hour = 1; hour <= 11; hour++)
-            {
+                {
                     <option value="@hour">@hour.ToString()</option>
                 }
             </select>
         </div>
-        <div class="col span-1-of-6">
-            <select asp-for="StartMinute">
-                <option value="0" selected>00</option>
-                <option value="15">:15</option>
-                <option value="30">:30</option>
-                <option value="45">:45</option>
-            </select>
+        <div data-replace-element="StartMinute" class="switch-container start-minute col span-2-of-6">
+            <input type="hidden" asp-for="StartMinute" />
+            <span data-replace-val="0" class="col span-1-of-4">00</span>
+            <span data-replace-val="15" class="col span-1-of-4">15</span>
+            <span data-replace-val="30" class="col span-1-of-4">30</span>
+            <span data-replace-val="45" class="col span-1-of-4">45</span>
         </div>
-        <div class="col span-1-of-6">
-            <select asp-for="StartAMPM" asp-items="Html.GetEnumSelectList<AMPM>()">
-                <option value="" selected></option>
-            </select>
+        <div data-replace-element="StartAMPM" class="switch-container start-ampm col span-1-of-6">
+            <input type="hidden" asp-for="StartAMPM" />
+            <span data-replace-val="AM" class="col span-1-of-2">AM</span>
+            <span data-replace-val="PM" class="col span-1-of-2">PM</span>
         </div>
 
     </div>
     <div class="row">
-        <div class="col span-3-of-6">
+        <div class="col span-1-of-6">
             <label asp-for="EndHour">End:</label>
         </div>
-        <div class="col span-1-of-6">
-            <select asp-for="EndHour">
+        <div class="col span-2-of-6">
+            <select asp-for="EndHour" style="float:right;">
                 <option value="12" selected>12</option>
                 @for (int hour = 1; hour <= 11; hour++)
-            {
+                {
                     <option value="@hour">@hour.ToString()</option>
                 }
             </select>
         </div>
-        <div class="col span-1-of-6">
-            <select asp-for="EndMinute">
-                <option value="0" selected>00</option>
-                <option value="15">:15</option>
-                <option value="30">:30</option>
-                <option value="45">:45</option>
-            </select>
+        <div data-replace-element="EndMinute" class="switch-container end-minute col span-2-of-6">
+            <input type="hidden" asp-for="EndMinute" />
+            <span data-replace-val="0" class="col span-1-of-4">00</span>
+            <span data-replace-val="15" class="col span-1-of-4">15</span>
+            <span data-replace-val="30" class="col span-1-of-4">30</span>
+            <span data-replace-val="45" class="col span-1-of-4">45</span>
         </div>
-        <div class="col span-1-of-6">
-            <select asp-for="EndAMPM" asp-items="Html.GetEnumSelectList<AMPM>()">
-                <option value="" selected></option>
-            </select>
+        <div data-replace-element="EndAMPM" class="switch-container end-ampm col span-1-of-6">
+            <input type="hidden" asp-for="EndAMPM" />
+            <span data-replace-val="AM" class="col span-1-of-2">AM</span>
+            <span data-replace-val="PM" class="col span-1-of-2">PM</span>
         </div>
 
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label>RSVP Required?</label>
+        </div>
+        <div data-replace-element="RSVPRequired" class="switch-container col span-3-of-4 rsvp-required">
+            <input class="invisible" asp-for="RSVPRequired" />
+            <span data-replace-val="true" class="switch-selected col span-1-of-2">Yes</span>
+            <span data-replace-val="false" class="col span-1-of-2">No</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label>Check-In Verification:</label>
+        </div>
+        <div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
+            <input type="hidden" asp-for="AttendanceVerificationMethod" />
+            <span data-replace-val="None" class="switch-selected col span-1-of-3">None</span>
+            <span data-replace-val="PasswordAndLocation" class="col span-1-of-3">Password or Location</span>
+            <span data-replace-val="PasswordOnly" class="col span-1-of-3">Password Only</span>
+        </div>
+    </div>
+    <div class="row verification-code" style="display:none;">
+        <div class="col span-1-of-3">
+            <label asp-for="VerificationCode">Code:</label>
+        </div>
+        <div class="col span-2-of-3">
+            <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Code...">
+        </div>
+    </div>
+    <div class="row location-tolerance" style="display:none;">
+        <div class="col span-1-of-3">
+            <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
+        </div>
+        <div class="col span-2-of-3">
+            <input asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label>Saved as Draft?</label>
+        </div>
+        <div data-replace-element="IsDraft" class="switch-container col span-3-of-4">
+            <input class="invisible" asp-for="IsDraft" />
+            <span data-replace-val="true" class="switch-selected col span-1-of-2">Yes</span>
+            <span data-replace-val="false" class="col span-1-of-2">No</span>
+        </div>
     </div>
 </form>

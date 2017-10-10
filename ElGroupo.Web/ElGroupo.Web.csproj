@@ -9,6 +9,8 @@
     <Content Remove="Mail\Templates\EventCreated.cshtml" />
     <Content Remove="Mail\Templates\EventOrganizer.cshtml" />
     <Content Remove="Mail\Templates\EventUnregisteredAttendee.cshtml" />
+    <Content Remove="Mail\Templates\ForgotPassword.cshtml" />
+    <Content Remove="Mail\Templates\VerifyEmail.cshtml" />
   </ItemGroup>
 
   <!--<ItemGroup>
@@ -95,6 +97,8 @@
       <EmbeddedResource Include="Mail\Templates\EventCreated.cshtml" />
       <EmbeddedResource Include="Mail\Templates\EventOrganizer.cshtml" />
       <EmbeddedResource Include="Mail\Templates\EventUnregisteredAttendee.cshtml" />
+      <EmbeddedResource Include="Mail\Templates\ForgotPassword.cshtml" />
+      <EmbeddedResource Include="Mail\Templates\VerifyEmail.cshtml" />
     </ItemGroup>
 
 </Project>

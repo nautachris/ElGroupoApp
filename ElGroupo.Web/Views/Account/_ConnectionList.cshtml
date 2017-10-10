@@ -1,8 +1,8 @@
 ﻿@using ElGroupo.Web.Models.Account
 @model IEnumerable<UserConnectionModel>
-    @{ 
-        Layout = null;
-    }
+@{
+    Layout = null;
+}
 
 @functions{
     public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
@@ -32,13 +32,13 @@
         return result;
 
     }
-    public string GetImageUrl(int id)
+    public string GetImageUrl(long id)
     {
         var url = Url.Action("UserPhoto", "Users", new { id = id });
         return url;
     }
 
-    public string GetUserViewLink(int id)
+    public string GetUserViewLink(long id)
     {
         var url = Url.Action("View", "Account", new { id = id });
         return url;
@@ -55,31 +55,28 @@
     {
         <div class="row connections-details" style="display:flex; align-items:center;">
             @foreach (var connection in rowGroup)
-                    {
-                <div class="col span-1-of-4 rounded-border" style="text-align:center; ">
-                    @if (connection.Registered)
+            {
+
+                @if (connection.Registered)
                         {
+                    <div data-user-id="@connection.UserId" class="col span-1-of-4 rounded-border" style="text-align:center; ">
+                        <a href="@GetUserViewLink(connection.UserId)">
+                            <img class="image-circle-200" style="background-image:url('@GetImageUrl(connection.UserId)')" />
+                            <span style="font-weight:bold; text-transform:uppercase;">@connection.Name</span>
+                        </a>
+                    </div>
 
-                            <a href="@GetUserViewLink(connection.UserId)">
-                                <img class="image-circle-200" style="background-image:url('@GetImageUrl(connection.UserId)')" />
-                                <span style="font-weight:bold; text-transform:uppercase;">@connection.Name</span>
-                            </a>
 
-                       
+                }
+                else
+                {
+                    <div data-connection-email="@connection.Email" class="col span-1-of-4 rounded-border" style="text-align:center; ">
+                        <div style="font-weight:bold; display:inline-block; width:100%; text-transform:uppercase;">@connection.Email</div>
+                        <div style="font-weight:bold; display:inline-block; width:100%; text-transform:uppercase;">@connection.Name</div>
+                        <a>Delete?</a>
+                    </div>
+                }
 
-                    }
-                    else
-                    {
-
-                            <div style="font-weight:bold; display:inline-block; width:100%; text-transform:uppercase;">@connection.Email</div>
-                            <div style="font-weight:bold; display:inline-block; width:100%; text-transform:uppercase;">@connection.Name</div>
-                            <a>Delete?</a>
-                         
-
-                      
-
-                    }
-                </div>
             }
         </div>
     }

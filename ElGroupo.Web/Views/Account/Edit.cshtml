@@ -1,11 +1,7 @@
 ﻿@using ElGroupo.Web.Models.Account
 @model EditAccountModel
 
-<style type="text/css">
-    input {
-        border: none transparent;
-    }
-</style>
+
 
 <section id="sectionEditAccount" class="section-form">
     <div class="row">
@@ -19,10 +15,10 @@
         </div>
 
     }
-    <div class="page-nav">
-        <a class="links bold" data-link-type="details" href="#">My Details</a>
-        <a class="links" data-link-type="contact-methods" href="#">My Contact Methods</a>
-        <a class="links" data-link-type="connections" href="#">Connections</a>
+    <div class="page-nav row">
+        <div class="col span-1-of-3"><a href="#" class="links bold" data-link-type="details">My Details</</a></div>
+        <div class="col span-1-of-3" ><a  href="#" class="links" data-link-type="contact-methods">My Contact Methods</a></div>
+        <div class="col span-1-of-3" ><a  href="#" class="links" data-link-type="connections">Connections</a></div>
 
     </div>
     <div class="row tab details">
@@ -39,7 +35,7 @@
                     <label asp-for="Name">Name:</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input asp-for="Name" placeholder="Enter Name...">
+                    <input class="input-transparent" type="text" asp-for="Name" placeholder="Enter Name...">
                 </div>
             </div>
             <div class="row line-after">
@@ -47,7 +43,7 @@
                     <label asp-for="EmailAddress">Email:</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input asp-for="EmailAddress" placeholder="Enter Email...">
+                    <input class="input-transparent" type="text" asp-for="EmailAddress" placeholder="Enter Email...">
                 </div>
             </div>
             <div class="row line-after">
@@ -55,7 +51,7 @@
                     <label asp-for="PhoneNumber">Phone Number:</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input asp-for="PhoneNumber" placeholder="Enter Phone Number...">
+                    <input class="input-transparent" type="text" asp-for="PhoneNumber" placeholder="Enter Phone Number...">
                 </div>
             </div>
             <div class="row line-after">
@@ -63,7 +59,7 @@
                     <label asp-for="ZipCode">ZIP Code:</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input asp-for="ZipCode" placeholder="Enter Zip Code...">
+                    <input class="input-transparent" type="text" asp-for="ZipCode" placeholder="Enter Zip Code...">
                 </div>
             </div>
 

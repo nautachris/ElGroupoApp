@@ -131,10 +131,7 @@ h1, h2, h3 {
     width: 100px;
 }
 
-#sectionEditAccount input {
-    border: none transparent;
-    width: 100%;
-}
+
 
 h1 {
     margin-bottom: 0;
@@ -654,7 +651,7 @@ cite {
     width: 100%;
 }
 
-input[type=text], input[type=email], input[type=password], input[type=tel], input[type=date], select, textarea {
+input[type=text], input[type=email], input[type=password], input[type=tel], input[type=date], select, textarea, input[type=datetime], input[type=number] {
     /*width: 100%;*/
     padding: 7px;
     border-radius: 3px;
@@ -807,9 +804,9 @@ footer p {
 }
 
 
-input[type=text], input[type=select] {
+/*input[type=text], input[type=select] {
     width: 100%;
-}
+}*/
 
 .row.attendees, .row.notifications, .row.messages {
     display: none;
@@ -845,9 +842,6 @@ a {
     list-style: none;
 }
 
-    .page-nav a {
-        margin-left: 60px;
-    }
 
 .bold {
     font-weight: bold;
@@ -870,9 +864,9 @@ a {
 }
 
 
-input[type=text], input[type=select] {
+/*input[type=text], input[type=select] {
     width: 100%;
-}
+}*/
 
 .row.attendees, .row.notifications, .row.messages {
     display: none;
@@ -908,9 +902,9 @@ a {
     list-style: none;
 }
 
-    .page-nav a {
+    /*.page-nav a {
         margin-left: 60px;
-    }
+    }*/
 
 .bold {
     font-weight: bold;
@@ -1057,6 +1051,7 @@ border-radius:10px;
         -ms-transition: all 0.1s ease-in-out;
         -o-transition: all 0.1s ease-in-out;
         transition: all 0.1s ease-in-out;
+
     }
 
     .switch-container > span.switch-selected {
@@ -1065,10 +1060,10 @@ border-radius:10px;
         box-shadow: none;
     }
 
-    .switch-container > span{
-        display:inline-block;
-        margin-left:0px;
-        margin-right:0px;
+    .switch-container > span {
+        display: inline-block;
+        margin-left: -2px;
+        margin-right: -2px;
     }
 
     .switch-container span:first-of-type {
@@ -1078,3 +1073,25 @@ border-radius:10px;
     .switch-container span:last-of-type {
         border-radius: 0 4px 4px 0;
     }
+
+
+.input-transparent {
+    border: none transparent;
+    width: 100%;
+}
+
+.invisible {
+display:none;
+}
+
+select {
+    background-color: #A5DC86;
+    border-radius:10px;
+    width:100%;
+}
+
+.light-blue{
+    background-color:lightblue;
+    border-radius:2px;
+
+}

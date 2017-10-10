@@ -91,11 +91,11 @@ namespace ElGroupo.Web.Controllers
             try
             {
                 var user = await this.userManager.GetUserAsync(HttpContext.User);
-                var attendee = await this.dbContext.EventAttendees.FirstOrDefaultAsync(x => x.EventId == eventId && x.UserId == user.Id);
-                var canEdit = HttpContext.User.IsInRole("admin") || this.dbContext.EventAttendees.Any(x => x.EventId == eventId && x.UserId == user.Id && x.IsOrganizer);
+                var attendee = await this.dbContext.EventAttendees.FirstOrDefaultAsync(x => x.EventId == eventId && x.User.Id == user.Id);
+                var canEdit = HttpContext.User.IsInRole("admin") || this.dbContext.EventAttendees.Any(x => x.EventId == eventId && x.User.Id == user.Id && x.IsOrganizer);
                 if (attendee == null) return BadRequest();
                 var model = new List<EventMessageModel>();
-                foreach (var mba in this.dbContext.MessageBoardItemAttendees.Include("MessageBoardItem.User").Where(x => x.AttendeeId == attendee.Id))
+                foreach (var mba in this.dbContext.MessageBoardItemAttendees.Include("MessageBoardItem").Where(x => x.AttendeeId == attendee.Id))
                 {
                     model.Add(new EventMessageModel
                     {

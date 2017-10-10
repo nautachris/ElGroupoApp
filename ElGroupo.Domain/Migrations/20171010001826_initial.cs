@@ -53,7 +53,7 @@ namespace ElGroupo.Domain.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false),
+                    Id = table.Column<long>(nullable: false),
                     ConcurrencyStamp = table.Column<string>(nullable: true),
                     Name = table.Column<string>(maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(maxLength: 256, nullable: true)
@@ -67,7 +67,7 @@ namespace ElGroupo.Domain.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(nullable: false),
+                    UserId = table.Column<long>(nullable: false),
                     LoginProvider = table.Column<string>(nullable: false),
                     Name = table.Column<string>(nullable: false),
                     Value = table.Column<string>(nullable: true)
@@ -82,7 +82,7 @@ namespace ElGroupo.Domain.Migrations
                 schema: "dbo",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false),
+                    Id = table.Column<long>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     ConcurrencyStamp = table.Column<string>(nullable: true),
                     EmailAddress = table.Column<string>(maxLength: 256, nullable: true),
@@ -119,7 +119,7 @@ namespace ElGroupo.Domain.Migrations
                     Id = table.Column<int>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true),
-                    RoleId = table.Column<int>(nullable: false)
+                    RoleId = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -141,6 +141,7 @@ namespace ElGroupo.Domain.Migrations
                     DateUpdated = table.Column<DateTime>(nullable: false),
                     Name = table.Column<string>(nullable: false),
                     OwnerId = table.Column<int>(nullable: false),
+                    OwnerId1 = table.Column<long>(nullable: false),
                     UserCreated = table.Column<string>(nullable: true),
                     UserUpdated = table.Column<string>(nullable: true)
                 },
@@ -148,8 +149,8 @@ namespace ElGroupo.Domain.Migrations
                 {
                     table.PrimaryKey("PK_EventGroups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_EventGroups_User_OwnerId",
-                        column: x => x.OwnerId,
+                        name: "FK_EventGroups_User_OwnerId1",
+                        column: x => x.OwnerId1,
                         principalSchema: "dbo",
                         principalTable: "User",
                         principalColumn: "Id",
@@ -157,15 +158,44 @@ namespace ElGroupo.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UnregisteredUserConnections",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateUpdated = table.Column<DateTime>(nullable: false),
+                    Email = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    Phone1Type = table.Column<string>(nullable: true),
+                    Phone1Value = table.Column<string>(nullable: true),
+                    Phone2Type = table.Column<string>(nullable: true),
+                    Phone2Value = table.Column<string>(nullable: true),
+                    UserCreated = table.Column<string>(nullable: true),
+                    UserId = table.Column<long>(nullable: true),
+                    UserUpdated = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UnregisteredUserConnections", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UnregisteredUserConnections_User_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "dbo",
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserConnection",
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false),
-                    ConnectedUserId = table.Column<int>(nullable: false),
+                    ConnectedUserId = table.Column<long>(nullable: false),
                     DateCreated = table.Column<DateTime>(nullable: false),
                     DateUpdated = table.Column<DateTime>(nullable: false),
                     UserCreated = table.Column<string>(nullable: true),
-                    UserId = table.Column<int>(nullable: false),
+                    UserId = table.Column<long>(nullable: false),
                     UserUpdated = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -188,7 +218,7 @@ namespace ElGroupo.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserContacts",
+                name: "UserContactMethods",
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false),
@@ -196,27 +226,52 @@ namespace ElGroupo.Domain.Migrations
                     DateCreated = table.Column<DateTime>(nullable: false),
                     DateUpdated = table.Column<DateTime>(nullable: false),
                     UserCreated = table.Column<string>(nullable: true),
-                    UserId = table.Column<int>(nullable: false),
+                    UserId = table.Column<long>(nullable: false),
                     UserUpdated = table.Column<string>(nullable: true),
                     Value = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserContacts", x => x.Id);
+                    table.PrimaryKey("PK_UserContactMethods", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserContacts_ContactMethods_ContactMethodId",
+                        name: "FK_UserContactMethods_ContactMethods_ContactMethodId",
                         column: x => x.ContactMethodId,
                         principalSchema: "dbo",
                         principalTable: "ContactMethods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserContacts_User_UserId",
+                        name: "FK_UserContactMethods_User_UserId",
                         column: x => x.UserId,
                         principalSchema: "dbo",
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserTokens",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateUpdated = table.Column<DateTime>(nullable: false),
+                    Token = table.Column<Guid>(nullable: false),
+                    TokenType = table.Column<int>(nullable: false),
+                    UserCreated = table.Column<string>(nullable: true),
+                    UserId = table.Column<long>(nullable: true),
+                    UserUpdated = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserTokens_User_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "dbo",
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -226,7 +281,7 @@ namespace ElGroupo.Domain.Migrations
                     Id = table.Column<int>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true),
-                    UserId = table.Column<int>(nullable: false)
+                    UserId = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -247,7 +302,7 @@ namespace ElGroupo.Domain.Migrations
                     LoginProvider = table.Column<string>(nullable: false),
                     ProviderKey = table.Column<string>(nullable: false),
                     ProviderDisplayName = table.Column<string>(nullable: true),
-                    UserId = table.Column<int>(nullable: false)
+                    UserId = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -265,8 +320,8 @@ namespace ElGroupo.Domain.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(nullable: false),
-                    RoleId = table.Column<int>(nullable: false)
+                    UserId = table.Column<long>(nullable: false),
+                    RoleId = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -305,12 +360,14 @@ namespace ElGroupo.Domain.Migrations
                     GooglePlaceId = table.Column<string>(maxLength: 50, nullable: true),
                     GroupId = table.Column<long>(nullable: true),
                     LocationName = table.Column<string>(nullable: true),
+                    MustRSVP = table.Column<bool>(nullable: false),
                     Name = table.Column<string>(nullable: true),
                     SavedAsDraft = table.Column<bool>(nullable: false),
                     StartTime = table.Column<DateTime>(nullable: false),
                     State = table.Column<string>(maxLength: 10, nullable: true),
                     UserCreated = table.Column<string>(nullable: true),
                     UserUpdated = table.Column<string>(nullable: true),
+                    VerificationCode = table.Column<string>(maxLength: 10, nullable: true),
                     VerificationMethod = table.Column<int>(nullable: false),
                     Zip = table.Column<string>(maxLength: 10, nullable: true)
                 },
@@ -342,7 +399,7 @@ namespace ElGroupo.Domain.Migrations
                     ResponseStatus = table.Column<int>(nullable: false),
                     ResponseText = table.Column<string>(nullable: true),
                     UserCreated = table.Column<string>(nullable: true),
-                    UserId = table.Column<int>(nullable: false),
+                    UserId = table.Column<long>(nullable: false),
                     UserUpdated = table.Column<string>(nullable: true),
                     Viewed = table.Column<bool>(nullable: false)
                 },
@@ -373,6 +430,7 @@ namespace ElGroupo.Domain.Migrations
                     DateUpdated = table.Column<DateTime>(nullable: false),
                     EventId = table.Column<long>(nullable: false),
                     MessageText = table.Column<string>(nullable: false),
+                    PostedById = table.Column<long>(nullable: false),
                     PostedDate = table.Column<DateTime>(nullable: false),
                     Subject = table.Column<string>(nullable: true),
                     UserCreated = table.Column<string>(nullable: true),
@@ -389,8 +447,8 @@ namespace ElGroupo.Domain.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_MessageBoardItems_User_UserId",
-                        column: x => x.UserId,
+                        name: "FK_MessageBoardItems_User_PostedById",
+                        column: x => x.PostedById,
                         principalSchema: "dbo",
                         principalTable: "User",
                         principalColumn: "Id",
@@ -542,9 +600,9 @@ namespace ElGroupo.Domain.Migrations
                 column: "NotificationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EventGroups_OwnerId",
+                name: "IX_EventGroups_OwnerId1",
                 table: "EventGroups",
-                column: "OwnerId");
+                column: "OwnerId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EventNotifications_EventId",
@@ -562,9 +620,9 @@ namespace ElGroupo.Domain.Migrations
                 column: "EventId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MessageBoardItems_UserId",
+                name: "IX_MessageBoardItems_PostedById",
                 table: "MessageBoardItems",
-                column: "UserId");
+                column: "PostedById");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MessageBoardItemAttendees_AttendeeId",
@@ -581,6 +639,11 @@ namespace ElGroupo.Domain.Migrations
                 schema: "dbo",
                 table: "UnregisteredEventAttendees",
                 column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UnregisteredUserConnections_UserId",
+                table: "UnregisteredUserConnections",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -612,13 +675,18 @@ namespace ElGroupo.Domain.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserContacts_ContactMethodId",
-                table: "UserContacts",
+                name: "IX_UserContactMethods_ContactMethodId",
+                table: "UserContactMethods",
                 column: "ContactMethodId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserContacts_UserId",
-                table: "UserContacts",
+                name: "IX_UserContactMethods_UserId",
+                table: "UserContactMethods",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserTokens_UserId",
+                table: "UserTokens",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -661,10 +729,16 @@ namespace ElGroupo.Domain.Migrations
                 schema: "dbo");
 
             migrationBuilder.DropTable(
+                name: "UnregisteredUserConnections");
+
+            migrationBuilder.DropTable(
                 name: "UserConnection");
 
             migrationBuilder.DropTable(
-                name: "UserContacts");
+                name: "UserContactMethods");
+
+            migrationBuilder.DropTable(
+                name: "UserTokens");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");

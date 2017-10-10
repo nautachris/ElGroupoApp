@@ -7,7 +7,7 @@ namespace ElGroupo.Domain.Enums
     public enum AttendanceVerificationMethods
     {
         None = 0,
-        Geographic = 1,
-        Password = 2
+        PasswordAndLocation = 1,
+        PasswordOnly = 2
     }
 }

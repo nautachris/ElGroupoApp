@@ -11,7 +11,7 @@ namespace ElGroupo.Web.Models.Account
     {
 
         public List<EditContactModel> Contacts { get; set; }
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         public string Name { get; set; }
 

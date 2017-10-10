@@ -9,8 +9,8 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    [Migration("20170929191540_addfieldstouserunregisteredconnection")]
-    partial class addfieldstouserunregisteredconnection
+    [Migration("20171010001826_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -117,7 +117,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("UserCreated");
 
-                    b.Property<int>("UserId");
+                    b.Property<long>("UserId");
 
                     b.Property<string>("UserUpdated");
 
@@ -174,13 +174,15 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<int>("OwnerId");
 
+                    b.Property<long>("OwnerId1");
+
                     b.Property<string>("UserCreated");
 
                     b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("OwnerId1");
 
                     b.ToTable("EventGroups");
                 });
@@ -253,6 +255,8 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<string>("MessageText")
                         .IsRequired();
 
+                    b.Property<long>("PostedById");
+
                     b.Property<DateTime>("PostedDate");
 
                     b.Property<string>("Subject");
@@ -267,7 +271,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("PostedById");
 
                     b.ToTable("MessageBoardItems");
                 });
@@ -351,7 +355,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("UserCreated");
 
-                    b.Property<int?>("UserId");
+                    b.Property<long?>("UserId");
 
                     b.Property<string>("UserUpdated");
 
@@ -364,7 +368,7 @@ namespace ElGroupo.Domain.Migrations
 
             modelBuilder.Entity("ElGroupo.Domain.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("AccessFailedCount");
@@ -426,7 +430,7 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("ConnectedUserId");
+                    b.Property<long>("ConnectedUserId");
 
                     b.Property<DateTime>("DateCreated");
 
@@ -434,7 +438,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("UserCreated");
 
-                    b.Property<int>("UserId");
+                    b.Property<long>("UserId");
 
                     b.Property<string>("UserUpdated");
 
@@ -460,7 +464,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("UserCreated");
 
-                    b.Property<int>("UserId");
+                    b.Property<long>("UserId");
 
                     b.Property<string>("UserUpdated");
 
@@ -497,9 +501,35 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("UserPhoto");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<int>", b =>
+            modelBuilder.Entity("ElGroupo.Domain.UserValidationToken", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateCreated");
+
+                    b.Property<DateTime>("DateUpdated");
+
+                    b.Property<Guid>("Token");
+
+                    b.Property<int>("TokenType");
+
+                    b.Property<string>("UserCreated");
+
+                    b.Property<long?>("UserId");
+
+                    b.Property<string>("UserUpdated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserTokens");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<long>", b =>
+                {
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("ConcurrencyStamp")
@@ -520,7 +550,7 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("AspNetRoles");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<long>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -529,7 +559,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("ClaimValue");
 
-                    b.Property<int>("RoleId");
+                    b.Property<long>("RoleId");
 
                     b.HasKey("Id");
 
@@ -538,7 +568,7 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("AspNetRoleClaims");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<long>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -547,7 +577,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("ClaimValue");
 
-                    b.Property<int>("UserId");
+                    b.Property<long>("UserId");
 
                     b.HasKey("Id");
 
@@ -556,7 +586,7 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("AspNetUserClaims");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<long>", b =>
                 {
                     b.Property<string>("LoginProvider");
 
@@ -564,7 +594,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("ProviderDisplayName");
 
-                    b.Property<int>("UserId");
+                    b.Property<long>("UserId");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -573,11 +603,11 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("AspNetUserLogins");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<long>", b =>
                 {
-                    b.Property<int>("UserId");
+                    b.Property<long>("UserId");
 
-                    b.Property<int>("RoleId");
+                    b.Property<long>("RoleId");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -586,9 +616,9 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("AspNetUserRoles");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<long>", b =>
                 {
-                    b.Property<int>("UserId");
+                    b.Property<long>("UserId");
 
                     b.Property<string>("LoginProvider");
 
@@ -637,7 +667,7 @@ namespace ElGroupo.Domain.Migrations
                 {
                     b.HasOne("ElGroupo.Domain.User", "Owner")
                         .WithMany("EventGroups")
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("OwnerId1")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -662,7 +692,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.HasOne("ElGroupo.Domain.User", "PostedBy")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("PostedById")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -723,15 +753,22 @@ namespace ElGroupo.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("ElGroupo.Domain.UserValidationToken", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<int>")
+                    b.HasOne("ElGroupo.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<long>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<long>")
                         .WithMany("Claims")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<long>", b =>
                 {
                     b.HasOne("ElGroupo.Domain.User")
                         .WithMany("Claims")
@@ -739,7 +776,7 @@ namespace ElGroupo.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<long>", b =>
                 {
                     b.HasOne("ElGroupo.Domain.User")
                         .WithMany("Logins")
@@ -747,9 +784,9 @@ namespace ElGroupo.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<int>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<long>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<int>")
+                    b.HasOne("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<long>")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);

@@ -8,7 +8,7 @@ using ElGroupo.Web.Mail;
 
 namespace ElGroupo.Web.Services
 {
-    public class MailService
+    public class MailService: IEmailService
     {
         private readonly IEmailSender emailSender;
         private readonly IRazorLightEngine engine;

@@ -1,0 +1,18 @@
+﻿@model ElGroupo.Web.Mail.Models.VerifyEmailModel
+@using Microsoft.AspNetCore.Html
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Welcome to Tribez!!</title>
+</head>
+<body>
+    <div>Hello, @Model.Recipient!</div>
+    <div>Thanks for signing up with Tribez!</div>
+    <div>To complete the registration process, we just need to confirm your email address</div>
+    <div><a href="@(new HtmlString(Model.CallbackUrl))">Click Here to Verify Your Email Address!</a></div>
+
+    <br />
+    <div>Thanks, The El Groupo Team!!</div>
+</body>
+</html>

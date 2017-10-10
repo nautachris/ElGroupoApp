@@ -11,6 +11,37 @@
 
     });
 
+
+    $("html").on("click", ".switch-container > div", function () {
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+    });
+    $("html").on("click", ".switch-container > span", function () {
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+    });
+
+
+    $("#divAddConnections div").on("click", ".switch-container > div", function () {
+
+        //$(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        //$(this).addClass("switch-selected");
+
+        if ($(this).attr('data-action') === 'manual') {
+            console.log('hiding autocomplete');
+            $(".row.select-existing-contacts").hide();
+            $(".row.manual-search").show();
+        }
+        else {
+            console.log('showing autocomplete');
+            $(".row.select-existing-contacts").show();
+            $(".row.manual-search").hide();
+        }
+    });
+
+
+
+
     var originalImageUrl = $("#divImg").css('background-image');
     $("#btnAddNewContact").on("click", function () {
         if ($("#selContactType").val() === '') return false;
@@ -92,17 +123,7 @@
     });
 
 
-    //connections
-    $(".contact-search-rb").on("change", function () {
-        if ($("#rbExistingContacts").is(':checked')) {
-            $(".row.select-existing-contacts").show();
-            $(".row.manual-search").hide();
-        }
-        else {
-            $(".row.select-existing-contacts").hide();
-            $(".row.manual-search").show();
-        }
-    });
+
 
 
     $("#tblImportList").on("click", "th a", function () {
@@ -125,20 +146,23 @@
     $("#btnAddConnection").on('click', function () {
         if (!$("#txtSelectConnection").has('[data-contact-id]')) return;
         var cid = Number($("#txtSelectConnection").attr('data-contact-id'));
+
+        //check to see if the user already exsits
+        if ($("#divConnectionList").find("div[data-user-id=" + cid + "]").length > 0) return;
+
         //active user id
-        var eid = Number($("#Id").val());
-        var obj = { userId: cid, eventId: eid };
 
         $.ajax({
-            url: "/Account/AddConnection/" + eid.toString() + '/Add/' + cid.toString(),
+            url: "/Account/AddConnection/" + cid.toString(),
             type: 'POST',
             async: true,
             cache: false,
             dataType: "html",
             success: function success(results) {
-                $("#divConnections").html(results);
+                $("#divConnectionList").html(results);
                 $("#txtSelectConnection").val('');
-                $("#txtSelectConnection").removeAttr('data-contact-id')
+                $("#txtSelectConnection").removeAttr('data-contact-id');
+                $("#txtSelectConnection").removeClass('light-blue');
             },
             error: function error(err) {
                 alert('fuck me');
@@ -148,7 +172,8 @@
     $("#txtSelectConnection").on("input", function () {
         if ($(this).val() === '') {
             $(this).removeAttr('data-contact-id');
-            $("#txtSelectConnection").attr('disabled', true);
+            $("#btnAddConnection").attr('disabled', true);
+            $("#txtSelectConnection").removeClass('light-blue');
         }
     });
     $("#txtSelectConnection").autocomplete({
@@ -157,14 +182,15 @@
         delay: 300,
         select: function (e, i) {
             $("#txtSelectConnection").attr('data-contact-id', i.item.id);
+            $("#txtSelectConnection").addClass('light-blue');
             $("#btnAddConnection").attr('disabled', false);
         },
         source: function (request, response) {
-            var userId = $("#Id").val();
-            var apiUrl = $("#rbContactsConnections").is(':checked') ? "/Users/SearchAutocompleteByUser/" + request.term : "/Users/SearchAutocomplete/" + request.term;
+            //var userId = $("#Id").val();
+            //var apiUrl = $("#rbContactsConnections").is(':checked') ? "/Users/SearchAllUsers/" + request.term : "/Users/SearchAutocomplete/" + request.term;
             var _response = response;
             $.ajax({
-                url: apiUrl,
+                url: "/Users/SearchAllUsers/" + request.term,
                 type: 'GET',
                 //dataType: "application/json; charset=utf-8",
                 async: true,

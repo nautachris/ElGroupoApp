@@ -9,6 +9,15 @@
 
     });
 
+    $("html").on("click", ".switch-container > div", function () {
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+    });
+    $("html").on("click", ".switch-container > span", function () {
+        $(this).closest("div.switch-container").find(".switch-selected").removeClass("switch-selected");
+        $(this).addClass("switch-selected");
+    });
+
     //details
 
 

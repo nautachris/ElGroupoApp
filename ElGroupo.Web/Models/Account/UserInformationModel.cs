@@ -10,6 +10,6 @@ namespace ElGroupo.Web.Models.Account
         public string Name { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
-        public int Id { get; set; }
+        public long Id { get; set; }
     }
 }

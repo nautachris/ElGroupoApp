@@ -33,8 +33,8 @@ namespace ElGroupo.Web.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("SearchAutocomplete/{search}")]
-        public async Task<IActionResult> SearchAutocomplete([FromRoute]string search)
+        [Route("SearchAllUsers/{search}")]
+        public async Task<IActionResult> SearchAllUsers([FromRoute]string search)
         {
             var users = dbContext.Users.Where(x => x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
             var list = new List<AutoCompleteModel>();
@@ -45,14 +45,16 @@ namespace ElGroupo.Web.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("SearchAutocompleteByUser/{search}")]
-        public async Task<IActionResult> SearchAutocompleteByUser([FromRoute]string search)
+        [Route("SearchUserConnections/{search}")]
+        public async Task<IActionResult> SearchUserConnections([FromRoute]string search)
         {
             var user = await this.userManager.GetUserAsync(HttpContext.User);
             var users = dbContext.UserConnections.Include("ConnectedUser").Where(x => x.User.Id == user.Id && x.ConnectedUser.Name.ToUpper().Contains(search.ToUpper()) || x.ConnectedUser.Email.ToUpper().Contains(search.ToUpper())).Select(x=>x.ConnectedUser);
-            var list = new List<AutoCompleteModel>();
-            await users.ForEachAsync(x => list.Add(new AutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name }));
-            return Json(list);
+            var list = new List<ConnectionAutoCompleteModel>();
+            await users.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name, Registered = true  }));
+            var unregisteredUsers = dbContext.UnregisteredUserConnections.Where(x => x.User.Id == user.Id && x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
+            await unregisteredUsers.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Name = x.Name, Id = x.Id, Registered = false }));
+            return Json(list.OrderBy(x=>x.Name).ToList());
         }
 
         [Authorize]

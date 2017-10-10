@@ -9,7 +9,7 @@ namespace ElGroupo.Web.Models.Events
     {
         public string Name { get; set; }
         public long Id { get; set; }
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public RSVPTypes RSVPStatus { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }

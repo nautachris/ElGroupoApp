@@ -30,7 +30,7 @@ namespace ElGroupo.Web.Filters
                 var user = await this.userManager.GetUserAsync(context.HttpContext.User);
                 //var userId = Convert.ToInt32(this.userManager.GetUserId(context.HttpContext.User));
                 var eventId = Convert.ToInt64(context.ActionArguments["eid"]);
-                allowed = this.context.EventAttendees.Any(x => x.UserId == user.Id && x.EventId == eventId && x.IsOrganizer);
+                allowed = this.context.EventAttendees.Any(x => x.User.Id == user.Id && x.EventId == eventId && x.IsOrganizer);
                 if (!allowed)
                 {     
                     context.Result = new JsonResult("unauthorized");

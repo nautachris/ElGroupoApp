@@ -5,19 +5,21 @@ using Microsoft.AspNetCore.Identity;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ElGroupo.Domain.Data.Configurations;
-
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace ElGroupo.Domain.Data
 {
 
 
-    public class ElGroupoDbContext : IdentityDbContext<User, IdentityRole<int>, int>
+    public class ElGroupoDbContext : IdentityDbContext<User, IdentityRole<long>, long>
     {
         public DbSet<Lookups.ContactMethod> ContactTypes { get; set; }
 
@@ -39,6 +41,7 @@ namespace ElGroupo.Domain.Data
         public DbSet<UserPhoto> UserPhotos { get; set; }
 
         public DbSet<UserConnection> UserConnections { get; set; }
+        public DbSet<UserValidationToken> UserValidationTokens { get; set; }
 
 
         public ElGroupoDbContext(DbContextOptions<ElGroupoDbContext> options) : base(options)
@@ -55,6 +58,11 @@ namespace ElGroupo.Domain.Data
             builder.Entity<UserConnection>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<UserConnection>().HasOne(x => x.User).WithMany(x => x.ConnectedUsers).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
             builder.Entity<UserConnection>().HasOne(x => x.ConnectedUser);
+
+            builder.Entity<UserValidationToken>().ToTable("UserTokens");
+            builder.Entity<UserValidationToken>().HasKey(x => x.Id);
+            builder.Entity<UserValidationToken>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<UserValidationToken>().HasOne(x => x.User);
 
 
             builder.AddConfiguration<UserConfiguration>();
@@ -74,7 +82,7 @@ namespace ElGroupo.Domain.Data
             builder.Entity<MessageBoardItem>().HasMany(x => x.Attendees).WithOne(x => x.MessageBoardItem).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
             builder.Entity<EventAttendee>().HasMany(x => x.MessageBoardItems).WithOne(x => x.Attendee).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
             builder.Entity<EventAttendee>().HasMany(x => x.Notifications).WithOne(x => x.Attendee).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
-            
+
 
 
 
@@ -89,49 +97,150 @@ namespace ElGroupo.Domain.Data
         public static async Task CreateAdminAccount(IServiceProvider provider, IConfiguration configuration)
         {
             UserManager<User> userManager = provider.GetRequiredService<UserManager<User>>();
-            RoleManager<IdentityRole<int>> roleManager = provider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+            RoleManager<IdentityRole<long>> roleManager = provider.GetRequiredService<RoleManager<IdentityRole<long>>>();
 
             string adminName = "admin";
             string roleName = "admin";
             if (await userManager.FindByNameAsync(adminName) == null)
             {
-                if (await roleManager.FindByNameAsync(roleName) == null) await roleManager.CreateAsync(new IdentityRole<int>(roleName));
-                User newUser = new User { UserName = adminName, Email = "nautachris@gmail.com" };
-                var createResult = await userManager.CreateAsync(newUser, "cS!102381");
+                if (await roleManager.FindByNameAsync(roleName) == null) await roleManager.CreateAsync(new IdentityRole<long>(roleName));
+                User newUser = new User { UserName = adminName, Email = "nautachris@gmail.com", EmailConfirmed = true };
+                var createResult = await userManager.CreateAsync(newUser, "flyguy23");
                 if (createResult.Succeeded) await userManager.AddToRoleAsync(newUser, roleName);
+
+
             }
         }
 
+        public static async Task AddUserPhotos(IServiceProvider provider)
+        {
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+
+            var photoDict = new Dictionary<int, string>();
+            var count = 0;
+            foreach (var photo in new DirectoryInfo("C:\\Photos").GetFiles("*.jpg", SearchOption.TopDirectoryOnly))
+            {
+                count++;
+                photoDict.Add(count, photo.FullName);
+            }
+
+
+            count = 0;
+            Random r = new Random(4845);
+            var usersWithoutPhotos = ctx.Set<User>().Include(x => x.Photo).Where(x => x.Photo == null).ToList();
+            foreach (var u in usersWithoutPhotos)
+            {
+                count++;
+                var idx = r.Next(1, photoDict.Count);
+
+                var imageBytes = CreateThumbnail(photoDict[idx], "image/jpeg");
+                var newPhoto = new UserPhoto
+                {
+                    ContentType = "image/jpeg",
+                    ImageData = imageBytes
+                };
+                ctx.UserPhotos.Add(newPhoto);
+                u.Photo = newPhoto;
+                ctx.Update(u);
+
+                if (count % 20 == 0)
+                {
+                    await ctx.SaveChangesAsync();
+                    count = 0;
+                }
+            }
+            await ctx.SaveChangesAsync();
+        }
+
+        public static bool ThumbnailCallback()
+        {
+            return false;
+        }
+        private static byte[] CreateThumbnail(string fileName, string contentType)
+        {
+            //all images will now be 300 px wide
+            int width = 300;
+            Image i = Image.FromFile(fileName);
+
+            double dx = 300d / (double)i.Width;
+
+            Image.GetThumbnailImageAbort callback = new Image.GetThumbnailImageAbort(ThumbnailCallback);
+            Image thumbnail = i.GetThumbnailImage(width, Convert.ToInt32(i.Height * dx), callback, IntPtr.Zero);
+            var ms = new MemoryStream();
+            ImageFormat format = ImageFormat.Jpeg;
+            switch (contentType)
+            {
+                case "image/jpeg":
+                case "image/jpg":
+                    format = ImageFormat.Jpeg;
+                    break;
+                case "image/png":
+                    format = ImageFormat.Png;
+                    break;
+                case "image/gif":
+                    format = ImageFormat.Gif;
+                    break;
+            }
+            thumbnail.Save(ms, format);
+            return ms.ToArray();
+        }
 
         public static async Task CreateUsers(IServiceProvider provider)
         {
             var ctx = provider.GetRequiredService<ElGroupoDbContext>();
-            //UserManager<User> userManager = provider.GetRequiredService<UserManager<User>>();
-            //RoleManager<IdentityRole<int>> roleManager = provider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-            //for (var x = 0; x < 25; x++)
-            //{
-            //    string name = "user" + x.ToString();
-            //    string email = name + "@email.com";
-            //    var newUser = new User { UserName = name, Email = email };
-            //    var createResult = await userManager.CreateAsync(newUser, "cS!102381");
-
-
-            //}
-            //foreach (var u in ctx.Users.Include("Contacts").Where(x=>x.Contacts.Count == 0))
-            //{
-            //    foreach (var ct in ctx.ContactTypes)
-            //    {
-            //        u.AddContact(ct, "contact");
-
-            //    }
-            //    ctx.Update(u);
-            //}
-
-            foreach (var u in ctx.Users.Where(x => x.Name == null))
+            UserManager<User> userManager = provider.GetRequiredService<UserManager<User>>();
+            RoleManager<IdentityRole<long>> roleManager = provider.GetRequiredService<RoleManager<IdentityRole<long>>>();
+            var count = 0;
+            string filePath = @"C:\Projects\ElGroupo\ElGroupoApp\fakecontacts.csv";
+            var reader = File.OpenText(filePath);
+            var line = reader.ReadLine();
+            line = reader.ReadLine();
+            while (line != null)
             {
-                u.Name = u.UserName;
-                u.ZipCode = "87111";
-                ctx.Update(u);
+                count++;
+                var ary = line.Split('|');
+                string name = ary[4] + " " + ary[6];
+                string zip = ary[11];
+                string email = ary[14];
+                string username = ary[15];
+                var phone = ary[18];
+                if (zip.Length < 5)
+                {
+                    var dddid = 4;
+                    zip = "0" + zip;
+                }
+                var newUser = new User { UserName = username, Name = name, Email = email, ZipCode = zip, EmailConfirmed = true, PhoneNumber = phone };
+                var result = await userManager.CreateAsync(newUser, "flyguy23");
+                if (!result.Succeeded)
+                {
+                    var fff = 4;
+                }
+
+                line = reader.ReadLine();
+            }
+
+
+            count = 0;
+            foreach (var u in await ctx.Users.Include(x => x.ContactMethods).Where(x => !x.ContactMethods.Any()).ToListAsync())
+            {
+                count++;
+                foreach (var ct in ctx.ContactTypes)
+                {
+                    var cm = new UserContactMethod
+                    {
+                        User = u,
+                        ContactMethod = ct,
+                        Value = "contact"
+                    };
+                    ctx.Add(cm);
+
+                }
+
+                if (count % 100 == 0)
+                {
+                    await ctx.SaveChangesAsync();
+                    count = 0;
+                }
             }
             await ctx.SaveChangesAsync();
 

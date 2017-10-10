@@ -37,22 +37,23 @@ namespace ElGroupo.Web
         {
             services.AddDbContext<ElGroupoDbContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddTransient<DbContext>(p => p.GetService<ElGroupoDbContext>());
-            services.AddIdentity<User, IdentityRole<int>>(opts =>
+            services.AddIdentity<User, IdentityRole<long>>(opts =>
             {
                 opts.User.RequireUniqueEmail = true;
                 opts.Password.RequiredLength = 6;
                 opts.Password.RequireNonAlphanumeric = false;
                 opts.Password.RequireLowercase = false;
                 opts.Password.RequireUppercase = false;
+                opts.SignIn.RequireConfirmedEmail = true;
                 opts.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-            }).AddEntityFrameworkStores<ElGroupoDbContext, int>();
+            }).AddEntityFrameworkStores<ElGroupoDbContext, long>();
             services.AddMvc();
             //services.AddTransient<IEmailSender, SendGridEmailSender>();
             services.AddTransient<IEmailSender, MailgunEmailSender>();
             services.AddTransient<EventService, EventService>();
 
             services.AddSingleton(EngineFactory.CreateEmbedded(typeof(Mail.Templates.TemplatePointer)));
-            services.AddSingleton<MailService, MailService>();
+            services.AddSingleton<IEmailService, MailService>();
             services.Configure<EmailConfigOptions>(Configuration);
             services.Configure<GoogleConfigOptions>(Configuration);
 
@@ -98,6 +99,7 @@ namespace ElGroupo.Web
 
 
             //Models.Configuration.EmailConfigOptions.SendTestEmail().Wait();
+            ElGroupoDbContext.AddUserPhotos(app.ApplicationServices).Wait();
             //ElGroupoDbContext.CreateUsers(app.ApplicationServices).Wait();
             //ElGroupoDbContext.PopulateUserContacts(app.ApplicationServices).Wait();
             //ElGroupoDbContext.CreateAdminAccount(app.ApplicationServices, Configuration).Wait();

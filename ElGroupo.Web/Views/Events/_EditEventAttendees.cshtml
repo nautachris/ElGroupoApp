@@ -1,0 +1,66 @@
+﻿@using ElGroupo.Web.Models.Events
+@model ViewEventDetailsModel
+
+@{ 
+    Layout = null;
+}
+
+<div id="divEditEventAttendees" class="row">
+    <div class="row">
+        @*<div class="col span-1-of-4">
+            <label>Select People to Invite:</label>
+        </div>*@
+
+        <div class="col width-100 switch-container search-method">
+            <div data-action="connections" class="switch-selected span-1-of-3">Search within My Connections</div>
+            <div data-action="all" class="span-1-of-3">Search for ElGroupo Members</div>
+            <div data-action="manual" class="span-1-of-3">Enter New Name and Email</div>
+        </div>
+    </div>
+
+    <div class="row select-existing-contacts centered">
+
+        <div class="col span-2-of-2">
+            <label>Enter Name or Email</label>
+            <input type="text" id="txtAttendees" class="span-7-of-8" />
+        </div>
+        <div class="col span-2-of-2 centered switch-container registered-owner">
+            <label class="span-2-of-2">Event Owner?</label>
+            <span data-action="yes" class="span-1-of-5">Yes</span>
+            <span data-action="no" class="span-1-of-5 switch-selected">No</span>
+        </div>
+        <div class="col span-2-of-2">
+            <a class="btn btn-primary" disabled id="btnAddAttendee">Add Attendee</a>
+        </div>
+    </div>
+    <div class="row manual-search centered">
+        <div class="col span-2-of-2">
+            <label class="span-2-of-2" for="new-user-name">Enter Name</label>
+            <input type="text" name="new-user-name" id="txtNewUserName" class="span-7-of-8" />
+        </div>
+
+        <div class="col span-2-of-2">
+            <label class="span-2-of-2" for="new-user-email">Email:</label>
+            <input class="span-7-of-8" name="new-user-email" id="txtNewUserEmail" type="email">
+        </div>
+        <div class="col span-2-of-2 centered switch-container unregistered-owner">
+            <label class="span-2-of-2">Event Owner?</label>
+            <span data-action="yes" class="span-1-of-5">Yes</span>
+            <span data-action="no" class="span-1-of-5 switch-selected">No</span>
+        </div>
+        <div class="col span-2-of-2">
+            <a class="btn btn-primary" disabled id="btnAddNewUser">Add New User</a>
+        </div>
+    </div>
+
+
+
+    <div class="row centered" id="divAddedAttendeeList">
+        <div class="col span-1-of-2">
+            <a id="btnCancelAddAttendee" class="btn btn-primary">Cancel Attendee Changes</a>
+        </div>
+        <div class="col span-1-of-2">
+            <a id="btnAddAttendee" class="btn btn-primary">Invite New Attendees</a>
+        </div>
+    </div>
+</div>

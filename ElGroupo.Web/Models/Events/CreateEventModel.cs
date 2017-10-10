@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ElGroupo.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 namespace ElGroupo.Web.Models.Events
 {
@@ -26,7 +27,7 @@ namespace ElGroupo.Web.Models.Events
         [Required]
 
         [Display(Description = "Start Minute")]
-        public int StartMinute { get; set; }
+        public int StartMinute { get; set; } = 0;
         [Required]
         public Enums.AMPM StartAMPM { get; set; }
         [Required]
@@ -34,7 +35,7 @@ namespace ElGroupo.Web.Models.Events
         public int EndHour { get; set; }
         [Required]
         [Display(Description = "End Minute")]
-        public int EndMinute { get; set; }
+        public int EndMinute { get; set; } = 0;
         [Required]
         public Enums.AMPM EndAMPM { get; set; }
 
@@ -58,5 +59,11 @@ namespace ElGroupo.Web.Models.Events
         public double YCoord { get; set; }
 
         public string GooglePlaceId { get; set; }
+
+        public AttendanceVerificationMethods AttendanceVerificationMethod { get; set; }
+        public string VerificationCode { get; set; }
+        public int? LocationTolerance { get; set; }
+
+        public bool RSVPRequired { get; set; }
     }
 }

@@ -1,0 +1,32 @@
+﻿@using ElGroupo.Web.Models.Events
+@model IEnumerable<PendingEventAttendeeModel>
+
+@{
+    Layout = null;
+}
+
+@foreach (var att in Model)
+{
+    <div class="row width-100 attendee-container" data-id="@att.Id" data-registered="@att.Registered.ToString()">
+        <div class="span-4-of-10">@att.Name</div>
+        <div class="span-3-of-10">@att.Email</div>
+        <div class="span-3-of-10">
+            <div class="col span-2-of-2 switch-container">
+                @if (att.Owner)
+                {
+                    <div data-action="yes" class="span-1-of-2 switch-selected">Owner</div>
+                    <div data-action="no" class="span-1-of-2">Attendee Only</div>
+                }
+                else
+                {
+                    <div data-action="yes" class="span-1-of-2">Owner</div>
+                    <div data-action="no" class="span-1-of-2  switch-selected">Attendee Only</div>
+
+                }
+            </div>
+        </div>
+    </div>
+
+
+
+}

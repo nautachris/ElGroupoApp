@@ -42,7 +42,7 @@ namespace ElGroupo.Web.Controllers
             {
                 var user = await this.userManager.GetUserAsync(HttpContext.User);
                 var e = await this.dbContext.Events.Include("Attendees.User").Include("Organizers.User").FirstAsync(x => x.Id == model.EventId);
-                var org = e.Attendees.FirstOrDefault(x => x.UserId == user.Id && x.IsOrganizer);
+                var org = e.Attendees.FirstOrDefault(x => x.User.Id == user.Id && x.IsOrganizer);
                 if (!HttpContext.User.IsInRole("admin") && org == null)
                 {
                     return BadRequest();
@@ -108,8 +108,8 @@ namespace ElGroupo.Web.Controllers
             try
             {
                 var user = await this.userManager.GetUserAsync(HttpContext.User);
-                var attendee = await this.dbContext.EventAttendees.FirstOrDefaultAsync(x => x.EventId == eventId && x.UserId == user.Id);
-                var canEdit = HttpContext.User.IsInRole("admin") || this.dbContext.EventAttendees.Any(x => x.EventId == eventId && x.UserId == user.Id && x.IsOrganizer);
+                var attendee = await this.dbContext.EventAttendees.FirstOrDefaultAsync(x => x.EventId == eventId && x.User.Id == user.Id);
+                var canEdit = HttpContext.User.IsInRole("admin") || this.dbContext.EventAttendees.Any(x => x.EventId == eventId && x.User.Id == user.Id && x.IsOrganizer);
                 if (attendee == null) return BadRequest();
                 var model = new List<EventNotificationModel>();
                 foreach (var ean in this.dbContext.EventAttendeeNotifications.Include("Notification.PostedBy.User").Where(x => x.AttendeeId == attendee.Id))
@@ -189,7 +189,7 @@ namespace ElGroupo.Web.Controllers
             var user = await this.userManager.GetUserAsync(HttpContext.User);
             var msg = await this.dbContext.EventAttendeeNotifications.Include("Notification.Event.Organizers").Include("Notification.Attendees").FirstOrDefaultAsync(x => x.Id == notificationId);
 
-            if (!msg.Notification.Event.Attendees.Any(x => x.UserId == user.Id && x.IsOrganizer) || HttpContext.User.IsInRole("admin"))
+            if (!msg.Notification.Event.Attendees.Any(x => x.User.Id == user.Id && x.IsOrganizer) || HttpContext.User.IsInRole("admin"))
             {
                 return BadRequest();
             }

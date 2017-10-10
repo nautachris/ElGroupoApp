@@ -45,6 +45,14 @@ namespace ElGroupo.Web.Controllers
             return View();
         }
 
+
+        [Authorize]
+        [Route("PendingAttendeeList")]
+        public async Task<IActionResult> PendingAttendeeList([FromBody]PendingEventAttendeeModel[] models)
+        {
+            return View("_PendingAttendeeList", models);
+        }
+
         [HttpPost]
         [Authorize]
         [Route("Create")]
@@ -56,8 +64,8 @@ namespace ElGroupo.Web.Controllers
                 var eventId = await this.eventService.CreateEvent(model, user);
 
                 //move on to Contacts
-
-                return RedirectToAction("Contacts", new { id = eventId });
+                //now lets just redirect to the normal view/edit view
+                return RedirectToAction("View", new { eid = eventId });
             }
             return View(model);
 
@@ -455,8 +463,8 @@ namespace ElGroupo.Web.Controllers
         {
             if (HttpContext.User.IsInRole("admin")) return EditAccessTypes.Edit;
             var user = await this.userManager.GetUserAsync(HttpContext.User);
-            if (await this.dbContext.EventAttendees.AnyAsync(x => x.UserId == user.Id && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
-            if (await this.dbContext.EventAttendees.AnyAsync(x => x.UserId == user.Id && x.EventId == eventId)) return EditAccessTypes.View;
+            if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
+            if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId)) return EditAccessTypes.View;
             return EditAccessTypes.None;
         }
 

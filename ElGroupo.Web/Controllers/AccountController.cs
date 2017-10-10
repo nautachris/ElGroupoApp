@@ -29,20 +29,36 @@ namespace ElGroupo.Web.Controllers
         private SignInManager<User> signInManager;
         private IPasswordHasher<User> passwordHasher;
         private ElGroupoDbContext dbContext;
-        private IEmailSender emailSender;
+        private IEmailService emailService;
         private GoogleConfigOptions googleOptions;
+
         public AccountController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, IPasswordHasher<User> hasher, ElGroupoDbContext ctx, IEmailSender sender, IOptions<GoogleConfigOptions> googConfig)
+                SignInManager<User> signinMgr, IPasswordHasher<User> hasher, ElGroupoDbContext ctx, IEmailService sender, IOptions<GoogleConfigOptions> googConfig)
         {
             userManager = userMgr;
             signInManager = signinMgr;
             passwordHasher = hasher;
             dbContext = ctx;
-            emailSender = sender;
+            emailService = sender;
             googleOptions = googConfig.Value;
         }
 
+        [Authorize]
+        [HttpPost("AddConnection/{uid}")]
+        public async Task<IActionResult> AddConnection([FromRoute]long uid)
+        {
 
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var uc = new UserConnection
+            {
+                User = user,
+                ConnectedUser = dbContext.Users.First(x => x.Id == uid)
+            };
+            dbContext.Add(uc);
+            await dbContext.SaveChangesAsync();
+
+            return RedirectToAction("GetConnectionList", new { uid = user.Id });
+        }
 
         [Authorize]
         [HttpPost("ImportSelectedContacts")]
@@ -302,6 +318,34 @@ namespace ElGroupo.Web.Controllers
             return View("Create", new CreateAccountModel { InvitedFromEvent = true, InviteName = invite.Name, EventName = invite.Event.Name, InvitedEmail = invite.Email, InviteId = invite.RegisterToken });
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("VerifyEmail/{code}", Name = "VerifyEmail")]
+        public async Task<IActionResult> VerifyEmail([FromRoute]string code)
+        {
+            var codeGuid = new Guid(code);
+            var token = await dbContext.Set<UserValidationToken>().Include(x => x.User).FirstOrDefaultAsync(x => x.TokenType == Domain.Enums.TokenTypes.EmailVerification && x.Token == codeGuid);
+            if (token == null) return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
+
+
+
+            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == token.User.Id);
+            user.EmailConfirmed = true;
+            dbContext.Update(user);
+            dbContext.Remove(token);
+            await dbContext.SaveChangesAsync();
+            ViewBag.Message = "Thanks for confirming your email!  Please login below!";
+            return RedirectToAction("Login");
+
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("PendingEmailConfirmation")]
+        public IActionResult PendingEmailConfirmation()
+        {
+            return View();
+        }
 
         [HttpPost]
         [AllowAnonymous]
@@ -320,7 +364,8 @@ namespace ElGroupo.Web.Controllers
                         UserName = model.UserName,
                         Name = model.Name,
                         ZipCode = model.ZipCode,
-                        PhoneNumber = model.PhoneNumber
+                        PhoneNumber = model.PhoneNumber,
+                        EmailConfirmed = model.InviteId.HasValue
                     };
 
                     //need to attempt to add first in case we get any password validation errors or something -
@@ -357,6 +402,14 @@ namespace ElGroupo.Web.Controllers
                         await userManager.UpdateAsync(newUser);
                     }
 
+                    //what about converting unregistereduserconnection to userconnection??
+                    foreach (var conn in dbContext.Set<UnregisteredUserConnection>().Include("User").Where(x => x.Email == model.EmailAddress))
+                    {
+                        var uc = new UserConnection { User = conn.User, ConnectedUser = newUser };
+                        dbContext.Add(uc);
+                        dbContext.UnregisteredUserConnections.Remove(conn);
+                    }
+                    await dbContext.SaveChangesAsync();
 
                     if (model.InviteId.HasValue)
                     {
@@ -375,8 +428,39 @@ namespace ElGroupo.Web.Controllers
                         dbContext.EventAttendees.Add(ea);
                         await dbContext.SaveChangesAsync();
 
-
+                        return Redirect("/Account/Edit");
                     }
+                    else
+                    {
+                        var token = new UserValidationToken
+                        {
+                            User = newUser,
+                            TokenType = Domain.Enums.TokenTypes.EmailVerification,
+                            Token = Guid.NewGuid()
+                        };
+
+                        dbContext.Add(token);
+                        await dbContext.SaveChangesAsync();
+
+                        var mailModel = new ElGroupo.Web.Mail.Models.VerifyEmailModel
+                        {
+                            Recipient = newUser.Name,
+                            CallbackUrl = Url.Action("VerifyEmail", "Account", new { code = token.Token.ToString() }, HttpContext.Request.Scheme)
+                        };
+                        var mailMetadata = new ElGroupo.Web.Mail.MailMetadata
+                        {
+                            To = new List<string> { newUser.Email },
+                            Subject = "Welcome To Tribes!"
+                        };
+                        await this.emailService.SendEmail(mailMetadata, mailModel);
+                        return Redirect("/Account/PendingEmailConfirmation");
+                    }
+
+
+
+
+
+
 
                 }
                 catch (Exception ex)
@@ -387,7 +471,7 @@ namespace ElGroupo.Web.Controllers
 
 
             }
-            return Redirect("/Account/Edit");
+            return View(model);
 
         }
 
@@ -401,7 +485,8 @@ namespace ElGroupo.Web.Controllers
                     Name = c.ConnectedUser.Name,
                     Email = c.ConnectedUser.Email,
                     Phone = c.ConnectedUser.ContactMethods.Any(x => x.ContactMethod.Value == "Phone") ? c.ConnectedUser.ContactMethods.First(x => x.ContactMethod.Value == "Phone").Value : "",
-                    Registered = true
+                    Registered = true,
+                    UserId = c.ConnectedUser.Id
                 });
             }
             foreach (var uc in user.UnregisteredConnections)
@@ -483,7 +568,7 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> View(int userId)
         {
 
-            var userRecord = await dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").FirstOrDefaultAsync(x => x.Id == userId);
+            var userRecord = await dbContext.Set<User>().Include("Photo").Include("ContactMethods.ContactMethod").FirstOrDefaultAsync(x => x.Id == userId);
 
             var model = new ViewAccountModel
             {
@@ -579,7 +664,7 @@ namespace ElGroupo.Web.Controllers
                 editingOwnAccount = false;
             }
 
-            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == user.Id);
+            var userRecord = dbContext.Set<User>().Include(x=>x.Photo).Include(x=>x.ContactMethods).ThenInclude(x=>x.ContactMethod).First(x => x.Id == user.Id);
             userRecord.ZipCode = model.ZipCode;
             userRecord.Email = model.EmailAddress;
             userRecord.PhoneNumber = model.PhoneNumber;
@@ -753,10 +838,16 @@ namespace ElGroupo.Web.Controllers
                 return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
             try
             {
-                var result = await userManager.ResetPasswordAsync(user, model.Code, model.Password);
+                var token = await dbContext.Set<UserValidationToken>().FirstOrDefaultAsync(x => x.User.Id == user.Id && x.TokenType == Domain.Enums.TokenTypes.ForgotPassword && x.Token == new Guid(model.Code));
+                if (token == null) return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
+
+                var code = await userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await userManager.ResetPasswordAsync(user, code, model.Password);
+
                 if (result.Succeeded)
                 {
-                    //TempData["EmailConfirmMessage"] = "The password for " + user.Email + " has been successfully changed.  Please login below";
+                    dbContext.Remove(token);
+                    await dbContext.SaveChangesAsync();
                     return RedirectToAction("Login");
                 }
                 AddErrors(result);
@@ -783,19 +874,20 @@ namespace ElGroupo.Web.Controllers
 
                 // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
                 // Send an email with this link
-                var resetCode = await this.userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.Action("ResetPassword", "Account", new { code = resetCode },
+                var resetCode = new UserValidationToken
+                {
+                    User = user,
+                    Token = Guid.NewGuid(),
+                    TokenType = Domain.Enums.TokenTypes.ForgotPassword
+                };
+                dbContext.Add(resetCode);
+                await dbContext.SaveChangesAsync();
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { code = resetCode.Token.ToString() },
                     HttpContext.Request.Scheme);
-                var msg = "Dear " + user.Name + ",";
-                msg += "<br/>";
-                msg = "<a href='" + callbackUrl + "'>Click on this link to reset your ElGroupo password!</a>";
-                msg += "<br/>";
-                msg += "Thanks,";
-                msg += "<br/>";
-                msg += "The ElGroupo Team";
 
-                await emailSender.SendEmailAsync(model.Email, "ElGroupo Password Reset", msg);
-
+                var mailModel = new ElGroupo.Web.Mail.Models.ForgotPasswordMailModel { CallbackUrl = callbackUrl, Recipient = user.Name };
+                var metadata = new Mail.MailMetadata { To = new List<string> { user.Email }, Subject = "ElGroupo Password Reset" };
+                await emailService.SendEmail(metadata, mailModel);
                 return View("ForgotPasswordConfirmation");
             }
 

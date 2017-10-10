@@ -52,14 +52,28 @@
     <h2>@Model.Details.Name</h2>
 </div>
 <div class="page-nav row">
-    <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
-    <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
-    <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
-    <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
-    
+    @if (Model.IsOrganizer)
+    {
+        <div class="col span-1-of-5"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+        <div class="col span-1-of-5"><a class="links" data-link-type="add-attendees" href="#">Add New Attendees</a></div>
+        <div class="col span-1-of-5"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
+        <div class="col span-1-of-5"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+        <div class="col span-1-of-5"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+
+    }
+    else
+    {
+        <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+        <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
+        <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+        <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+
+    }
    
-    
-    
+
+
+
+
 </div>
 <div class="row tab details contact-form">
     <div id="divViewDetails">
@@ -67,12 +81,12 @@
     </div>
     @if (Model.IsOrganizer)
     {
-        <div style="display:none;" id="divEditDetails"></div>
-        <div class="row centered">
-            <a id="btnEditDetails" href="#">Edit</a>
-            <a style="display:none;" id="btnCancelEditDetails" href="#">Cancel</a>
-            <a style="display:none;" id="btnSaveEditDetails" href="#">Save</a>
-        </div>
+    <div style="display:none;" id="divEditDetails"></div>
+    <div class="row centered">
+        <a id="btnEditDetails" href="#">Edit</a>
+        <a style="display:none;" id="btnCancelEditDetails" href="#">Cancel</a>
+        <a style="display:none;" id="btnSaveEditDetails" href="#">Save</a>
+    </div>
 
     }
     <div class="row map-search">
@@ -91,12 +105,12 @@
     </div>
     @if (Model.IsOrganizer)
     {
-        <div style="display:none;" id="divEditLocation"></div>
-        <div class="row centered">
-            <a id="btnEditLocation" href="#">Edit Location</a>
-            <a style="display:none;" id="btnCancelEditLocation" href="#">Cancel Location Changes</a>
-            <a style="display:none;" id="btnSaveEditLocation" href="#">Save Location Changes</a>
-        </div>
+    <div style="display:none;" id="divEditLocation"></div>
+    <div class="row centered">
+        <a id="btnEditLocation" href="#">Edit Location</a>
+        <a style="display:none;" id="btnCancelEditLocation" href="#">Cancel Location Changes</a>
+        <a style="display:none;" id="btnSaveEditLocation" href="#">Save Location Changes</a>
+    </div>
     }
 
     <div class="row">
@@ -106,17 +120,24 @@
     </div>
 
 </div>
+
+@if (Model.IsOrganizer)
+{
+
+    <div class="row tab add-attendees contact-form" style="display:none;">
+        <h2>Invite more shitheads to your lame event</h2>
+        @Html.Partial("_EditEventAttendees", Model.Details)
+
+    </div>
+
+}
+
 <div class="row tab attendees contact-form">
-    <h2>Who the fuck is going?</h2>
-    @if (Model.IsOrganizer)
-    {
-        @Html.Partial("_AddEventAttendees", Model.Details)
 
 
-    }
-     <div id="divViewAttendees">
-         @Html.Partial("_ViewEventAttendees", Model.Attendees)
-     </div>
+    <div id="divViewAttendees">
+        @Html.Partial("_ViewEventAttendees", Model.Attendees)
+    </div>
 
 </div>
 <div class="row tab notifications contact-form">
@@ -127,7 +148,7 @@
 
     @if (Model.IsOrganizer)
     {
-        @Html.Partial("_AddEventNotification")
+        @Html.Partial("_EditEventNotifications")
 
     }
 </div>
@@ -142,12 +163,13 @@
 
 @section Scripts{
     <script type="text/javascript" src="~/content/scripts/events/view.js"></script>
-<script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
-<script type="text/javascript" src="~/content/scripts/events/view-notifications.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/view-notifications.js"></script>
     @if (Model.IsOrganizer)
     {
         <script type="text/javascript" src="~/content/scripts/events/edit-notifications.js"></script>
-        <script type="text/javascript" src="~/content/scripts/events/edit.js"></script>
+            <script type="text/javascript" src="~/content/scripts/events/edit.js"></script>
+            <script type="text/javascript" src="~/content/scripts/events/edit-attendees.js"></script>
 
     }
     <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>

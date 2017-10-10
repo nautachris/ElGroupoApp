@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using ElGroupo.Domain.Lookups;
 namespace ElGroupo.Domain
 {
-    public class User : IdentityUser<int>
+    public class User : IdentityUser<long>
     {
 
         public User()

@@ -7,7 +7,7 @@ namespace ElGroupo.Domain
 {
     public class EventAttendee:ClassBase
     {
-        public int UserId { get; set; }
+        //public int UserId { get; set; }
         public long EventId { get; set; }
 
         [Required]
