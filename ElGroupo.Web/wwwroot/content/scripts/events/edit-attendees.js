@@ -34,24 +34,28 @@
             return false;
         }
 
-        var eid = Number($("#Event_Id").val());
-        var obj = {
-            name: nameVal,
-            email: emailVal,
-            eventId: eid
+        var attendee = {
+            Id: -1,
+            Name: $("#txtNewUserName").val(),
+            Email: $("#txtNewUserEmail").val(),
+            Owner: $(".unregistered-owner span.switch-selected").attr("data-action") === 'yes'
         };
+
+        var otherAttendees = GetAddedAttendees();
+        otherAttendees.push(attendee);
+
         $.ajax({
-            url: "/Events/Attendees/" + eid.toString() + '/AddUnregistered',
+            url: "/Events/PendingAttendeeList",
             type: 'POST',
             async: true,
             cache: false,
             contentType: "application/json; charset=utf-8",
             dataType: "html",
-            data: JSON.stringify(obj),
+            data: JSON.stringify(otherAttendees),
             success: function success(results) {
-                $("#divAttendees").html(results);
-                $("#txtAttendees").val('');
-                $("#txtAttendees").removeAttr('data-contact-id')
+                $("#divAddedAttendeeList").html(results);
+                $("#txtNewUserName").val('');
+                $("#txtNewUserEmail").val('');
             },
             error: function error(err) {
                 alert('fuck me');
@@ -83,19 +87,35 @@
 
     });
     $("#btnAddAttendee").on('click', function () {
-        if (!$("#txtAttendees").has('[data-contact-id]')) return;
-        var cid = Number($("#txtAttendees").attr('data-contact-id'));
-        var eid = Number($("#Event_Id").val());
-        var obj = { userId: cid, eventId: eid };
 
+
+        //we need to post the list of pending event attendees - or just refresh the pending event list client-side
+        var attendee = {
+            Id : Number($("#txtAttendees").attr("data-contact-id")),
+            Name : $("#txtAttendees").val(),
+            Owner : $(".registered-owner span.switch-selected").attr("data-action") === 'yes'
+        };
+
+        console.log('attendee to add');
+        console.log(attendee);
+
+        var otherAttendees = GetAddedAttendees();
+        otherAttendees.push(attendee);
+
+        console.log('all pending attendees');
+        console.log(otherAttendees);
+        //console.log('btnaddatendee post object');
+        //console.log(obj);
         $.ajax({
-            url: "/Events/Attendees/" + eid.toString() + '/Add/' + cid.toString(),
+            url: "/Events/PendingAttendeeList",
             type: 'POST',
+            data : JSON.stringify(otherAttendees),
             async: true,
             cache: false,
+            contentType: 'application/json',
             dataType: "html",
             success: function success(results) {
-                $("#divAttendees").html(results);
+                $("#divAddedAttendeeList").html(results);
                 $("#txtAttendees").val('');
                 $("#txtAttendees").removeAttr('data-contact-id')
             },
@@ -152,4 +172,106 @@
             });
         }
     });
+
+
+
+    //pending users
+    $("html").on("click", "div.pending-attendee-info", function () {
+        console.log('connection info click');
+        //if click on div but not on links, reset
+        console.log('opacity: ' + $(this).css('opacity'));
+
+        var $links = $(this).closest("div[data-user-id]").find("div.pending-attendee-links");
+        if ($(this).css('opacity') == 0.5) {
+            $links.hide();
+            $(this).css('opacity', 1);
+        }
+
+        else {
+            //close all links?
+            $("div.pending-attendee-links").hide();
+            $("div.pending-attendee-info").css('opacity', 1);
+
+            $(this).css('opacity', 0.5);
+            $links.show();
+        }
+
+
+
+
+
+    });
+
+    $("html").on("click", ".pending-attendee-links a", function () {
+        console.log('link clicked');
+        var $infoDiv = $(this).closest("div[data-user-id]").find("div.pending-attendee-info");
+        if ($(this).attr('data-action') == 'profile') {
+            //profile link
+        }
+        else {
+            //remove
+            $(this).closest(".pending-attendee-container").remove();
+        }
+        //$(this).closest("div.pending-attendee-links").hide();
+        //$infoDiv.css('opacity', 1);
+
+
+    });
+    $("#btnCancelAddAttendee").on("click", function () {
+        $("#divAddedAttendeeList").empty();
+
+    });
+
+    $("#btnSaveAttendeeChanges").on("click", function () {
+        var list = GetAddedAttendees();
+        var obj = {
+            EventId: Number($("#EventId")),
+            Attendees: list
+        };
+        $.ajax({
+            url: "/Events/SavePendingAttendees",
+            type: 'POST',
+            data: JSON.stringify(obj),
+            async: true,
+            cache: false,
+            contentType: 'application/json',
+            dataType: "html",
+            success: function success(results) {
+                //this will redirect to _ViewEventAttendees
+                $("#divViewAttendees").html(results);
+                $("#divAddedAttendeeList").empty();
+            },
+            error: function error(err) {
+                alert('fuck me');
+            }
+        });
+
+    });
+
+    function GetAddedAttendees() {
+        var list = [];
+        $("#divAddedAttendeeList div.pending-attendee-container").each(function () {
+            var name = $(this).attr('data-user-name');
+            var id = $(this).attr('data-user-id');
+            var email = null;
+            if (Number(id) === -1) {
+                email = $(this).attr('data-user-email');
+            }
+            var isOwner = $(this).find(".switch-selected").attr('data-action') === 'yes';
+
+
+            var attendee = {
+                Name: name,
+                Id: id,
+                Email: email,
+                Owner: isOwner
+            }
+            list.push(attendee);
+
+
+        });
+
+        return list;
+
+    }
 });

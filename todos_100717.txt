@@ -24,13 +24,15 @@ view event view - add "organized by" text
 
 COMPLETE - widget that sets the propery switch-container switch-selected class  upon load
 
+COMPLETE - add fake users
 
 
-http://localhost:46657/Account/VerifyEmail/4c25105b-602c-4290-8225-d7a6c048d9d1
 
 
 
-add CPA prefix to all fields in ticket ornamentation table
-create 3 sql create scripts
-recreate tables with scripts will sent, add our new fields later
-update domain model to reference new field names
+
+
+
+
+
+

@@ -21,5 +21,6 @@ namespace ElGroupo.Web.Models.Events
         public string Name { get; set; }
         public long EventId { get; set; }
         public string Email { get; set; }
+        public bool isOwner { get; set; }
     }
 }

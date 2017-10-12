@@ -5,27 +5,152 @@
     Layout = null;
 }
 
-@foreach (var att in Model)
+@functions{
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+    public string GetImageUrl(long id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+
+    public string GetUserViewLink(long id)
+    {
+        var url = Url.Action("View", "Account", new { id = id });
+        return url;
+
+    }
+
+}
+
+@if (Model.Count() > 0)
 {
-    <div class="row width-100 attendee-container" data-id="@att.Id" data-registered="@att.Registered.ToString()">
-        <div class="span-4-of-10">@att.Name</div>
-        <div class="span-3-of-10">@att.Email</div>
-        <div class="span-3-of-10">
-            <div class="col span-2-of-2 switch-container">
-                @if (att.Owner)
+    @foreach (var rowGroup in SplitList<PendingEventAttendeeModel>(Model, 4))
+    { 
+        <div class="row">
+            @foreach (var pending in rowGroup)
+            {
+                if (pending.Id != -1)
                 {
-                    <div data-action="yes" class="span-1-of-2 switch-selected">Owner</div>
-                    <div data-action="no" class="span-1-of-2">Attendee Only</div>
+                    <div data-user-id="@pending.Id" data-user-name="@pending.Name" class="col span-1-of-4 rounded-border user-photo-list pending-attendee-container">
+                        <div class="pending-attendee-info" style="z-index:2">
+                            <img class="image-circle-200" style="background-image:url('@GetImageUrl(pending.Id)')" />
+                            <span style="font-weight:bold; text-transform:uppercase;">@pending.Name</span>
+                        </div>
+                        <div class="width-100 centered switch-container event-owner">
+                            <label style="display:inline-block; width:100%">Event Owner?</label>
+                            @if (pending.Owner)
+                            {
+                                <span data-action="yes" class="span-1-of-2 switch-selected">Yes</span>
+                                <span data-action="no" class="span-1-of-2">No</span>
+
+                            }
+                            else
+                            {
+                                <span data-action="yes" class="span-1-of-2">Yes</span>
+                                <span data-action="no" class="span-1-of-2 switch-selected">No</span>
+
+                            }
+
+                        </div>
+                        <div class="pending-attendee-links centered" style="z-index:3; display:none; position:absolute; top: 40%; left:5%; width:90%;">
+                            <a class="no-decoration" data-action="profile" data-profile-link="@GetUserViewLink(pending.Id)">View Profile</a>
+                            <a class="no-decoration" data-action="remove" style="display:inline-block; width:100%;">Remove</a>
+                        </div>
+                        @*<div class="width-100 centered switch-container event-owner">
+                            <label style="display:inline-block; width:100%">Event Owner?</label>
+                            @if (pending.Owner)
+                            {
+                                <span data-action="yes" class="span-1-of-2 switch-selected">Yes</span>
+                                <span data-action="no" class="span-1-of-2">No</span>
+
+                            }
+                            else
+                            {
+                                <span data-action="yes" class="span-1-of-2">Yes</span>
+                                <span data-action="no" class="span-1-of-2 switch-selected">No</span>
+
+                            }
+
+                        </div>*@
+                    </div>
+
                 }
                 else
                 {
-                    <div data-action="yes" class="span-1-of-2">Owner</div>
-                    <div data-action="no" class="span-1-of-2  switch-selected">Attendee Only</div>
 
+                    <div data-user-id="@pending.Id" data-user-name="@pending.Name" data-user-email="@pending.Email" class="col span-1-of-4 rounded-border user-photo-list pending-attendee-container">
+                        <div class="pending-attendee-info" style="z-index:2">
+                            <img class="image-circle-200" style="background-image:url('@GetImageUrl(pending.Id)')" />
+                            <span style="font-weight:bold; text-transform:uppercase;">@pending.Name</span>
+
+                        </div>
+                        <div class="width-100 centered switch-container event-owner">
+                            <label style="display:inline-block; width:100%">Event Owner?</label>
+                            @if (pending.Owner)
+                            {
+                                <span data-action="yes" class="span-1-of-2 switch-selected">Yes</span>
+                                <span data-action="no" class="span-1-of-2">No</span>
+
+                            }
+                            else
+                            {
+                                <span data-action="yes" class="span-1-of-2">Yes</span>
+                                <span data-action="no" class="span-1-of-2 switch-selected">No</span>
+
+                            }
+
+                        </div>
+                        <div class="pending-attendee-links centered" style="z-index:3; display:none; position:absolute; top: 40%; left:5%; width:90%;">
+                            <a class="no-decoration" data-action="remove" style="display:inline-block; width:100%;">Remove</a>
+                        </div>
+                        @*<div class="width-100 centered switch-container event-owner">
+                            <label style="display:inline-block; width:100%">Event Owner?</label>
+                            @if (pending.Owner)
+                            {
+                                <span data-action="yes" class="span-1-of-2 switch-selected">Yes</span>
+                                <span data-action="no" class="span-1-of-2">No</span>
+
+                            }
+                            else
+                            {
+                                <span data-action="yes" class="span-1-of-2">Yes</span>
+                                <span data-action="no" class="span-1-of-2 switch-selected">No</span>
+
+                            }
+                          
+                        </div>*@
+                    </div>
                 }
-            </div>
+            }
         </div>
-    </div>
+    }
+
 
 
 

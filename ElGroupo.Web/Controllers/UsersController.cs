@@ -49,12 +49,12 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> SearchUserConnections([FromRoute]string search)
         {
             var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var users = dbContext.UserConnections.Include("ConnectedUser").Where(x => x.User.Id == user.Id && x.ConnectedUser.Name.ToUpper().Contains(search.ToUpper()) || x.ConnectedUser.Email.ToUpper().Contains(search.ToUpper())).Select(x=>x.ConnectedUser);
+            var users = dbContext.UserConnections.Include("ConnectedUser").Where(x => x.User.Id == user.Id && x.ConnectedUser.Name.ToUpper().Contains(search.ToUpper()) || x.ConnectedUser.Email.ToUpper().Contains(search.ToUpper())).Select(x => x.ConnectedUser);
             var list = new List<ConnectionAutoCompleteModel>();
-            await users.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name, Registered = true  }));
+            await users.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name, Registered = true }));
             var unregisteredUsers = dbContext.UnregisteredUserConnections.Where(x => x.User.Id == user.Id && x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
             await unregisteredUsers.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Name = x.Name, Id = x.Id, Registered = false }));
-            return Json(list.OrderBy(x=>x.Name).ToList());
+            return Json(list.OrderBy(x => x.Name).ToList());
         }
 
         [Authorize]
@@ -68,34 +68,49 @@ namespace ElGroupo.Web.Controllers
             return PartialView("../Account/_UserList", list.OrderBy(x => x.UserName));
         }
 
+        private byte[] MissingUserPhoto()
+        {
+
+            var ff = this.hostEnv.WebRootPath;
+            string path = this.hostEnv.WebRootPath + "\\content\\resources\\images\\noimage.jpg";
+            if (System.IO.File.Exists(path))
+            {
+                var bytes = System.IO.File.ReadAllBytes(this.hostEnv.WebRootPath + "\\content\\resources\\images\\noimage.jpg");
+                return bytes;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
 
         [Authorize]
         [HttpGet]
         [Route("UserPhoto/{id}")]
-        public async Task<IActionResult> UserPhoto([FromRoute]int id)
+        public async Task<IActionResult> UserPhoto([FromRoute]long id)
         {
-            var user = dbContext.Users.Include("Photo").FirstOrDefault(x => x.Id == id);
-            if (user == null || user.Photo == null)
+            if (id != -1)
             {
-                var ff = this.hostEnv.WebRootPath;
-                string path = this.hostEnv.WebRootPath + "\\content\\resources\\images\\noimage.jpg";
-                if (System.IO.File.Exists(path))
+                var user = dbContext.Users.Include("Photo").FirstOrDefault(x => x.Id == id);
+                if (user == null || user.Photo == null)
                 {
-                    var bytes = System.IO.File.ReadAllBytes(this.hostEnv.WebRootPath + "\\content\\resources\\images\\noimage.jpg");
-                    return File(bytes, "image/jpg");
+                    var missing = MissingUserPhoto();
+                    if (missing != null) return File(missing, "image/jpg");
+                    return new EmptyResult();
                 }
                 else
                 {
-                    return new EmptyResult();
+                    return File(user.Photo.ImageData, user.Photo.ContentType);
                 }
-
-                //reader.wr
-
             }
             else
             {
-                return File(user.Photo.ImageData, user.Photo.ContentType);
+                var missing = MissingUserPhoto();
+                if (missing != null) return File(missing, "image/jpg");
+                return new EmptyResult();
             }
+
 
 
 

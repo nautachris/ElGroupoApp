@@ -17,9 +17,9 @@ namespace ElGroupo.Web.Services
     public class EventService
     {
         private readonly ElGroupoDbContext dbContext;
-        private readonly MailService mailService;
+        private readonly IEmailService mailService;
         private UserManager<User> userManager;
-        public EventService(ElGroupoDbContext ctx, MailService service, UserManager<User> manager)
+        public EventService(ElGroupoDbContext ctx, IEmailService service, UserManager<User> manager)
         {
             this.dbContext = ctx;
             this.mailService = service;
@@ -225,10 +225,40 @@ namespace ElGroupo.Web.Services
             return model;
         }
 
+
+        private List<string> FindChangedEventDetails(EditEventDetailsModel model, Event e)
+        {
+            var changes = new List<string>();
+            if (e.Name != model.Name) changes.Add("Name");
+            if (model.AttendanceVerificationMethod != e.VerificationMethod) changes.Add("Verification Method");
+            if (model.Description != e.Description) changes.Add("Description");
+            if (model.RSVPRequired != e.MustRSVP) changes.Add("RSVP Required");
+
+            int startHour, endHour;
+            if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+            else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
+
+            if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+            else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
+
+
+            if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
+            else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
+            else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
+            else startHour = model.StartHour + 12;
+
+            var modelStartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
+            var modelEndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+
+            if (modelStartTime != e.StartTime) changes.Add("Start Time");
+            if (modelEndTime != e.EndTime) changes.Add("End Time");
+
+            return changes;
+        }
         public async Task<bool> UpdateEventDetails(EditEventDetailsModel model)
         {
             var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
-
+            var changes = FindChangedEventDetails(model, e);
             var draftChange = !model.IsDraft && e.SavedAsDraft;
 
             e.Name = model.Name;
@@ -258,11 +288,15 @@ namespace ElGroupo.Web.Services
             if (draftChange)
             {
                 //send out all emails
-                foreach(var att in dbContext.EventAttendees.Where(x=>x.EventId == e.Id))
+                foreach (var att in dbContext.EventAttendees.Where(x => x.EventId == e.Id))
                 {
 
                 }
 
+            }
+            else if (!e.SavedAsDraft && changes.Count > 0)
+            {
+                //details have changed, must send out emails
             }
 
             return true;
@@ -350,10 +384,10 @@ namespace ElGroupo.Web.Services
         //    await dbContext.SaveChangesAsync();
         //}
 
-        public async Task AddEventAttendee(long eventId, long userId)
+        public async Task AddEventAttendee(AddRegisteredEventAttendeeModel model)
         {
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
-            var u = dbContext.Users.FirstOrDefault(x => x.Id == userId);
+            var e = dbContext.Events.FirstOrDefault(x => x.Id == model.eventId);
+            var u = dbContext.Users.FirstOrDefault(x => x.Id == model.userId);
             var ea = new EventAttendee
             {
                 Event = e,
@@ -361,7 +395,8 @@ namespace ElGroupo.Web.Services
                 DateCreated = DateTime.Now,
                 UserCreated = u.UserName,
                 AllowEventUpdates = true,
-                Viewed = false
+                Viewed = false,
+                IsOrganizer = model.isOwner
             };
             dbContext.EventAttendees.Add(ea);
             await dbContext.SaveChangesAsync();

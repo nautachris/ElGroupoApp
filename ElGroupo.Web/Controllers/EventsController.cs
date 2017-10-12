@@ -26,10 +26,10 @@ namespace ElGroupo.Web.Controllers
 
         private SignInManager<User> signInManager;
         private ElGroupoDbContext dbContext;
-        private MailService mailService;
+        private IEmailService mailService;
         private EventService eventService;
         public EventsController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, ElGroupoDbContext ctx, MailService sndr, EventService service) : base(userMgr)
+                SignInManager<User> signinMgr, ElGroupoDbContext ctx, IEmailService sndr, EventService service) : base(userMgr)
         {
 
             signInManager = signinMgr;
@@ -47,11 +47,39 @@ namespace ElGroupo.Web.Controllers
 
 
         [Authorize]
+        [HttpGet]
         [Route("PendingAttendeeList")]
         public async Task<IActionResult> PendingAttendeeList([FromBody]PendingEventAttendeeModel[] models)
         {
+            //we will have added the new one on the client side
             return View("_PendingAttendeeList", models);
         }
+
+
+        [HttpPost]
+        [Authorize]
+        [Route("SavePendingAttendees")]
+        public async Task<IActionResult> Create([FromBody]SavePendingAttendeesModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await CurrentUser();
+                //var eventId = await this.eventService.CreateEvent(model, user);
+
+                //move on to Contacts
+                //now lets just redirect to the normal view/edit view
+                return RedirectToAction("View", new { eid = eventId });
+            }
+            return View(model);
+
+        }
+
+        //[Authorize]
+        //[Route("AddPendingAttendee")]
+        //public async Task<IActionResult> AddPendingAttendee([FromBody]PendingEventAttendeeModel[] models)
+        //{
+        //    return View("_PendingAttendeeList", models);
+        //}
 
         [HttpPost]
         [Authorize]
@@ -125,7 +153,7 @@ namespace ElGroupo.Web.Controllers
             //await emailSender.SendEmailAsync(u.Email, "You've been added as an event organizer!", msg);
         }
 
-        private async Task SendEventAttendeeEmail(int userId, long eventId)
+        private async Task SendEventAttendeeEmail(long userId, long eventId)
         {
             var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
             var u = dbContext.Users.FirstOrDefault(x => x.Id == userId);
@@ -338,12 +366,17 @@ namespace ElGroupo.Web.Controllers
 
         [Authorize]
         [HttpPost]
-        [Route("Attendees/{eid}/Add/{uid}")]
-        public async Task<IActionResult> AddEventAttendee([FromRoute]long eid, [FromRoute]int uid)
+        [Route("AddRegisteredAttendee", Name = "AddRegisteredAttendee")]
+        public async Task<IActionResult> AddRegisteredEventAttendee([FromBody]AddRegisteredEventAttendeeModel model)
         {
-            await this.eventService.AddEventAttendee(eid, uid);
-            await SendEventAttendeeEmail(uid, eid);
-            return RedirectToAction("AttendeesList", new { id = eid });
+            await this.eventService.AddEventAttendee(model);
+            var e = dbContext.Find<Event>(model.eventId);
+            if (!e.SavedAsDraft)
+            {
+                await SendEventAttendeeEmail(model.userId, model.eventId);
+            }
+
+            return RedirectToAction("AttendeesList", new { id = model.eventId });
         }
 
         private MailMetadata CreateMailMetadata(string toEmailAddress, string subject)
@@ -358,21 +391,21 @@ namespace ElGroupo.Web.Controllers
 
         [Authorize]
         [HttpPost]
-        [Route("Attendees/{eid}/AddUnregistered")]
-        public async Task<IActionResult> AddUnregisteredEventAttendee([FromRoute]long eid, [FromBody]UnregisteredEventAttendeeModel model)
+        [Route("AddUnregisteredAttendee")]
+        public async Task<IActionResult> AddUnregisteredEventAttendee([FromBody]UnregisteredEventAttendeeModel model)
         {
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == eid);
+            var e = dbContext.Events.FirstOrDefault(x => x.Id == model.EventId);
             var u = await userManager.GetUserAsync(HttpContext.User);
 
             //make sure this user doesn't exist in the system
             var userCheck = await userManager.FindByEmailAsync(model.Email);
             if (userCheck != null)
             {
-                return RedirectToAction("AddEventAttendee", new { eid = e.Id, uid = userCheck.Id });
+                return RedirectToAction("AddRegisteredAttendee", new { eid = e.Id, uid = userCheck.Id });
             }
 
             var token = await this.eventService.AddUnregisteredAttendee(u, e, model);
-            await this.mailService.SendEmail(CreateMailMetadata(model.Email, "Welcome to ElGroupo!  You'be been invited to a new event!"), new EventUnregisteredAttendeeMailModel
+            if (!e.SavedAsDraft) await this.mailService.SendEmail(CreateMailMetadata(model.Email, "Welcome to ElGroupo!  You'be been invited to a new event!"), new EventUnregisteredAttendeeMailModel
             {
                 Recipient = model.Name,
                 EventName = e.Name,
@@ -381,7 +414,8 @@ namespace ElGroupo.Web.Controllers
                 EndTime = e.EndTime,
                 CallbackUrl = Url.Action("Create", "Account", new { id = token }, HttpContext.Request.Scheme)
             });
-            return RedirectToAction("AttendeesList", new { id = eid });
+
+            return RedirectToAction("AttendeesList", new { id = model.EventId });
         }
 
 

@@ -53,24 +53,30 @@
 
     @foreach (var rowGroup in SplitList<UserConnectionModel>(Model, 4))
     {
-        <div class="row connections-details" style="display:flex; align-items:center;">
+        //style = "display:flex; align-items:center;"
+        <div class="row connections-details" >
             @foreach (var connection in rowGroup)
             {
 
                 @if (connection.Registered)
                         {
-                    <div data-user-id="@connection.UserId" class="col span-1-of-4 rounded-border" style="text-align:center; ">
-                        <a href="@GetUserViewLink(connection.UserId)">
+                    <div data-user-id="@connection.UserId" class="col span-1-of-4 rounded-border" style="text-align:center; position:relative; cursor:pointer;">
+                        <div class="connection-info" style="z-index:2">
                             <img class="image-circle-200" style="background-image:url('@GetImageUrl(connection.UserId)')" />
                             <span style="font-weight:bold; text-transform:uppercase;">@connection.Name</span>
-                        </a>
+
+                        </div>
+                        <div class="connection-links centered" style="z-index:3; display:none; position:absolute; top: 40%; left:5%; width:90%;">
+                            <a class="no-decoration" data-action="profile" data-profile-link="@GetUserViewLink(connection.UserId)">View Profile</a>
+                            <a class="no-decoration" data-action="remove" style="display:inline-block; width:100%;">Remove Connection</a>
+                        </div>
                     </div>
 
 
                 }
                 else
                 {
-                    <div data-connection-email="@connection.Email" class="col span-1-of-4 rounded-border" style="text-align:center; ">
+                    <div data-connection-email="@connection.Email" class="col span-1-of-4 rounded-border" style="text-align:center; position:relative;">
                         <div style="font-weight:bold; display:inline-block; width:100%; text-transform:uppercase;">@connection.Email</div>
                         <div style="font-weight:bold; display:inline-block; width:100%; text-transform:uppercase;">@connection.Name</div>
                         <a>Delete?</a>

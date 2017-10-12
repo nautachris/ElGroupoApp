@@ -341,6 +341,39 @@
         });
     });
 
+
+
+    $("html").on("click", "div.connection-info", function () {
+        console.log('connection info click');
+
+        //close all links?
+        $("div.connection-links").hide();
+        $("div.connection-info").css('opacity', 1);
+        var $links = $(this).closest("div[data-user-id]").find("div.connection-links");
+
+        $(this).css('opacity', 0.5);
+        $links.show();
+
+
+
+      
+    });
+
+    $(".connection-links").on("click", "a", function () {
+        var $infoDiv = $(this).closest("div[data-user-id]").find("div.connection-info");
+        if ($(this).attr('data-action') == 'profile') {
+            //profile link
+        }
+        else {
+            //remove
+
+        }
+        $(this).closest("div.connection-links").hide();
+        $infoDiv.css('opacity', 1);
+
+    });
+
+
 });
 
 var GoogleContacts = {

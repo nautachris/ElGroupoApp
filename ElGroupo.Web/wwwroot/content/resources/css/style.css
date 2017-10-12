@@ -813,7 +813,7 @@ footer p {
 }
 
 a.no-decoration {
-    color: #808080;
+    /*color: #808080;*/
     padding-bottom: 0px;
     border-bottom: none;
 }
@@ -872,11 +872,7 @@ a {
     display: none;
 }
 
-a.no-decoration {
-    color: #808080;
-    padding-bottom: 0px;
-    border-bottom: none;
-}
+
 
 li.new-event {
     background-color: aquamarine;
@@ -1094,4 +1090,18 @@ select {
     background-color:lightblue;
     border-radius:2px;
 
+}
+
+.connection-links a {
+    display: inline-block;
+    width: 90%;
+    background-color: #337ab7;
+    color:white;
+}
+
+.user-photo-list {
+
+text-align:center;
+position:relative;
+cursor:pointer;
 }
