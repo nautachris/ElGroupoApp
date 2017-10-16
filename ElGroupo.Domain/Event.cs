@@ -46,7 +46,7 @@ namespace ElGroupo.Domain
         public double CoordinateY { get; set; }
         public int CheckInTimeTolerance { get; set; }
         public double CheckInLocationTolerance { get; set; }
-        public bool SavedAsDraft { get; set; }
+        public EventStatus Status { get; set; }
 
         public long? GroupId { get; set; }
 

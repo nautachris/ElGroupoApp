@@ -50,6 +50,7 @@
 <input type="hidden" asp-for="EventId" />
 <div class="row">
     <h2>@Model.Details.Name</h2>
+    <h3 class="centered">Organizer: @Model.OrganizerName</h3>
 </div>
 <div class="page-nav row">
     @if (Model.IsOrganizer)
@@ -63,6 +64,19 @@
     }
     else
     {
+        //something where the user can set their rsvp status
+        <div class="row">
+            <div class="col span-1-of-4">
+                <label>Am I going?</label>
+            </div>
+            <div data-replace-element="RSVPRequired" class="switch-container col span-3-of-4 rsvp-required">
+                <input class="invisible" asp-for="RSVPStatus" />
+                <span data-replace-val="true" class="switch-selected col span-1-of-4"></span>
+                <span data-replace-val="false" class="col span-1-of-4">No</span>
+                <span data-replace-val="true" class="switch-selected col span-1-of-4">Yes</span>
+                <span data-replace-val="false" class="col span-1-of-4">No</span>
+            </div>
+        </div>
         <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
         <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
         <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>

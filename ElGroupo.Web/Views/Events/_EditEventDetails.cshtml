@@ -7,6 +7,7 @@
     Layout = null;
 }
 <form id="frmEditEventDetails">
+    <input type="hidden" id="OriginalStatus" value="@Model.Status" />
     <input asp-for="EventId" type="hidden" />
     <div class="row">
         <div class="col span-1-of-3">
@@ -127,10 +128,11 @@
         <div class="col span-1-of-4">
             <label>Saved as Draft?</label>
         </div>
-        <div data-replace-element="IsDraft" class="switch-container col span-3-of-4">
-            <input class="invisible" asp-for="IsDraft" />
-            <span data-replace-val="true" class="switch-selected col span-1-of-2">Yes</span>
-            <span data-replace-val="false" class="col span-1-of-2">No</span>
+        <div data-replace-element="Status" class="switch-container col span-3-of-4">
+            <input class="invisible" asp-for="Status" />
+            <span data-replace-val="Draft" class="switch-selected col span-1-of-3">Draft</span>
+            <span data-replace-val="Active" class="col span-1-of-3">Active</span>
+            <span data-replace-val="Cancelled" class="col span-1-of-3">Cancelled</span>
         </div>
     </div>
 </form>

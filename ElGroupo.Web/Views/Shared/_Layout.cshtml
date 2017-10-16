@@ -17,11 +17,21 @@
     <div id="main" style="min-height:65%;">
         @RenderBody()
     </div>
+    <div id="divConfirm" style="display:none;">
+        <div class="row">
+            <div class="col span-2-of-2 centered">
+                <span id="spanConfirmationMessage"></span>
+            </div>
+            <div class="col span-1-of-4"></div>
+                <div class="col span-1-of-4"><button id="btnConfirmYes" class="btn-primary width-100">Yes</button></div>
+                <div class="col span-1-of-4"><button id="btnConfirmNo" class="btn-primary width-100">No</button></div>
+            <div class="col span-1-of-4"></div>
+        </div>
+    </div>
 
 
 
-
-    @await  Html.PartialAsync("_Footer")
+    @*@await  Html.PartialAsync("_Footer")*@
 
     <div id="divDialog" style="display:none;"></div>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
@@ -43,5 +53,35 @@
     </script>
     <script type="text/javascript" src="~/content/scripts/shared/header.js"></script>
     <script type="text/javascript" src="~/content/scripts/shared/switch-container.js"></script>
+    <script type="text/javascript">
+        var Confirm = function (message, callbackYes, callbackNo) {
+            console.log('in confirm');
+            var cbYes = callbackYes;
+            var cbNo = callbackNo;
+            console.log(cbYes);
+            console.log(cbNo);
+            $("#main").hide();
+            $("#divConfirm").show();
+            $("#spanConfirmationMessage").text(message);
+            $("#btnConfirmYes").on("click", function () {
+                console.log('confirm yes clicked');
+                $("#divConfirm").hide();
+                $("#main").show();
+                $("#btnConfirmYes").off("click");
+                $("#btnConfirmNo").off("click");
+                if (cbYes) cbYes();
+            });
+            $("#btnConfirmNo").on("click", function () {
+
+                $("#main").show();
+                $("#divConfirm").hide();
+                $("#btnConfirmYes").off("click");
+                $("#btnConfirmNo").off("click");
+                if (cbNo) cbNo();
+            });
+        }
+
+
+    </script>
 </body>
 </html>

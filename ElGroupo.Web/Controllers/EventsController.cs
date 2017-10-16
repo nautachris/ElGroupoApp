@@ -47,7 +47,7 @@ namespace ElGroupo.Web.Controllers
 
 
         [Authorize]
-        [HttpGet]
+        [HttpGet, HttpPost]
         [Route("PendingAttendeeList")]
         public async Task<IActionResult> PendingAttendeeList([FromBody]PendingEventAttendeeModel[] models)
         {
@@ -55,11 +55,19 @@ namespace ElGroupo.Web.Controllers
             return View("_PendingAttendeeList", models);
         }
 
+        [HttpPost, HttpGet]
+        [Authorize]
+        [Route("ViewEventAttendees/{eventId}", Name ="ViewEventAttendees")]
+        public async Task<IActionResult> ViewEventAttendees([FromRoute]long eventId)
+        {
+            var model = await eventService.GetEventAttendees(eventId);
+            return View("_ViewEventAttendees", model);
+        }
 
         [HttpPost]
         [Authorize]
         [Route("SavePendingAttendees")]
-        public async Task<IActionResult> Create([FromBody]SavePendingAttendeesModel model)
+        public async Task<IActionResult> SavePendingAttendees([FromBody]SavePendingAttendeesModel model)
         {
             if (ModelState.IsValid)
             {
@@ -68,7 +76,16 @@ namespace ElGroupo.Web.Controllers
 
                 //move on to Contacts
                 //now lets just redirect to the normal view/edit view
-                return RedirectToAction("View", new { eid = eventId });
+                var response = await eventService.UpdateEventAttendees(model);
+                if (response.Success)
+                {
+                    return RedirectToRoute("ViewEventAttendees", new { eventId = model.EventId });
+                }
+                else
+                {
+                    return BadRequest(new { message = response.ErrorMessage });
+                }
+                
             }
             return View(model);
 
@@ -371,7 +388,7 @@ namespace ElGroupo.Web.Controllers
         {
             await this.eventService.AddEventAttendee(model);
             var e = dbContext.Find<Event>(model.eventId);
-            if (!e.SavedAsDraft)
+            if (e.Status == Domain.Enums.EventStatus.Active)
             {
                 await SendEventAttendeeEmail(model.userId, model.eventId);
             }
@@ -405,7 +422,7 @@ namespace ElGroupo.Web.Controllers
             }
 
             var token = await this.eventService.AddUnregisteredAttendee(u, e, model);
-            if (!e.SavedAsDraft) await this.mailService.SendEmail(CreateMailMetadata(model.Email, "Welcome to ElGroupo!  You'be been invited to a new event!"), new EventUnregisteredAttendeeMailModel
+            if (e.Status == Domain.Enums.EventStatus.Active) await this.mailService.SendEmail(CreateMailMetadata(model.Email, "Welcome to ElGroupo!  You'be been invited to a new event!"), new EventUnregisteredAttendeeMailModel
             {
                 Recipient = model.Name,
                 EventName = e.Name,
@@ -424,13 +441,15 @@ namespace ElGroupo.Web.Controllers
         [HttpDelete("{eid}")]
         public async Task<IActionResult> DeleteEvent([FromRoute]long eid)
         {
-            if (await this.eventService.DeleteEvent(eid))
+            var response = await this.eventService.DeleteEvent(eid);
+            if (response.Success)
             {
                 return Ok();
             }
             else
             {
-                return BadRequest();
+
+                return BadRequest(new { message = response.ErrorMessage });
             }
 
 
@@ -463,13 +482,14 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> DeleteEventAttendee([FromRoute]long eid, [FromRoute]long oid)
         {
             if (await CheckEventAccess(eid) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
-            if (await this.eventService.DeleteEventAttendee(oid, eid))
+            var response = await this.eventService.DeleteEventAttendee(oid, eid);
+            if (response.Success)
             {
                 return RedirectToAction("AttendeesList", new { id = eid });
             }
             else
             {
-                return BadRequest();
+                return BadRequest(new { message = response.ErrorMessage });
             }
 
 

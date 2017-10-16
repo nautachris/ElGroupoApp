@@ -5,48 +5,53 @@
 @model HeaderViewModel
 
 <style type="text/css">
-body {
-    font-family: "Lato", sans-serif;
-}
+    body {
+        font-family: "Lato", sans-serif;
+    }
 
-.sidenav {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    z-index: 1;
-    top: 0;
-    right: 0;
-    background-color: #111;
-    overflow-x: hidden;
-    transition: 0.5s;
-    padding-top: 60px;
-}
+    .sidenav {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        right: 0;
+        background-color: #111;
+        overflow-x: hidden;
+        transition: 0.5s;
+        padding-top: 60px;
+    }
 
-.sidenav a {
-    padding: 8px 8px 8px 32px;
-    text-decoration: none;
-    font-size: 25px;
-    color: #818181;
-    display: block;
-    transition: 0.3s;
-}
+        .sidenav a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
 
-.sidenav a:hover, .offcanvas a:focus{
-    color: #f1f1f1;
-}
+            .sidenav a:hover, .offcanvas a:focus {
+                color: #f1f1f1;
+            }
 
-.sidenav .closebtn {
-    position: absolute;
-    top: 0;
-    right: 25px;
-    font-size: 36px;
-    margin-left: 50px;
-}
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
 
-@@media screen and (max-height: 450px) {
-  .sidenav {padding-top: 15px;}
-  .sidenav a {font-size: 18px;}
-}
+    @@media screen and (max-height: 450px) {
+        .sidenav {
+            padding-top: 15px;
+        }
+
+            .sidenav a {
+                font-size: 18px;
+            }
+    }
 </style>
 
 <header>
@@ -58,7 +63,7 @@ body {
                 <div class="col span-1-of-8">
                     @*<a asp-controller="Account" asp-action="Edit">My Account</a>*@
                     <a asp-controller="Home" asp-action="Dashboard">Home</a>
-                    
+
                 </div>
                 <div class="col span-2-of-8">
                     <span style="color:#fff;">Welcome to ElGroupo, @Model.ActiveUser.Name @if (Model.IsAdmin) { <span style="margin-left:5px; font-weight:bold;">Admin</span> }</span>
@@ -74,33 +79,34 @@ body {
 
 
 
-                    <div id="mySidenav" class="sidenav">
-                        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-                        <a asp-controller="Account" class="no-decoration" asp-action="Edit">My Account</a>
-                        <a asp-controller="Account" class="no-decoration" asp-action="Edit">My Contacts</a>
-                        @if (Model.IsAdmin)
-                        {
-                            <a asp-controller="Account" class="no-decoration" asp-action="Admin">Acct. Admin</a>
+                <div id="mySidenav" class="sidenav">
+
+                    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+                    <a class="no-decoration" asp-controller="Events" asp-action="Create">Create New Event</a>
+                    <a asp-controller="Account" class="no-decoration" asp-action="Edit">My Account</a>
+                    <a asp-controller="Account" class="no-decoration" asp-action="Edit">My Connections</a>
+                    @if (Model.IsAdmin)
+                    {
+                        <a asp-controller="Account" class="no-decoration" asp-action="Admin">Acct. Admin</a>
                             <a asp-controller="Events" class="no-decoration" asp-action="Admin">Event Admin</a>
 
-                        }
-                        <a href="#" class="no-decoration">View Drafts</a>
-                        <a class="no-decoration" asp-controller="Events" asp-action="Create">Create New</a>
-                        <a class="no-decoration" asp-controller="Account" asp-action="Logout">Sign Out</a>
-                    </div>
-                    
+                    }
+
+                    <a class="no-decoration" asp-controller="Account" asp-action="Logout">Sign Out</a>
+                </div>
+
 
 
             }
             else
             {
-                <span style="float:left; font-size:2em; color:#fff;">ElGroupo!</span>
+                <a asp-controller="Account" asp-action="Login" style="float:left; font-size:2em; color:#fff;">ElGroupo!</a>
                 <ul class="main-nav">
                     <li>
                         <a href="#cities">Contact</a>
                     </li>
                     <li>
-                        <a href="#sign-up">About</a>
+                        <a asp-action="About" asp-controller="Account">About</a>
                     </li>
                 </ul>
                 @*<a class="mobile-nav-icon"><i class="ion-navicon-round js--nav-icon"></i></a>*@

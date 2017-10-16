@@ -43,6 +43,13 @@ namespace ElGroupo.Web.Controllers
             googleOptions = googConfig.Value;
         }
 
+        [AllowAnonymous]
+        [HttpGet("About")]
+        public IActionResult About()
+        {
+            return View();
+        }
+
         [Authorize]
         [HttpPost("AddConnection/{uid}")]
         public async Task<IActionResult> AddConnection([FromRoute]long uid)

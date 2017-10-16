@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using ElGroupo.Domain.Data.Configurations;
 using System.Drawing;
 using System.Drawing.Imaging;
+using ElGroupo.Domain.Enums;
 
 namespace ElGroupo.Domain.Data
 {
@@ -72,6 +73,7 @@ namespace ElGroupo.Domain.Data
 
             builder.Entity<UserContactMethod>().ToTable("UserContactMethods");
             builder.Entity<UserPhoto>().ToTable("UserPhoto");
+            builder.Entity<Event>().Property(x => x.Status).HasDefaultValue(EventStatus.Draft);
             builder.Entity<Event>().HasMany(x => x.Attendees).WithOne(x => x.Event);
             builder.Entity<Event>().HasMany(x => x.UnregisteredAttendees).WithOne(x => x.Event);
             builder.Entity<Event>().HasMany(x => x.MessageBoardItems).WithOne(x => x.Event);

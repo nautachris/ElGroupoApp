@@ -5,7 +5,43 @@
     @foreach (var e in Model)
     {
         <li data-event-id="@e.Id" class="@(e.IsNew ? "new-event": "")">
-            <div class="col span-4-of-7">
+            @if (e.IsNew && !e.OrganizedByUser)
+            {
+                //if it's new, there's obviously no response status
+                <div class="col" style="background-color:red; color:white; border: 1px solid black; padding:4px;">NEW!</div>
+
+            }
+            else if (e.OrganizedByUser)
+            {
+                <div class="col" style="background-color:green; color:white; border: 1px solid black; padding:4px;">This is my event</div>
+
+            }
+            else
+            {
+                if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
+                {
+                    <div class="col" style="background-color:gray; color:white; border: 1px solid black; padding:4px;">Response Pending</div>
+
+                }
+                else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
+                {
+                    <div class="col" style="background-color:yellow; color:white; border: 1px solid black; padding:4px;">I might go</div>
+
+            }
+                else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
+                {
+                    <div class="col" style="background-color:red; color:white; border: 1px solid black; padding:4px;">Fuck this, I'm not going</div>
+
+                }
+                else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
+                {
+                    <div class="col" style="background-color:green; color:white; border: 1px solid black; padding:4px;">Hell yeah I'm in!</div>
+
+                }
+
+            }
+
+            <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="col span-4-of-7 no-decoration">
                 <span id="spanEventName" style="font-weight:bold; ">
                     @if (e.OrganizedByUser)
                     {
@@ -13,9 +49,15 @@
                         }
                     @e.Name
                 </span>
+                @if (!e.OrganizedByUser)
+                {
+                    <span>Organized by: @e.OrganizerName</span>
+
+                }
+                
                 <span>@e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
-            </div>
-            <div class="col span-1-of-7">
+            </a>
+            @*<div class="col span-1-of-7">
                 @if (e.OrganizedByUser)
                 {
                     <a href="#" class="btn btn-primary width-100 event-delete">Delete</a>
@@ -24,7 +66,7 @@
             </div>
             <div class="col span-1-of-7">
                 <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="btn btn-primary width-100">View</a>
-            </div>
+            </div>*@
         </li>
     }
 </ul>

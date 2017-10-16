@@ -37,8 +37,8 @@ namespace ElGroupo.Web.Controllers
             //do we want a third "tab" for events I'm organizing?
             var user = await this.CurrentUser;
 
-            var organizedEvents = dbContext.EventAttendees.Include("User").Include("Event").Where(x => x.User.Id == user.Id && x.IsOrganizer).Select(x => x.Event);
-            var invitedEvents = dbContext.EventAttendees.Include("User").Include("Event").Where(x => x.User.Id == user.Id && !x.IsOrganizer);
+            var organizedEvents = dbContext.EventAttendees.Include(x=>x.User).Include(x=>x.Event).Where(x => x.User.Id == user.Id && x.IsOrganizer).Select(x => x.Event);
+            var invitedEvents = dbContext.EventAttendees.Include(x=>x.User).Include(x=>x.Event).ThenInclude(x=>x.Attendees).ThenInclude(x=>x.User).Where(x => x.User.Id == user.Id && !x.IsOrganizer);
             foreach (var ev in organizedEvents)
             {
                 allEvents.Add(new EventInformationModel
@@ -49,7 +49,7 @@ namespace ElGroupo.Web.Controllers
                     OrganizedByUser = true,
                     IsNew = false,
                     Name = ev.Name,
-                    Draft = ev.SavedAsDraft
+                    Status = ev.Status
                 });
             }
             foreach (var ev in invitedEvents.Where(x => !organizedEvents.Select(y => y.Id).Contains(x.EventId)))
@@ -61,13 +61,16 @@ namespace ElGroupo.Web.Controllers
                     Id = ev.Event.Id,
                     OrganizedByUser = false,
                     IsNew = !ev.Viewed,
-                    Name = ev.Event.Name
+                    Name = ev.Event.Name,
+                    OrganizerName = ev.Event.Attendees.First(x=>x.IsOrganizer).User.Name,
+                    Status = ev.Event.Status,
+                    RSVPStatus = ev.ResponseStatus
                 });
             }
 
-            model.Drafts = allEvents.Where(x => x.OrganizedByUser && x.Draft).OrderBy(x => x.StartDate).ToList();
-            model.PastEvents = allEvents.Where(x => x.StartDate < DateTime.Now).OrderBy(x => x.StartDate).ToList();
-            model.FutureEvents = allEvents.Where(x => x.StartDate >= DateTime.Now).OrderBy(x => x.StartDate).ToList();
+            model.Drafts = allEvents.Where(x => x.OrganizedByUser && x.Status == Domain.Enums.EventStatus.Draft).OrderBy(x => x.StartDate).ToList();
+            model.PastEvents = allEvents.Where(x => x.Status != Domain.Enums.EventStatus.Draft && x.StartDate < DateTime.Now).OrderBy(x => x.StartDate).ToList();
+            model.FutureEvents = allEvents.Where(x => x.Status != Domain.Enums.EventStatus.Draft && x.StartDate >= DateTime.Now).OrderBy(x => x.StartDate).ToList();
             return View(model);
         }
 

@@ -22,19 +22,13 @@
             }
         });
     });
-
-    //save details
-    $("#btnSaveEditDetails").on("click", function () {
-        var obj = $("#frmEditEventDetails").serializeArray();
-        var newObj = {};
-        for (var x = 0; x < obj.length; x++) {
-            newObj[obj[x].name] = obj[x].value;
-        }
+    var saveDetails = function (obj) {
+        console.log('in saveDetails');
         $.ajax({
             url: "/Events/EditDetails",
             type: 'POST',
             contentType: "application/json",
-            data: JSON.stringify(newObj),
+            data: JSON.stringify(obj),
             async: true,
             cache: false,
             dataType: 'html',
@@ -49,6 +43,52 @@
                 alert('fuck me');
             }
         });
+    }
+    //save details
+    $("#btnSaveEditDetails").on("click", function () {
+        var obj = $("#frmEditEventDetails").serializeArray();
+        var newObj = {};
+        for (var x = 0; x < obj.length; x++) {
+            newObj[obj[x].name] = obj[x].value;
+        }
+
+        console.log('status: ' + $("#Status").val());
+        console.log('original status: ' + $("#OriginalStatus").val());
+        if ($("#Status").val() !== $("#OriginalStatus").val()) {
+            var saveObject = newObj;
+            console.log('calling confirm');
+            Confirm("Do you want to change the status of your event from " + $("#OriginalStatus").val() + " to " + $("#Status").val() + "?",
+                function () {
+                    $.ajax({
+                        url: "/Events/EditDetails",
+                        type: 'POST',
+                        contentType: "application/json",
+                        data: JSON.stringify(saveObject),
+                        async: true,
+                        cache: false,
+                        dataType: 'html',
+                        success: function success(results) {
+                            $("#divEditDetails").empty().hide();
+                            $("#divViewDetails").html(results).show();
+                            $("#btnCancelEditDetails").hide();
+                            $("#btnSaveEditDetails").hide();
+                            $("#btnEditDetails").show();
+                        },
+                        error: function error(err) {
+                            alert('fuck me');
+                        }
+                    });
+                },
+                function () {
+                    //do nothing
+                });
+        }
+        else {
+            console.log('status not changed');
+            saveDetails(newObj);
+        }
+
+
     });
     $("#btnCancelEditDetails").on("click", function () {
         $("#divEditDetails").empty();
@@ -76,7 +116,7 @@
                 $("#btnSaveEditLocation").show();
                 $("#btnCancelEditLocation").show();
                 $("#divEditLocation").empty().html(results).show();
-               
+
             },
             error: function error(err) {
                 alert('fuck me');
@@ -114,7 +154,7 @@
 
 
 
-    
+
 
     $("#btnSubmit").on("click", function () {
         $("#frmEditEvent").submit();
@@ -200,7 +240,7 @@ EditEvent = {
 
         });
     },
-    PlaceChange : function (place) {
+    PlaceChange: function (place) {
         console.log('placechange');
 
         $("#Address1").val('');
@@ -233,7 +273,7 @@ EditEvent = {
                     case 'administrative_area_level_1':
                         state = place.address_components[x].short_name;
                         break;
-                    
+
                 }
             }
         }

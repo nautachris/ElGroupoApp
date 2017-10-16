@@ -6,7 +6,6 @@
         $(this).addClass('bold');
         $(".row.tab").hide();
         $(".row." + $(this).attr('data-link-type')).show();
-
     });
 
     $("html").on("click", ".switch-container > div", function () {

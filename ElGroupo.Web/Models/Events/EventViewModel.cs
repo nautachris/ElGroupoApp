@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using ElGroupo.Web.Models.Messages;
 using ElGroupo.Web.Models.Notifications;
+using ElGroupo.Domain.Enums;
 
 namespace ElGroupo.Web.Models.Events
 {
@@ -25,6 +26,10 @@ namespace ElGroupo.Web.Models.Events
         public long EventId { get; set; }
 
         public bool IsOrganizer { get; set; }
+
+        public string OrganizerName { get; set; }
+
+        public RSVPTypes RSVPStatus { get; set; }
 
 
         public List<EventNotificationModel> Notifications { get; set; }

@@ -29,6 +29,16 @@ COMPLETE - add fake users
 
 
 
+https://github.com/Leaflet/Leaflet.markercluster#adding-and-removing-markers
+
+center project mapping table
+remove "set field mappings" button while field mapping table is open
+
+grab new data
+
+
+
+
 
 
 

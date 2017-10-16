@@ -93,7 +93,8 @@
         var attendee = {
             Id : Number($("#txtAttendees").attr("data-contact-id")),
             Name : $("#txtAttendees").val(),
-            Owner : $(".registered-owner span.switch-selected").attr("data-action") === 'yes'
+            Owner: $(".registered-owner span.switch-selected").attr("data-action") === 'yes',
+            Email: null
         };
 
         console.log('attendee to add');
@@ -173,14 +174,19 @@
         }
     });
 
+    $("#btnCancelAddAttendee").on("click", function () {
+
+        Confirm("Do you want to cancel your event attendee list edits?", function () {
+            $("#divAddedAttendeeList").empty();
+        });
+
+        
+    });
+
 
 
     //pending users
     $("html").on("click", "div.pending-attendee-info", function () {
-        console.log('connection info click');
-        //if click on div but not on links, reset
-        console.log('opacity: ' + $(this).css('opacity'));
-
         var $links = $(this).closest("div[data-user-id]").find("div.pending-attendee-links");
         if ($(this).css('opacity') == 0.5) {
             $links.hide();
@@ -202,6 +208,9 @@
 
     });
 
+
+
+
     $("html").on("click", ".pending-attendee-links a", function () {
         console.log('link clicked');
         var $infoDiv = $(this).closest("div[data-user-id]").find("div.pending-attendee-info");
@@ -217,17 +226,16 @@
 
 
     });
-    $("#btnCancelAddAttendee").on("click", function () {
-        $("#divAddedAttendeeList").empty();
 
-    });
 
     $("#btnSaveAttendeeChanges").on("click", function () {
         var list = GetAddedAttendees();
         var obj = {
-            EventId: Number($("#EventId")),
+            EventId: Number($("#EventId").val()),
             Attendees: list
         };
+        console.log('adding these attendees');
+        console.log(obj);
         $.ajax({
             url: "/Events/SavePendingAttendees",
             type: 'POST',
@@ -238,10 +246,15 @@
             dataType: "html",
             success: function success(results) {
                 //this will redirect to _ViewEventAttendees
+                console.log('results from savependingattendees');
+                console.log(results);
                 $("#divViewAttendees").html(results);
                 $("#divAddedAttendeeList").empty();
+
+                $(".links[data-link-type=attendees]").click();
             },
             error: function error(err) {
+                console.log(err);
                 alert('fuck me');
             }
         });
@@ -252,17 +265,17 @@
         var list = [];
         $("#divAddedAttendeeList div.pending-attendee-container").each(function () {
             var name = $(this).attr('data-user-name');
-            var id = $(this).attr('data-user-id');
+            var id = Number($(this).attr('data-user-id'));
             var email = null;
-            if (Number(id) === -1) {
+            if (id === -1) {
                 email = $(this).attr('data-user-email');
             }
             var isOwner = $(this).find(".switch-selected").attr('data-action') === 'yes';
 
 
             var attendee = {
+                Id : id,
                 Name: name,
-                Id: id,
                 Email: email,
                 Owner: isOwner
             }

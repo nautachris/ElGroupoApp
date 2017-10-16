@@ -26,10 +26,10 @@ namespace ElGroupo.Web.Models.Events
             this.AttendanceVerificationMethod = e.VerificationMethod;
             this.LocationTolerance = e.CheckInLocationTolerance;
             this.VerificationCode = e.VerificationCode;
-            this.IsDraft = e.SavedAsDraft;
+            this.Status = e.Status;
 
         }
-        public bool IsDraft { get; set; }
+        public EventStatus Status { get; set; }
         public long EventId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }

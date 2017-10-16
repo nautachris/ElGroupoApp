@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using ElGroupo.Web.Classes;
 using ElGroupo.Web.Models.Messages;
 using ElGroupo.Web.Models.Notifications;
+using ElGroupo.Web.Models.Shared;
 
 namespace ElGroupo.Web.Services
 {
@@ -26,37 +27,47 @@ namespace ElGroupo.Web.Services
             this.userManager = manager;
         }
 
-        public async Task<Guid> AddUnregisteredAttendee(User u, Event e, UnregisteredEventAttendeeModel model)
+        public async Task<SaveDataResponse> AddUnregisteredAttendee(User u, Event e, UnregisteredEventAttendeeModel model)
         {
-            var uea = new UnregisteredEventAttendee
+            try
             {
-                Event = e,
-                Name = model.Name,
-                Email = model.Email,
-                DateCreated = DateTime.Now,
-                UserCreated = u.UserName,
-                RegisterToken = Guid.NewGuid(),
+                var uea = new UnregisteredEventAttendee
+                {
+                    Event = e,
+                    Name = model.Name,
+                    Email = model.Email,
+                    DateCreated = DateTime.Now,
+                    UserCreated = u.UserName,
+                    RegisterToken = Guid.NewGuid(),
 
-            };
-            dbContext.UnregisteredEventAttendees.Add(uea);
-            await dbContext.SaveChangesAsync();
-            return uea.RegisterToken;
+                };
+                dbContext.UnregisteredEventAttendees.Add(uea);
+                await dbContext.SaveChangesAsync();
+
+                return new SaveDataResponse { Success = true, ResponseData = uea.RegisterToken };
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResponse { Success = false, ErrorMessage = ex.ToString() };
+            }
+
+
         }
-        public async Task<bool> DeleteEvent(long eventId)
+        public async Task<SaveDataResponse> DeleteEvent(long eventId)
         {
             try
             {
 
                 //var fff =  await dbContext.Set<Event>().Include(x => x.MessageBoardItems).ThenInclude(y => y.Attendees).FirstOrDefaultAsync();
                 var e = await dbContext.Set<Event>().Include("Attendees").Include("UnregisteredAttendees").Include("MessageBoardItems.Attendees").Include("Notifications.Attendees").FirstOrDefaultAsync();
-                if (e == null) return false;
+                if (e == null) return SaveDataResponse.FromErrorMessage("Event not found");
                 dbContext.Events.Remove(e);
                 await dbContext.SaveChangesAsync();
-                return true;
+                return new SaveDataResponse();
             }
             catch (Exception ex)
             {
-                return false;
+                return SaveDataResponse.FromException(ex);
             }
 
         }
@@ -108,69 +119,154 @@ namespace ElGroupo.Web.Services
             return model;
         }
 
-        public async Task<long> CreateEvent(CreateEventModel model, User user)
+
+
+        public async Task<SaveDataResponse> UpdateEventAttendees(SavePendingAttendeesModel model)
         {
-
-            var e = new Event();
-
-
-            //we need this for the owners of the event to get messages
-            e.Attendees.Add(new EventAttendee
-            {
-                User = user,
-                Event = e,
-                IsOrganizer = true
-            });
-            e.Name = model.Name;
-            e.Description = model.Description;
-            e.LocationName = model.LocationName;
-            e.CheckInTimeTolerance = 30;
-            e.CheckInLocationTolerance = 500;
-            e.CoordinateX = model.XCoord;
-            e.CoordinateY = model.YCoord;
-            e.GooglePlaceId = model.GooglePlaceId;
-            e.Address1 = model.Address1;
-            e.Address2 = model.Address2;
-            e.City = model.City;
-            e.SavedAsDraft = true;
-            e.State = model.State;
-            if (model.LocationTolerance.HasValue) e.CheckInLocationTolerance = model.LocationTolerance.Value;
-            e.VerificationCode = model.VerificationCode;
-            e.VerificationMethod = model.AttendanceVerificationMethod;
-            e.MustRSVP = model.RSVPRequired;
-            e.Zip = model.ZipCode;
-
-            int startHour = 0;
-            int endHour = 0;
-
-            if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-            else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
-
-            if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-            else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
-
-
-            if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
-            else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
-            else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
-            else startHour = model.StartHour + 12;
-
-
-            e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
-            e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
-
-            dbContext.Events.Add(e);
-
             try
             {
+                var e = dbContext.Find<Event>(model.EventId);
+                if (e == null)
+                {
+                    return new SaveDataResponse
+                    {
+                        Success = false,
+                        ErrorMessage = "could not find event with id = " + model.EventId
+                    };
+                }
+
+                foreach (var att in model.Attendees)
+                {
+                    if (att.Id == -1)
+                    {
+                        //new user
+                        //check for email
+                        var emailCheck = dbContext.Users.Any(x => x.Email == att.Email);
+                        if (emailCheck)
+                        {
+                            var newAttendee = new EventAttendee
+                            {
+                                User = dbContext.Find<User>(att.Id),
+                                Event = e,
+                                IsOrganizer = att.Owner,
+                                ResponseStatus = Domain.Enums.RSVPTypes.None
+
+                            };
+                            dbContext.Add(newAttendee);
+                        }
+                        else
+                        {
+                            var unregisteredAttendee = new UnregisteredEventAttendee
+                            {
+                                Email = att.Email,
+                                Event = e,
+                                RegisterToken = Guid.NewGuid(),
+                            };
+                            dbContext.Add(unregisteredAttendee);
+                            if (e.Status == Domain.Enums.EventStatus.Active)
+                            {
+                                //send email
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //check to see if this attendee has already been added
+                        var emailCheck = dbContext.EventAttendees.Any(x => x.EventId == e.Id && x.User.Id == att.Id);
+                        if (!emailCheck)
+                        {
+                            var newAttendee = new EventAttendee
+                            {
+                                User = dbContext.Find<User>(att.Id),
+                                Event = e,
+                                IsOrganizer = att.Owner,
+                                ResponseStatus = Domain.Enums.RSVPTypes.None
+                            };
+                            dbContext.Add(newAttendee);
+                        }
+                    }
+                }
+
                 await dbContext.SaveChangesAsync();
+                if (e.Status == Domain.Enums.EventStatus.Active)
+                {
+                    //send emails
+                }
+                return new SaveDataResponse { Success = true };
             }
             catch (Exception ex)
             {
-                var fff = 4;
+                return new SaveDataResponse { Success = false, ErrorMessage = ex.ToString() };
             }
 
-            return e.Id;
+        }
+
+
+        public async Task<SaveDataResponse> CreateEvent(CreateEventModel model, User user)
+        {
+            try
+            {
+                var e = new Event();
+
+
+                //we need this for the owners of the event to get messages
+                e.Attendees.Add(new EventAttendee
+                {
+                    User = user,
+                    Event = e,
+                    IsOrganizer = true
+                });
+                e.Name = model.Name;
+                e.Description = model.Description;
+                e.LocationName = model.LocationName;
+                e.CheckInTimeTolerance = 30;
+                e.CheckInLocationTolerance = 500;
+                e.CoordinateX = model.XCoord;
+                e.CoordinateY = model.YCoord;
+                e.GooglePlaceId = model.GooglePlaceId;
+                e.Address1 = model.Address1;
+                e.Address2 = model.Address2;
+                e.City = model.City;
+                e.Status = Domain.Enums.EventStatus.Draft;
+                e.State = model.State;
+                if (model.LocationTolerance.HasValue) e.CheckInLocationTolerance = model.LocationTolerance.Value;
+                e.VerificationCode = model.VerificationCode;
+                e.VerificationMethod = model.AttendanceVerificationMethod;
+                e.MustRSVP = model.RSVPRequired;
+                e.Zip = model.ZipCode;
+
+                int startHour = 0;
+                int endHour = 0;
+
+                if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+                else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
+
+                if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+                else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
+
+
+                if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
+                else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
+                else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
+                else startHour = model.StartHour + 12;
+
+
+                e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
+                e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+
+                dbContext.Events.Add(e);
+
+
+                await dbContext.SaveChangesAsync();
+
+                return SaveDataResponse.IncludeData(e.Id);
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
+
         }
 
         public async Task<EventEditModel> GetEventEditModel(long eid)
@@ -255,76 +351,101 @@ namespace ElGroupo.Web.Services
 
             return changes;
         }
-        public async Task<bool> UpdateEventDetails(EditEventDetailsModel model)
+        public async Task<SaveDataResponse> UpdateEventDetails(EditEventDetailsModel model)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
-            var changes = FindChangedEventDetails(model, e);
-            var draftChange = !model.IsDraft && e.SavedAsDraft;
-
-            e.Name = model.Name;
-            e.Description = model.Description;
-            int startHour = 0;
-            int endHour = 0;
-            if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-            else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
-
-            if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-            else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
-
-
-            if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
-            else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
-            else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
-            else startHour = model.StartHour + 12;
-
-
-            e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
-            e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
-
-            dbContext.Update(e);
-            await dbContext.SaveChangesAsync();
-
-
-            if (draftChange)
+            try
             {
-                //send out all emails
-                foreach (var att in dbContext.EventAttendees.Where(x => x.EventId == e.Id))
+                var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
+                var changes = FindChangedEventDetails(model, e);
+                var draftChange = model.Status == Domain.Enums.EventStatus.Active && e.Status != Domain.Enums.EventStatus.Active;
+
+                e.Name = model.Name;
+                e.Description = model.Description;
+                int startHour = 0;
+                int endHour = 0;
+                if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+                else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
+
+                if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+                else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
+
+
+                if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
+                else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
+                else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
+                else startHour = model.StartHour + 12;
+
+
+                e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
+                e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+                e.Status = model.Status;
+                dbContext.Update(e);
+                await dbContext.SaveChangesAsync();
+
+
+                if (draftChange)
                 {
+                    //send out all emails
+                    foreach (var att in dbContext.EventAttendees.Where(x => x.EventId == e.Id))
+                    {
+
+                    }
 
                 }
+                else if (e.Status == Domain.Enums.EventStatus.Active && changes.Count > 0)
+                {
+                    //details have changed, must send out emails
+                }
 
+                return SaveDataResponse.Ok();
             }
-            else if (!e.SavedAsDraft && changes.Count > 0)
+            catch (Exception ex)
             {
-                //details have changed, must send out emails
+                return SaveDataResponse.FromException(ex);
             }
 
-            return true;
         }
 
-        public async Task<bool> UpdateEventLocation(EditEventLocationModel model)
+        public async Task<SaveDataResponse> UpdateEventLocation(EditEventLocationModel model)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
-            e.Address1 = model.Address1;
-            e.Address2 = model.Address2;
-            e.City = model.City;
-            e.State = model.State;
-            e.Zip = model.ZipCode;
-            e.GooglePlaceId = model.GooglePlaceId;
-            e.CoordinateX = model.XCoord;
-            e.CoordinateY = model.YCoord;
-            dbContext.Update(e);
-            await dbContext.SaveChangesAsync();
-            return true;
+            try
+            {
+                var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
+                e.Address1 = model.Address1;
+                e.Address2 = model.Address2;
+                e.City = model.City;
+                e.State = model.State;
+                e.Zip = model.ZipCode;
+                e.GooglePlaceId = model.GooglePlaceId;
+                e.CoordinateX = model.XCoord;
+                e.CoordinateY = model.YCoord;
+                dbContext.Update(e);
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
         }
 
         public async Task<EventViewModel> GetEventViewModel(long eventId, long userId, EditAccessTypes accessLevel)
         {
-
-            var e = await dbContext.Events.Include("Attendees.User").Include("Attendees.MessageBoardItems.MessageBoardItem.PostedBy").FirstOrDefaultAsync(x => x.Id == eventId);
+            //var e = await dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).Include("Attendees.MessageBoardItems.MessageBoardItem.PostedBy").FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).
+                Include(x=>x.Attendees).ThenInclude(x=>x.MessageBoardItems).ThenInclude(x=>x.MessageBoardItem).ThenInclude(x=>x.PostedBy).
+                FirstOrDefaultAsync(x => x.Id == eventId);
             var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == userId);
+            if (thisAttendee.Viewed == false)
+            {
+                thisAttendee.Viewed = true;
+                dbContext.Update(thisAttendee);
+                await dbContext.SaveChangesAsync();
+            }
             //var isOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
             var model = new EventViewModel(e);
+            model.RSVPStatus = thisAttendee.ResponseStatus;
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             model.Attendees = new List<EventAttendeeModel>();
             foreach (var att in e.Attendees)
@@ -337,6 +458,8 @@ namespace ElGroupo.Web.Services
                     Name = att.User.Name
                 });
             }
+
+            model.OrganizerName = e.Attendees.First(x => x.IsOrganizer).User.Name;
 
             model.Messages = new List<EventMessageModel>();
 
@@ -384,22 +507,31 @@ namespace ElGroupo.Web.Services
         //    await dbContext.SaveChangesAsync();
         //}
 
-        public async Task AddEventAttendee(AddRegisteredEventAttendeeModel model)
+        public async Task<SaveDataResponse> AddEventAttendee(AddRegisteredEventAttendeeModel model)
         {
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == model.eventId);
-            var u = dbContext.Users.FirstOrDefault(x => x.Id == model.userId);
-            var ea = new EventAttendee
+            try
             {
-                Event = e,
-                User = u,
-                DateCreated = DateTime.Now,
-                UserCreated = u.UserName,
-                AllowEventUpdates = true,
-                Viewed = false,
-                IsOrganizer = model.isOwner
-            };
-            dbContext.EventAttendees.Add(ea);
-            await dbContext.SaveChangesAsync();
+                var e = dbContext.Events.FirstOrDefault(x => x.Id == model.eventId);
+                var u = dbContext.Users.FirstOrDefault(x => x.Id == model.userId);
+                var ea = new EventAttendee
+                {
+                    Event = e,
+                    User = u,
+                    DateCreated = DateTime.Now,
+                    UserCreated = u.UserName,
+                    AllowEventUpdates = true,
+                    Viewed = false,
+                    IsOrganizer = model.isOwner
+                };
+                dbContext.EventAttendees.Add(ea);
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
         }
 
         public async Task<List<EventAttendeeModel>> GetEventAttendees(long eventId)
@@ -412,13 +544,22 @@ namespace ElGroupo.Web.Services
             return model;
         }
 
-        public async Task<bool> DeleteEventAttendee(long attendee, long eventId)
+        public async Task<SaveDataResponse> DeleteEventAttendee(long attendee, long eventId)
         {
-            var eo = dbContext.EventAttendees.FirstOrDefault(x => x.Id == attendee);
-            if (eo.EventId != eventId) return false;
-            dbContext.EventAttendees.Remove(eo);
-            await dbContext.SaveChangesAsync();
-            return true;
+            try
+            {
+                var eo = dbContext.EventAttendees.FirstOrDefault(x => x.Id == attendee);
+                if (eo == null) return SaveDataResponse.FromErrorMessage("event attendee id " + attendee + " not found");
+                if (eo.EventId != eventId) return SaveDataResponse.FromErrorMessage("attendee is not part of event");
+                dbContext.EventAttendees.Remove(eo);
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
         }
 
         public async Task<List<EventInformationModel>> SearchEvents(string search, long userId)
@@ -437,7 +578,7 @@ namespace ElGroupo.Web.Services
             var list = new List<EventInformationModel>();
             await events.ForEachAsync(x => list.Add(new EventInformationModel
             {
-                Draft = x.SavedAsDraft,
+                Status = x.Status,
                 StartDate = x.StartTime,
                 EndDate = x.EndTime,
                 Id = x.Id,
