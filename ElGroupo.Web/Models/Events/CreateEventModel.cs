@@ -29,7 +29,7 @@ namespace ElGroupo.Web.Models.Events
         [Display(Description = "Start Minute")]
         public int StartMinute { get; set; } = 0;
         [Required]
-        public Enums.AMPM StartAMPM { get; set; }
+        public Enums.AMPM StartAMPM { get; set; } = Enums.AMPM.AM;
         [Required]
         [Display(Description = "End Hour")]
         public int EndHour { get; set; }
@@ -37,7 +37,7 @@ namespace ElGroupo.Web.Models.Events
         [Display(Description = "End Minute")]
         public int EndMinute { get; set; } = 0;
         [Required]
-        public Enums.AMPM EndAMPM { get; set; }
+        public Enums.AMPM EndAMPM { get; set; } = Enums.AMPM.AM;
 
         [Required]
         [Display(Description = "Address 1")]

@@ -57,7 +57,37 @@
                 <div class="col span-1-of-4" style="text-align:center;">
                     <a href="@GetUserViewLink(att.UserId)">
                         <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
-                        <span style="font-weight:bold; text-transform:uppercase;">@att.Name</span>
+
+                        @if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
+                        {
+                            <span style="font-weight:bold; padding:5px; text-transform:uppercase; border-radius:5px; background-color:yellow">@att.Name</span>
+
+                        }
+                        else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
+                        {
+
+                            <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:red">@att.Name</span>
+                        }
+                        else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
+                        {
+                            <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:green">@att.Name</span>
+
+                        }
+                        else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
+                        {
+                            <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:gray">@att.Name</span>
+
+                        }
+                        else
+                        {
+                            <span style="font-weight:bold;  padding:5px;text-transform:uppercase;">@att.Name</span>
+
+                        }
+                        @if (att.IsOrganizer)
+                        {
+                            <span>*</span>
+
+                        }
                     </a>
 
                 </div>

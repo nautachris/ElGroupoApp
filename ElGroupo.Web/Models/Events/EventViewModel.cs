@@ -19,7 +19,7 @@ namespace ElGroupo.Web.Models.Events
         }
 
 
-
+        public EventAttendeeRSVPModel RSVPResponse { get; set; }
         public ViewEventDetailsModel Details { get; set; }
         public ViewEventLocationModel Location { get; set; }
 
@@ -29,7 +29,7 @@ namespace ElGroupo.Web.Models.Events
 
         public string OrganizerName { get; set; }
 
-        public RSVPTypes RSVPStatus { get; set; }
+
 
 
         public List<EventNotificationModel> Notifications { get; set; }

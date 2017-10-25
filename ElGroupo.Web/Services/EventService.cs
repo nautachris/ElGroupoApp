@@ -53,24 +53,7 @@ namespace ElGroupo.Web.Services
 
 
         }
-        public async Task<SaveDataResponse> DeleteEvent(long eventId)
-        {
-            try
-            {
 
-                //var fff =  await dbContext.Set<Event>().Include(x => x.MessageBoardItems).ThenInclude(y => y.Attendees).FirstOrDefaultAsync();
-                var e = await dbContext.Set<Event>().Include("Attendees").Include("UnregisteredAttendees").Include("MessageBoardItems.Attendees").Include("Notifications.Attendees").FirstOrDefaultAsync();
-                if (e == null) return SaveDataResponse.FromErrorMessage("Event not found");
-                dbContext.Events.Remove(e);
-                await dbContext.SaveChangesAsync();
-                return new SaveDataResponse();
-            }
-            catch (Exception ex)
-            {
-                return SaveDataResponse.FromException(ex);
-            }
-
-        }
 
 
         //public async Task<List<EventOrganizerModel>> GetEventOrganizers(long eventId)
@@ -119,7 +102,41 @@ namespace ElGroupo.Web.Services
             return model;
         }
 
+        public async Task<SaveDataResponse> DeleteEvent(long eventId)
+        {
 
+            var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
+
+            if (e == null) return SaveDataResponse.FromErrorMessage("Event Id " + eventId + " not found");
+
+            try
+            {
+                var unregisteredEventAttendees = dbContext.UnregisteredEventAttendees.Where(x => x.EventId == eventId).ToList();
+                foreach (var u in unregisteredEventAttendees) dbContext.Remove(unregisteredEventAttendees);
+
+                var mbias = dbContext.MessageBoardItemAttendees.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
+                foreach (var mbia in mbias) dbContext.Remove(mbia);
+
+                var mbis = dbContext.MessageBoardItems.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
+                foreach (var mbi in mbis) dbContext.Remove(mbi);
+
+                var eatns = dbContext.EventAttendeeNotifications.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
+                foreach (var eatn in eatns) dbContext.Remove(eatn);
+
+                var eans = dbContext.EventAttendees.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
+                foreach (var ean in eans) dbContext.Remove(ean);
+
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
+
+
+        }
 
         public async Task<SaveDataResponse> UpdateEventAttendees(SavePendingAttendeesModel model)
         {
@@ -201,7 +218,21 @@ namespace ElGroupo.Web.Services
 
         }
 
-
+        public async Task<SaveDataResponse> UpdateRSVP(User user, UpdateRSVPStatusModel model)
+        {
+            try
+            {
+                var ea = dbContext.EventAttendees.Include(x=>x.Event).Include(x=>x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
+                if (ea == null) return SaveDataResponse.FromErrorMessage("User not found");
+                ea.ResponseStatus = model.Status;
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch(Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+        }
         public async Task<SaveDataResponse> CreateEvent(CreateEventModel model, User user)
         {
             try
@@ -210,12 +241,7 @@ namespace ElGroupo.Web.Services
 
 
                 //we need this for the owners of the event to get messages
-                e.Attendees.Add(new EventAttendee
-                {
-                    User = user,
-                    Event = e,
-                    IsOrganizer = true
-                });
+
                 e.Name = model.Name;
                 e.Description = model.Description;
                 e.LocationName = model.LocationName;
@@ -256,6 +282,14 @@ namespace ElGroupo.Web.Services
 
                 dbContext.Events.Add(e);
 
+                var ea = new EventAttendee
+                {
+                    User = user,
+                    Event = e,
+                    IsOrganizer = true,
+                    Viewed = true
+                };
+                dbContext.EventAttendees.Add(ea);
 
                 await dbContext.SaveChangesAsync();
 
@@ -433,8 +467,8 @@ namespace ElGroupo.Web.Services
         public async Task<EventViewModel> GetEventViewModel(long eventId, long userId, EditAccessTypes accessLevel)
         {
             //var e = await dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).Include("Attendees.MessageBoardItems.MessageBoardItem.PostedBy").FirstOrDefaultAsync(x => x.Id == eventId);
-            var e = await dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).
-                Include(x=>x.Attendees).ThenInclude(x=>x.MessageBoardItems).ThenInclude(x=>x.MessageBoardItem).ThenInclude(x=>x.PostedBy).
+            var e = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).
+                Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).ThenInclude(x => x.PostedBy).
                 FirstOrDefaultAsync(x => x.Id == eventId);
             var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == userId);
             if (thisAttendee.Viewed == false)
@@ -445,17 +479,18 @@ namespace ElGroupo.Web.Services
             }
             //var isOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
             var model = new EventViewModel(e);
-            model.RSVPStatus = thisAttendee.ResponseStatus;
+            model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             model.Attendees = new List<EventAttendeeModel>();
-            foreach (var att in e.Attendees)
+            foreach (var att in e.Attendees.Where(x=>x.User.Id != userId))
             {
                 model.Attendees.Add(new EventAttendeeModel
                 {
                     Id = att.Id,
                     UserId = att.User.Id,
                     RSVPStatus = att.ResponseStatus,
-                    Name = att.User.Name
+                    Name = att.User.Name,
+                    IsOrganizer = att.IsOrganizer
                 });
             }
 

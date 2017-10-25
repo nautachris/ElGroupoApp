@@ -1,40 +1,39 @@
-dont send emails or show in attendees dashboard untul event is moved from draft to active
+COMPLETE dont send emails or show in attendees dashboard untul event is moved from draft to active
 
-add styling to autocomplete textbox when a user from the autocomplete list is selected
+partially complete - add to add event attendees area - add styling to autocomplete textbox when a user from the autocomplete list is selected
 
 COMPLETE - add options for "geographic" or "passcode" or "none" verification on event create page
 
-add RSVP options on attendees event view page
+partially complete (what is workflow when user changes selection?) - add RSVP options on attendees event view page
 
 COMPLETE new users must verify email
 
 finish "edit location" page - add ability to drop a point?
 
-whenever any event detail changes (and event is no longer in draft mode), a "event changed" email must go out
+COMPLETE (except for email itself) - whenever any event detail changes (and event is no longer in draft mode), a "event changed" email must go out
 
-delete event button - "modal" confirmation
+COMPLETE - delete event button - "modal" confirmation
 
 event owner needs a request RSVP button that will send out emails to all users who's rsvp status is "none/pending" or "maybe"
 
 event attendee list - color code user image border based on rsvp status
 
-user dashboard - denote events that user has not rsvpd to
+COMPLETE (added status) - user dashboard - denote events that user has not rsvpd to
 
-view event view - add "organized by" text
+COMPLETE - view event view - add "organized by" text
 
 COMPLETE - widget that sets the propery switch-container switch-selected class  upon load
 
 COMPLETE - add fake users
 
+my connection list - finish code for "remove connection" click
 
 
 
-https://github.com/Leaflet/Leaflet.markercluster#adding-and-removing-markers
 
-center project mapping table
-remove "set field mappings" button while field mapping table is open
 
-grab new data
+
+
 
 
 

@@ -65,25 +65,18 @@
     else
     {
         //something where the user can set their rsvp status
+        @Html.Partial("_EditAttendeeRSVPResponse", Model.RSVPResponse)
         <div class="row">
-            <div class="col span-1-of-4">
-                <label>Am I going?</label>
-            </div>
-            <div data-replace-element="RSVPRequired" class="switch-container col span-3-of-4 rsvp-required">
-                <input class="invisible" asp-for="RSVPStatus" />
-                <span data-replace-val="true" class="switch-selected col span-1-of-4"></span>
-                <span data-replace-val="false" class="col span-1-of-4">No</span>
-                <span data-replace-val="true" class="switch-selected col span-1-of-4">Yes</span>
-                <span data-replace-val="false" class="col span-1-of-4">No</span>
-            </div>
+            <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+            <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
+            <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+            <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
         </div>
-        <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
-        <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
-        <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
-        <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+
+
 
     }
-   
+
 
 
 
@@ -95,12 +88,12 @@
     </div>
     @if (Model.IsOrganizer)
     {
-    <div style="display:none;" id="divEditDetails"></div>
-    <div class="row centered">
-        <a id="btnEditDetails" href="#">Edit</a>
-        <a style="display:none;" id="btnCancelEditDetails" href="#">Cancel</a>
-        <a style="display:none;" id="btnSaveEditDetails" href="#">Save</a>
-    </div>
+        <div style="display:none;" id="divEditDetails"></div>
+        <div class="row centered">
+            <a id="btnEditDetails" href="#">Edit</a>
+            <a style="display:none;" id="btnCancelEditDetails" href="#">Cancel</a>
+            <a style="display:none;" id="btnSaveEditDetails" href="#">Save</a>
+        </div>
 
     }
     <div class="row map-search">
@@ -119,19 +112,19 @@
     </div>
     @if (Model.IsOrganizer)
     {
-    <div style="display:none;" id="divEditLocation"></div>
-    <div class="row centered">
-        <a id="btnEditLocation" href="#">Edit Location</a>
-        <a style="display:none;" id="btnCancelEditLocation" href="#">Cancel Location Changes</a>
-        <a style="display:none;" id="btnSaveEditLocation" href="#">Save Location Changes</a>
-    </div>
+        <div style="display:none;" id="divEditLocation"></div>
+        <div class="row centered">
+            <a id="btnEditLocation" href="#">Edit Location</a>
+            <a style="display:none;" id="btnCancelEditLocation" href="#">Cancel Location Changes</a>
+            <a style="display:none;" id="btnSaveEditLocation" href="#">Save Location Changes</a>
+        </div>
     }
 
-    <div class="row">
+    @*<div class="row">
 
-        <a class="btn btn-primary width-100" asp-controller="Home" asp-action="Dashboard">Return to My Events</a>
+            <a class="btn btn-primary width-100" asp-controller="Home" asp-action="Dashboard">Return to My Events</a>
 
-    </div>
+        </div>*@
 
 </div>
 
@@ -175,6 +168,15 @@
     @Html.Partial("_AddEventMessage")
 </div>
 
+@if (Model.IsOrganizer)
+{
+    <div class="row centered" style="margin-top:20px; margin-bottom:40px;">
+        <button id="btnDeleteEvent" class="btn-primary">Delete Event</button>
+    </div>
+
+
+}
+
 @section Scripts{
     <script type="text/javascript" src="~/content/scripts/events/view.js"></script>
     <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
@@ -182,8 +184,8 @@
     @if (Model.IsOrganizer)
     {
         <script type="text/javascript" src="~/content/scripts/events/edit-notifications.js"></script>
-            <script type="text/javascript" src="~/content/scripts/events/edit.js"></script>
-            <script type="text/javascript" src="~/content/scripts/events/edit-attendees.js"></script>
+        <script type="text/javascript" src="~/content/scripts/events/edit.js"></script>
+        <script type="text/javascript" src="~/content/scripts/events/edit-attendees.js"></script>
 
     }
     <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>

@@ -57,12 +57,16 @@ namespace ElGroupo.Web.Controllers
 
         [HttpPost, HttpGet]
         [Authorize]
-        [Route("ViewEventAttendees/{eventId}", Name ="ViewEventAttendees")]
+        [Route("ViewEventAttendees/{eventId}", Name = "ViewEventAttendees")]
         public async Task<IActionResult> ViewEventAttendees([FromRoute]long eventId)
         {
             var model = await eventService.GetEventAttendees(eventId);
             return View("_ViewEventAttendees", model);
         }
+
+
+
+
 
         [HttpPost]
         [Authorize]
@@ -85,7 +89,7 @@ namespace ElGroupo.Web.Controllers
                 {
                     return BadRequest(new { message = response.ErrorMessage });
                 }
-                
+
             }
             return View(model);
 
@@ -98,6 +102,27 @@ namespace ElGroupo.Web.Controllers
         //    return View("_PendingAttendeeList", models);
         //}
 
+
+        [HttpPost]
+        [Authorize]
+        [Route("UpdateRSVPStatus")]
+        public async Task<IActionResult> UpdateRSVPStatus([FromBody]UpdateRSVPStatusModel model)
+        {
+
+                var user = await CurrentUser();
+                var response = await this.eventService.UpdateRSVP(user, model);
+                if (response.Success)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(new { error = response.ErrorMessage });
+                }
+
+
+        }
+
         [HttpPost]
         [Authorize]
         [Route("Create")]
@@ -106,11 +131,19 @@ namespace ElGroupo.Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = await CurrentUser();
-                var eventId = await this.eventService.CreateEvent(model, user);
+                var response = await this.eventService.CreateEvent(model, user);
+                if (response.Success)
+                {
+                    return RedirectToRoute("ViewEvent", new { eid = Convert.ToInt64(response.ResponseData) });
+                }
+                else
+                {
+                    return BadRequest(new { error = response.ErrorMessage });
+                }
 
                 //move on to Contacts
                 //now lets just redirect to the normal view/edit view
-                return RedirectToAction("View", new { eid = eventId });
+
             }
             return View(model);
 
@@ -232,22 +265,24 @@ namespace ElGroupo.Web.Controllers
 
 
 
-        [Authorize]
-        [HttpGet]
-        [ServiceFilter(typeof(EventOrganizerFilterAttribute))]
-        [Route("{eid}/Edit", Name = "editevent")]
-        public async Task<IActionResult> Edit([FromRoute]long eid)
-        {
-            if (!await CheckEventExists(eid)) return View("../Shared/NotFound");
-            if (await CheckEventAccess(eid) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
-            var model = await this.eventService.GetEventEditModel(eid);
+        //[Authorize]
+        //[HttpGet]
+        //[ServiceFilter(typeof(EventOrganizerFilterAttribute))]
+        //[Route("{eid}/Edit", Name = "editevent")]
+        //public async Task<IActionResult> Edit([FromRoute]long eid)
+        //{
+        //    if (!await CheckEventExists(eid)) return View("../Shared/NotFound");
+        //    if (await CheckEventAccess(eid) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
+        //    var model = await this.eventService.GetEventEditModel(eid);
 
 
-            return View(model);
-        }
+        //    return View(model);
+        //}
+
+
         [Authorize]
-        [HttpGet]
-        [Route("{eid}/View")]
+        [HttpGet, HttpPost]
+        [Route("{eid}/View", Name = "ViewEvent")]
         public async Task<IActionResult> View([FromRoute]long eid)
         {
             var accessLevel = await CheckEventAccess(eid);
@@ -444,7 +479,8 @@ namespace ElGroupo.Web.Controllers
             var response = await this.eventService.DeleteEvent(eid);
             if (response.Success)
             {
-                return Ok();
+                var redirectUrl = Url.Action("Dashboard", "Home", new { }, HttpContext.Request.Scheme);
+                return Json(new { url = redirectUrl });
             }
             else
             {

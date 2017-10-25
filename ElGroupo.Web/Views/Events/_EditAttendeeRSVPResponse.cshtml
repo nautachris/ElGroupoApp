@@ -1,0 +1,24 @@
+﻿@using ElGroupo.Web.Models.Events
+@model EventAttendeeRSVPModel
+@{
+    Layout = null;
+
+}
+
+<div class="row centered">
+    <label>Am I going?</label>
+</div>
+
+<div class="row">
+    <input type="hidden" asp-for="Status" id="OriginalStatus" />
+    <input type="hidden" asp-for="Status" />
+    <div class="col span-1-of-5"></div>
+    <div data-replace-element="Status" class="switch-container centered col span-3-of-5 rsvp-required">
+        <input class="invisible" asp-for="Status" />
+        <span data-replace-val="None" class="switch-selected col span-1-of-4">None</span>
+        <span data-replace-val="Yes" class="col span-1-of-4">Yes</span>
+        <span data-replace-val="No" class="switch-selected col span-1-of-4">No</span>
+        <span data-replace-val="Maybe" class="col span-1-of-4">Maybe</span>
+    </div>
+    <div class="col span-1-of-5"></div>
+</div>

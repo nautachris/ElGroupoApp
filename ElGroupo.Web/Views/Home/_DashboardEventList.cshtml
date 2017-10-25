@@ -8,40 +8,40 @@
             @if (e.IsNew && !e.OrganizedByUser)
             {
                 //if it's new, there's obviously no response status
-                <div class="col" style="background-color:red; color:white; border: 1px solid black; padding:4px;">NEW!</div>
+                <div class="col span-1-of-7" style="background-color:red; color:white; border: 1px solid black; padding:4px;">NEW!</div>
 
             }
             else if (e.OrganizedByUser)
             {
-                <div class="col" style="background-color:green; color:white; border: 1px solid black; padding:4px;">This is my event</div>
+                <div class="col span-1-of-7" style="background-color:green; color:white; border: 1px solid black; padding:4px;">This is my event</div>
 
             }
             else
             {
                 if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
                 {
-                    <div class="col" style="background-color:gray; color:white; border: 1px solid black; padding:4px;">Response Pending</div>
+                    <div class="col span-1-of-7" style="background-color:gray; color:white; border: 1px solid black; padding:4px;">Response Pending</div>
 
                 }
                 else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
                 {
-                    <div class="col" style="background-color:yellow; color:white; border: 1px solid black; padding:4px;">I might go</div>
+                    <div class="col span-1-of-7" style="background-color:yellow; color:white; border: 1px solid black; padding:4px;">I might go</div>
 
             }
                 else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
                 {
-                    <div class="col" style="background-color:red; color:white; border: 1px solid black; padding:4px;">Fuck this, I'm not going</div>
+                    <div class="col span-1-of-7" style="background-color:red; color:white; border: 1px solid black; padding:4px;">Fuck this, I'm not going</div>
 
                 }
                 else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
                 {
-                    <div class="col" style="background-color:green; color:white; border: 1px solid black; padding:4px;">Hell yeah I'm in!</div>
+                    <div class="col span-1-of-7" style="background-color:green; color:white; border: 1px solid black; padding:4px;">Hell yeah I'm in!</div>
 
                 }
 
             }
 
-            <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="col span-4-of-7 no-decoration">
+            <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="col span-6-of-7 no-decoration">
                 <span id="spanEventName" style="font-weight:bold; ">
                     @if (e.OrganizedByUser)
                     {

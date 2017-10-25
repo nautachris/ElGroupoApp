@@ -1,5 +1,65 @@
 ﻿$(document).ready(function () {
 
+
+    //user changes response
+    $("div.rsvp-required span").on("click", function () {
+        console.log('rsvp changed!');
+        var newStatus = $(this).attr('data-replace-val');
+        var oldStatus = $("#OriginalStatus").val();
+        if (newStatus === oldStatus) return false;
+        Confirm("Do you want to change your RSVP status from " + oldStatus + " to " + newStatus + "?", function () {
+            var model = {
+                Status: $("#Status").val(),
+                EventId: $("#EventId").val()
+            };
+            console.log(model);
+            $.ajax({
+                url: "/Events/UpdateRSVPStatus",
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                async: true,
+                cache: false,
+                //dataType: "application/json",
+                data: JSON.stringify(model),
+                success: function success() {
+                    console.log('success');
+                    //$("#divMessages").html(results);
+                },
+                error: function error(err) {
+                    console.log('error in saving response');
+                    console.log(err);
+                    alert('fuck me');
+                }
+            });
+        });
+    });
+
+
+
+    $("#btnDeleteEvent").on("click", function () {
+        console.log('delete event');
+        Confirm("Do you want to delete this event?", function () {
+
+            $.ajax({
+                url: "/Events/" + $("#EventId").val(),
+                type: 'DELETE',
+                async: true,
+                cache: false,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function success(results) {
+                    console.log('delete results');
+                    console.log(results);
+                    window.location = results.url;
+                },
+                error: function error(err) {
+                    alert('fuck me');
+                }
+            });
+        }, function () { });
+
+
+    });
     //navigation
     $(".links").on("click", function () {
         $(".links").removeClass('bold');
