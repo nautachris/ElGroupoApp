@@ -1,0 +1,85 @@
+﻿@using ElGroupo.Web.Models.Account
+@model IEnumerable<AttendeeGroupListModel>
+
+    @{ 
+        Layout = null;
+    }
+
+@functions{
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+    public string GetImageUrl(long id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+
+    public string GetEditGroupLink(long id)
+    {
+        var url = Url.Action("ViewAttendeeGroup", "Account", new { id = id });
+        return url;
+
+    }
+
+}
+
+
+@if (Model.Count() > 0)
+{
+
+    @foreach (var rowGroup in SplitList<AttendeeGroupListModel>(Model, 4))
+    {
+        //style = "display:flex; align-items:center;"
+        <div class="row attendee-group-details">
+            @foreach (var group in rowGroup)
+            {
+
+                    <div data-group-id="@group.Id" class="col span-1-of-4 rounded-border" style="text-align:center; position:relative; cursor:pointer;">
+                        <div class="group-info" style="z-index:2">
+                            <span style="font-weight:bold; text-transform:uppercase;">@group.Name (@group.UserCount.ToString())</span>
+
+                        </div>
+                        <div class="group-links centered">
+                            <a style="display:inline-block; width:100%;" class="no-decoration" data-action="edit">Edit</a>
+                            <a style="display:inline-block; width:100%;" class="no-decoration" data-action="remove">Remove</a>
+                        </div>
+                    </div>
+
+
+            }
+        </div>
+    }
+
+}
+else
+{
+    <h2 class="attendee-group-details">You do not have any groups</h2>
+}
+<div class="row centered">
+    <input id="btnAddAttendeeGroup" type="button" class="btn btn-primary" value="Add New Attendee Group" />
+</div>

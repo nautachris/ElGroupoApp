@@ -26,8 +26,28 @@ COMPLETE - widget that sets the propery switch-container switch-selected class  
 
 COMPLETE - add fake users
 
-my connection list - finish code for "remove connection" click
+partially complete - my connection list - finish code for "remove connection" click
 
+
+organizer text on view event page, show primary organizer, then list of secondary organizers
+
+make organizer text a hyperlink to their profile
+
+move "saved as draft" outside of "edit event details" view - make it more obvious
+
+complete - after event is active, you cannot reset it to draft
+
+partiall complete - uninvite attendee - need to wire edit-attendees.js
+
+started - added DB infrastructure - event groups - allow user to save groups of 30 people (example) to 
+
+started - added DB onfrastructure - event recurrance - wait for andy's email
+
+
+request checkin - button that automatically appears when a time buffer
+request rsvp - send email and show on users dashboard
+
+rsvp requests - show to user as separate tab in dahsboard to left of "upcoming events" OR show driectly under title - should we also show new messages, notifications, etc?
 
 
 

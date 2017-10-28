@@ -67,6 +67,10 @@ namespace ElGroupo.Web.Controllers
             return RedirectToAction("GetConnectionList", new { uid = user.Id });
         }
 
+
+
+
+
         [Authorize]
         [HttpPost("ImportSelectedContacts")]
         public async Task<IActionResult> ImportContacts([FromBody]ImportSelectContactModel[] contacts)
@@ -346,6 +350,43 @@ namespace ElGroupo.Web.Controllers
 
         }
 
+        //[HttpGet("EditAttendeeGroup/{id}")]
+        //public async Task<IActionResult> EditAttendeeGroup([FromRoute]long id)
+        //{
+        //    var model = new EditAttendeeGroupModel();
+        //    if (id != 0)
+        //    {
+        //        var attGroup = await dbContext.AttendeeGroups.
+        //            Include(x => x.Attendees).ThenInclude(x => x.User).
+        //            FirstOrDefaultAsync(x => x.Id == id);
+        //        model.Id = id;
+        //        model.Name = attGroup.Name;
+        //        foreach(var user in attGroup.Attendees.Select(x => x.User))
+        //        {
+        //            var uim = new UserInformationModel();
+        //            uim.Name = user.Name;
+        //            uim.Email = user.Email;
+        //            uim.Id = user.Id;
+        //            uim.UserName = user.UserName;
+
+        //        }
+        //    }
+
+
+
+        //}
+
+
+        [Authorize]
+        [HttpGet("AttendeeGroupUserList"), HttpPost("AttendeeGroupUserList")]
+        public IActionResult AttendeeGroupUserList([FromBody]AttendeeGroupUserModel[] models)
+        {
+            //we will have added the new one on the client side
+            return View("_AttendeeGroupUserList", models);
+        }
+
+
+
         [AllowAnonymous]
         [HttpGet]
         [Route("PendingEmailConfirmation")]
@@ -482,6 +523,124 @@ namespace ElGroupo.Web.Controllers
 
         }
 
+
+        [HttpGet("ViewAttendeeGroup/{id}")]
+        public async Task<IActionResult> ViewAttendeeGroup([FromRoute]long id)
+        {
+            var model = new AttendeeGroupModel();
+            if (id != 0)
+            {
+                var ag = await dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
+                model.Name = ag.Name;
+                model.Id = ag.Id;
+                model.UserId = ag.User.Id;
+                foreach (var u in ag.Attendees)
+                {
+                    model.Users.Add(new AttendeeGroupUserModel { Name = u.User.Name, Email = u.User.Email, Id = u.User.Id });
+                }
+            }
+
+
+            return View("_ViewAttendeeGroup", model);
+        }
+
+
+        [HttpDelete("DeleteAttendeeGroup/{id}")]
+        public async Task<IActionResult> DeleteAttendeeGroup([FromRoute] long id)
+        {
+            var activeUser = await userManager.GetUserAsync(HttpContext.User);
+            var attendeeGroup = await dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
+            dbContext.Remove(attendeeGroup);
+            await dbContext.SaveChangesAsync();
+            return RedirectToAction("ViewAttendeeGroups", new { uid = activeUser.Id });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("EditAttendeeGroup")]
+        public async Task<IActionResult> EditAttendeeGroup([FromBody]AttendeeGroupModel model)
+        {
+            var user = dbContext.Users.FirstOrDefault(x => x.Id == model.UserId);
+
+            //security check
+            var activeUser = await userManager.GetUserAsync(HttpContext.User);
+            AttendeeGroup attendeeGroup = null;
+            if (model.Id == 0)
+            {
+                attendeeGroup = new AttendeeGroup { Name = model.Name, User = user };
+                dbContext.Add(attendeeGroup);
+                foreach (var groupUser in model.Users)
+                {
+                    var agu = new AttendeeGroupUser
+                    {
+                        AttendeeGroup = attendeeGroup,
+                        User = dbContext.Users.First(x => x.Id == groupUser.Id)
+                    };
+                    dbContext.Add(agu);
+                }
+                await dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                attendeeGroup = await dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == model.Id);
+                if (attendeeGroup.User.Id != user.Id) return BadRequest();
+                var existingUsers = attendeeGroup.Attendees.Select(x => x.User.Id).ToList();
+                var updatedUsers = model.Users.Select(x => x.Id).ToList();
+
+                var newUserIds = updatedUsers.Where(x => !existingUsers.Contains(x)).ToList();
+                var deletedUserIds = existingUsers.Where(x => !updatedUsers.Contains(x)).ToList();
+
+                if (model.Name != attendeeGroup.Name || newUserIds.Count > 0 || deletedUserIds.Count > 0)
+                {
+                    if (model.Name != attendeeGroup.Name)
+                    {
+                        attendeeGroup.Name = model.Name;
+                        dbContext.Update(attendeeGroup);
+                    }
+
+                    foreach (var newUserId in newUserIds)
+                    {
+                        var agu = new AttendeeGroupUser
+                        {
+                            AttendeeGroup = attendeeGroup,
+                            User = dbContext.Users.First(x => x.Id == newUserId)
+                        };
+                        dbContext.Add(agu);
+                    }
+                    var toDelete = attendeeGroup.Attendees.Where(x => deletedUserIds.Contains(x.User.Id)).ToList();
+                    dbContext.RemoveRange(toDelete);
+                    await dbContext.SaveChangesAsync();
+
+                }
+            }
+
+            //the list of users in the group will be current in the browser before they click save so we dont need to render a new view
+            //this will update the list of all attendee groups instead b/c the user may navigate away
+
+
+            return RedirectToAction("ViewAttendeeGroups", new { uid = model.UserId });
+
+
+        }
+
+
+        [HttpGet("ViewAttendeeGroups/{uid}"), HttpPost("ViewAttendeeGroups/{uid}")]
+        public async Task<IActionResult> ViewAttendeeGroups([FromRoute] int uid)
+        {
+            var ags = await dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).Where(x => x.User.Id == uid).ToListAsync();
+            var model = new List<AttendeeGroupListModel>();
+            foreach (var ag in ags) model.Add(new AttendeeGroupListModel { Name = ag.Name, Id = ag.Id, UserCount = ag.Attendees.Count });
+            return View("_AttendeeGroupList", model);
+        }
+
+
+        private List<AttendeeGroupListModel> GetAttendeeGroups(User user)
+        {
+            var model = new List<AttendeeGroupListModel>();
+            foreach (var a in user.AttendeeGroups) model.Add(new AttendeeGroupListModel { Name = a.Name, Id = a.Id, UserCount = a.Attendees.Count });
+            return model.OrderBy(x => x.Name).ToList();
+        }
+
         private List<UserConnectionModel> GetConnections(User user)
         {
             var model = new List<UserConnectionModel>();
@@ -540,7 +699,7 @@ namespace ElGroupo.Web.Controllers
         [Route("ConnectionList/{uid}")]
         public async Task<IActionResult> GetConnectionList([FromRoute] int uid)
         {
-            var user = await dbContext.Set<User>().Include("ConnectedUsers.ConnectedUser").Include("UnregisteredConnections").FirstOrDefaultAsync(x => x.Id == uid);
+            var user = await dbContext.Set<User>().Include(x => x.ConnectedUsers).ThenInclude(x => x.ConnectedUser).Include(x => x.UnregisteredConnections).FirstOrDefaultAsync(x => x.Id == uid);
             if (user == null) return BadRequest();
             return View("_ConnectionList", GetConnections(user));
         }
@@ -551,13 +710,20 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> Edit()
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include("Photo").Include("ContactMethods.ContactMethod").Include("ConnectedUsers.ConnectedUser").Include("UnregisteredConnections").First(x => x.Id == user.Id);
+            var userRecord = dbContext.Set<User>().
+                Include(x => x.Photo).
+                Include(x => x.AttendeeGroups).ThenInclude(x => x.Attendees).
+                Include(x => x.ContactMethods).ThenInclude(x => x.ContactMethod).
+                Include(x => x.ConnectedUsers).ThenInclude(x => x.ConnectedUser).
+                Include(x => x.UnregisteredConnections).
+                First(x => x.Id == user.Id);
 
             var model = new EditAccountModel
             {
                 Contacts = GetContacts(userRecord),
                 ContactTypes = GetContactTypes(),
                 Connections = GetConnections(userRecord),
+                AttendeeGroups = GetAttendeeGroups(userRecord),
                 EmailAddress = userRecord.Email,
                 HasPhoto = userRecord.Photo != null,
                 Id = userRecord.Id,
@@ -671,7 +837,7 @@ namespace ElGroupo.Web.Controllers
                 editingOwnAccount = false;
             }
 
-            var userRecord = dbContext.Set<User>().Include(x=>x.Photo).Include(x=>x.ContactMethods).ThenInclude(x=>x.ContactMethod).First(x => x.Id == user.Id);
+            var userRecord = dbContext.Set<User>().Include(x => x.Photo).Include(x => x.ContactMethods).ThenInclude(x => x.ContactMethod).First(x => x.Id == user.Id);
             userRecord.ZipCode = model.ZipCode;
             userRecord.Email = model.EmailAddress;
             userRecord.PhoneNumber = model.PhoneNumber;

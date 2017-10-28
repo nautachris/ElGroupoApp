@@ -16,9 +16,10 @@
 
     }
     <div class="page-nav row">
-        <div class="col span-1-of-3"><a href="#" class="links bold" data-link-type="details">My Details</</a></div>
-        <div class="col span-1-of-3" ><a  href="#" class="links" data-link-type="contact-methods">My Contact Methods</a></div>
-        <div class="col span-1-of-3" ><a  href="#" class="links" data-link-type="connections">Connections</a></div>
+        <div class="col span-1-of-4"><a href="#" class="links bold" data-link-type="details">My Details</</a></div>
+        <div class="col span-1-of-4" ><a  href="#" class="links" data-link-type="contact-methods">My Contact Methods</a></div>
+        <div class="col span-1-of-4" ><a  href="#" class="links" data-link-type="connections">My Connections</a></div>
+        <div class="col span-1-of-4"><a href="#" class="links" data-link-type="attendee-groups">My Groups</a></div>
 
     </div>
     <div class="row tab details">
@@ -109,6 +110,15 @@
 
 
     </div>
+    <div style="display:none;" id="divAttendeeGroups" class="row tab attendee-groups">
+        <div id="divViewAttendeeGroups">
+            @Html.Partial("_AttendeeGroupList", Model.AttendeeGroups)
+        </div>
+        <div id="divEditAttendeeGroup" style="display:none;">
+
+        </div>
+
+    </div>
 </section>
 <section></section>
 
@@ -118,5 +128,6 @@
 
 
     <script type="text/javascript" src="~/content/scripts/account/edit.js"></script>
+    <script type="text/javascript" src="~/content/scripts/account/attendee-groups.js"></script>
 <script async defer src="https://apis.google.com/js/api.js" onload="GoogleContacts.HandleClientLoad('@Model.apiKey','@Model.clientId');" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
 }

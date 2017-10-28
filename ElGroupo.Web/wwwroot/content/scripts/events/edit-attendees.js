@@ -1,4 +1,53 @@
 ﻿$(document).ready(function () {
+
+
+
+    //attendee remove/view profile
+
+    $("html").on("click", "div.attendee-info", function () {
+        console.log('attendee info click');
+        var $links = $(this).closest("div[data-user-id]").find("div.attendee-links");
+        if ($(this).css('opacity') == 0.5) {
+            //links are showing
+            console.log('links are showing');
+            $("div.attendee-links").hide();
+            $("div.attendee-info").css('opacity', 1);
+        }
+        else {
+            //we do this to close any other open attendee links in the grid
+            $("div.attendee-links").hide();
+            $("div.attendee-info").css('opacity', 1);
+            $(this).css('opacity', 0.5);
+            $links.show();
+
+        }
+
+        //close all links?
+
+
+
+
+    });
+
+    $(".attendee-links").on("click", "a", function () {
+        console.log('attendee links click');
+        var $infoDiv = $(this).closest("div[data-user-id]").find("div.attendee-info");
+        if ($(this).attr('data-action') == 'profile') {
+            //profile link
+        }
+        else {
+            //remove
+            Confirm("Do you want to remove this attendee from this event?", function () { }, function () { });
+
+        }
+        $(this).closest("div.attendee-links").hide();
+        $infoDiv.css('opacity', 1);
+
+    });
+
+
+
+
     console.log('edit-attendees.js loaded');
     $("#divEditEventAttendees div").on("click", ".switch-container > div", function () {
         console.log('divEditattendees switch container click');
@@ -61,8 +110,6 @@
                 alert('fuck me');
             }
         });
-
-
     });
     $("#divAttendees").on("click", "a[data-contact-id]", function () {
         var eid = Number($("#Event_Id").val());
@@ -201,11 +248,6 @@
             $(this).css('opacity', 0.5);
             $links.show();
         }
-
-
-
-
-
     });
 
 

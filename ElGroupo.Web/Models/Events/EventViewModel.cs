@@ -40,6 +40,6 @@ namespace ElGroupo.Web.Models.Events
 
 
 
-        public List<EventAttendeeModel> Attendees { get; set; }
+        public ViewEventAttendeesModel Attendees { get; set; }
     }
 }

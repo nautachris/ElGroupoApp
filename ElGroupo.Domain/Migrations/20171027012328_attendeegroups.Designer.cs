@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171027012328_attendeegroups")]
+    partial class attendeegroups
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -42,32 +43,6 @@ namespace ElGroupo.Domain.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AttendeeGroup");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.AttendeeGroupUser", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<long?>("AttendeeGroupId");
-
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<long?>("UserId");
-
-                    b.Property<string>("UserUpdated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttendeeGroupId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AttendeeGroupUser");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Event", b =>
@@ -425,6 +400,8 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<int>("AccessFailedCount");
 
+                    b.Property<long?>("AttendeeGroupId");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
 
@@ -464,6 +441,8 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<string>("ZipCode");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AttendeeGroupId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasName("EmailIndex");
@@ -690,17 +669,6 @@ namespace ElGroupo.Domain.Migrations
                         .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("ElGroupo.Domain.AttendeeGroupUser", b =>
-                {
-                    b.HasOne("ElGroupo.Domain.AttendeeGroup", "AttendeeGroup")
-                        .WithMany("Attendees")
-                        .HasForeignKey("AttendeeGroupId");
-
-                    b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-                });
-
             modelBuilder.Entity("ElGroupo.Domain.Event", b =>
                 {
                     b.HasOne("ElGroupo.Domain.RecurringEvent", "Recurrence")
@@ -785,6 +753,10 @@ namespace ElGroupo.Domain.Migrations
 
             modelBuilder.Entity("ElGroupo.Domain.User", b =>
                 {
+                    b.HasOne("ElGroupo.Domain.AttendeeGroup")
+                        .WithMany("Attendees")
+                        .HasForeignKey("AttendeeGroupId");
+
                     b.HasOne("ElGroupo.Domain.UserPhoto", "Photo")
                         .WithMany()
                         .HasForeignKey("PhotoId");

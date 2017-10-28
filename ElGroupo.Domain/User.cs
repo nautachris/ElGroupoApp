@@ -31,7 +31,9 @@ namespace ElGroupo.Domain
 
         //public virtual ICollection<EventOrganizer> OrganizedEvents { get; set; }
         public virtual ICollection<EventAttendee> AttendedEvents { get; set; }
-        public virtual ICollection<EventGroup> EventGroups { get; set; }
+
+        public virtual ICollection<AttendeeGroup> AttendeeGroups { get; set; }
+
 
         public virtual UserPhoto Photo { get; set; }
 

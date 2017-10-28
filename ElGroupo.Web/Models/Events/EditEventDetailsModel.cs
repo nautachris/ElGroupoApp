@@ -29,6 +29,10 @@ namespace ElGroupo.Web.Models.Events
             this.Status = e.Status;
 
         }
+
+
+        public EventRecurrenceModel Recurrence { get; set; }
+
         public EventStatus Status { get; set; }
         public long EventId { get; set; }
         public string Name { get; set; }

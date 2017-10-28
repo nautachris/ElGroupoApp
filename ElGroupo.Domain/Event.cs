@@ -50,8 +50,8 @@ namespace ElGroupo.Domain
 
         public long? GroupId { get; set; }
 
+        public virtual RecurringEvent Recurrence { get; set; }
 
-        public virtual EventGroup Group { get; set; }
         public virtual ICollection<EventAttendee> Attendees { get; set; }
         public virtual ICollection<MessageBoardItem> MessageBoardItems { get; set; }
 

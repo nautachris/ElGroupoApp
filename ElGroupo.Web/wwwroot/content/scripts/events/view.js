@@ -1,6 +1,8 @@
 ﻿$(document).ready(function () {
 
 
+
+
     //user changes response
     $("div.rsvp-required span").on("click", function () {
         console.log('rsvp changed!');

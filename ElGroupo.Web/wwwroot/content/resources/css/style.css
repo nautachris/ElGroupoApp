@@ -1092,7 +1092,7 @@ select {
 
 }
 
-.connection-links a {
+.connection-links a, .attendee-links a {
     display: inline-block;
     width: 90%;
     background-color: #337ab7;
@@ -1104,4 +1104,15 @@ select {
 text-align:center;
 position:relative;
 cursor:pointer;
+}
+
+.margin-left-25{
+    margin-left:25% !important;
+}
+
+.ui-autocomplete {
+    max-height: 250px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
 }

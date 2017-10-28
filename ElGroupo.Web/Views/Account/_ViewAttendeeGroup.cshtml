@@ -1,0 +1,110 @@
+﻿@using ElGroupo.Web.Models.Account
+@model AttendeeGroupModel
+@{ 
+    Layout = null;
+}
+
+
+@functions{
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+    public string GetImageUrl(int id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+
+    public string GetUserViewLink(int id)
+    {
+        var url = Url.Action("View", "Account", new { id = id });
+        return url;
+
+    }
+
+}
+
+<div>
+    <input type="hidden" value="@Model.Name" id="iptOriginalName"/>
+    <input type="hidden" value="@string.Join(",",Model.Users.Select(x=>x.Id.ToString()))" id="iptOriginalGroupUsers" />
+    <input type="hidden" value="@Model.Id" id="iptGroupId"/>
+    <div class="row">
+        <div class="col span-2-of-2 centered">
+            <label>Edit User Group!</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label for="new-user-name">Group Name:</label>
+        </div>
+        <div class="col span-3-of-4">
+            <input type="text" class="width-100" id="txtAttendeeGroupName" asp-for="Name" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col span-2-of-2 centered">
+            <label>Add Users</label>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col span-1-of-4"></div>
+        <div class="col centered span-2-of-4 switch-container search-method">
+
+            <div data-action="connections" class="span-1-of-2 switch-selected">Search within My Connections</div>
+            <div data-action="all" class="span-1-of-2">Search All Users</div>
+
+        </div>
+        <div class="col span-1-of-4"></div>
+    </div>
+    <div class="row centered">
+        <label class="span-2-of-2">Enter Name or Email Address:</label>
+        <div class="col width-100 centered">
+            <input type="text" id="txtSelectUser" class="span-7-of-8" />
+        </div>
+        <div class="col span-2-of-2 centered">
+            <a class="btn btn-primary" disabled id="btnAddUser">Add Connection</a>
+        </div>
+    </div>
+</div>
+
+<div id="divAttendeeGroupUsersList">
+    @Html.Partial("_AttendeeGroupUserList", Model.Users)
+</div>
+
+<div class="row" style="text-align:center;">
+    <a id="btnReturnToGroups" class="btn btn-primary">Return to Groups</a>
+    <a id="btnSaveGroupChanges" class="btn btn-primary">Save Changes</a>
+</div>
+
+
+
+
+
+
+

@@ -29,7 +29,9 @@ namespace ElGroupo.Domain.Data
 
         public DbSet<Event> Events { get; set; }
         public DbSet<EventAttendee> EventAttendees { get; set; }
-        public DbSet<EventGroup> EventGroups { get; set; }
+        public DbSet<AttendeeGroup> AttendeeGroups { get; set; }
+
+        
         public DbSet<MessageBoardItem> MessageBoardItems { get; set; }
         public DbSet<EventAttendeeNotification> EventAttendeeNotifications { get; set; }
         public DbSet<EventNotification> EventNotifications { get; set; }
@@ -53,6 +55,18 @@ namespace ElGroupo.Domain.Data
         {
             base.OnModelCreating(builder);
             builder.AddConfiguration<SequenceConfiguration>();
+
+            builder.Entity<RecurringEvent>().ToTable("RecurringEvent");
+            builder.Entity<RecurringEvent>().HasKey(x => x.Id);
+            builder.Entity<RecurringEvent>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecurringEvent>().HasMany(x => x.Events).WithOne(x => x.Recurrence);
+
+
+            builder.Entity<AttendeeGroup>().ToTable("AttendeeGroup");
+            builder.Entity<AttendeeGroup>().HasKey(x => x.Id);
+            builder.Entity<AttendeeGroup>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<AttendeeGroup>().HasOne(x => x.User).WithMany(x => x.AttendeeGroups);
+            builder.Entity<AttendeeGroup>().HasMany(x => x.Attendees);
 
             builder.Entity<UserConnection>().ToTable("UserConnection");
             builder.Entity<UserConnection>().HasKey(x => x.Id);

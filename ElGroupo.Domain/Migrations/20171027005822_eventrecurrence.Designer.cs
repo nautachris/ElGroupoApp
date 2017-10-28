@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171027005822_eventrecurrence")]
+    partial class eventrecurrence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -19,56 +20,6 @@ namespace ElGroupo.Domain.Migrations
                 .HasAnnotation("SqlServer:HiLoSequenceName", "IdGenerator")
                 .HasAnnotation("SqlServer:HiLoSequenceSchema", "dbo")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo);
-
-            modelBuilder.Entity("ElGroupo.Domain.AttendeeGroup", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("Name");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<long?>("UserId");
-
-                    b.Property<string>("UserUpdated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AttendeeGroup");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.AttendeeGroupUser", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<long?>("AttendeeGroupId");
-
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<long?>("UserId");
-
-                    b.Property<string>("UserUpdated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttendeeGroupId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AttendeeGroupUser");
-                });
 
             modelBuilder.Entity("ElGroupo.Domain.Event", b =>
                 {
@@ -681,24 +632,6 @@ namespace ElGroupo.Domain.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.AttendeeGroup", b =>
-                {
-                    b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany("AttendeeGroups")
-                        .HasForeignKey("UserId");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.AttendeeGroupUser", b =>
-                {
-                    b.HasOne("ElGroupo.Domain.AttendeeGroup", "AttendeeGroup")
-                        .WithMany("Attendees")
-                        .HasForeignKey("AttendeeGroupId");
-
-                    b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Event", b =>

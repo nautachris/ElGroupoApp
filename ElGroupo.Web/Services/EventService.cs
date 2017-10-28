@@ -481,10 +481,10 @@ namespace ElGroupo.Web.Services
             var model = new EventViewModel(e);
             model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
-            model.Attendees = new List<EventAttendeeModel>();
+            model.Attendees = new ViewEventAttendeesModel();
             foreach (var att in e.Attendees.Where(x=>x.User.Id != userId))
             {
-                model.Attendees.Add(new EventAttendeeModel
+                model.Attendees.Attendees.Add(new EventAttendeeModel
                 {
                     Id = att.Id,
                     UserId = att.User.Id,
@@ -493,6 +493,7 @@ namespace ElGroupo.Web.Services
                     IsOrganizer = att.IsOrganizer
                 });
             }
+            model.Attendees.IsOrganizer = model.IsOrganizer;
 
             model.OrganizerName = e.Attendees.First(x => x.IsOrganizer).User.Name;
 

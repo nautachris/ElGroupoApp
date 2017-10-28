@@ -1,0 +1,21 @@
+﻿@using ElGroupo.Web.Models.Events
+@model EventRecurrenceModel
+
+@{
+    Layout = null;
+
+}
+
+
+<div class="row">
+    <div class="col span-1-of-4">
+        <label asp-for="Pattern">Pattern:</label>
+    </div>
+    <div data-replace-element="Pattern" class="col span-3-of-4 switch-container">
+        <input type="hidden" asp-for="Pattern"/>
+        <span data-replace-val="Daily" class="col span-1-of-4">Daily</span>
+        <span data-replace-val="Weekly" class="col span-1-of-4">Weekly</span>
+        <span data-replace-val="Monthly" class="col span-1-of-4">Monthly</span>
+        <span data-replace-val="Yearly" class="col span-1-of-4">Yearly</span>
+    </div>
+</div>

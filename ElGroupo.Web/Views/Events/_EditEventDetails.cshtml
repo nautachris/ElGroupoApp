@@ -130,7 +130,12 @@
         </div>
         <div data-replace-element="Status" class="switch-container col span-3-of-4">
             <input class="invisible" asp-for="Status" />
-            <span data-replace-val="Draft" class="switch-selected col span-1-of-3">Draft</span>
+            @if (Model.Status == ElGroupo.Domain.Enums.EventStatus.Draft)
+            {
+                <span data-replace-val="Draft" class="switch-selected col span-1-of-3">Draft</span>
+
+            }
+            
             <span data-replace-val="Active" class="col span-1-of-3">Active</span>
             <span data-replace-val="Cancelled" class="col span-1-of-3">Cancelled</span>
         </div>
