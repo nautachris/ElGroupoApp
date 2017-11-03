@@ -30,6 +30,7 @@ namespace ElGroupo.Web.Models.Events
 
         }
 
+        public bool UpdateRecurring { get; set; }
 
         public EventRecurrenceModel Recurrence { get; set; }
 

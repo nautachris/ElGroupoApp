@@ -24,25 +24,76 @@
     });
     var saveDetails = function (obj) {
         console.log('in saveDetails');
-        $.ajax({
-            url: "/Events/EditDetails",
-            type: 'POST',
-            contentType: "application/json",
-            data: JSON.stringify(obj),
-            async: true,
-            cache: false,
-            dataType: 'html',
-            success: function success(results) {
-                $("#divEditDetails").empty().hide();
-                $("#divViewDetails").html(results).show();
-                $("#btnCancelEditDetails").hide();
-                $("#btnSaveEditDetails").hide();
-                $("#btnEditDetails").show();
-            },
-            error: function error(err) {
-                alert('fuck me');
-            }
-        });
+
+        if ($("#IsRecurring").val() == "True") {
+            var saveObj = obj;
+            
+            Confirm('Do you want to update all recurring events?', function () {
+                saveObj.updateRecurring = true;
+                $.ajax({
+                    url: "/Events/EditDetails",
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify(obj),
+                    async: true,
+                    cache: false,
+                    dataType: 'html',
+                    success: function success(results) {
+                        $("#divEditDetails").empty().hide();
+                        $("#divViewDetails").html(results).show();
+                        $("#btnCancelEditDetails").hide();
+                        $("#btnSaveEditDetails").hide();
+                        $("#btnEditDetails").show();
+                    },
+                    error: function error(err) {
+                        alert('fuck me');
+                    }
+                });
+            }, function () {
+                $.ajax({
+                    url: "/Events/EditDetails",
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify(obj),
+                    async: true,
+                    cache: false,
+                    dataType: 'html',
+                    success: function success(results) {
+                        $("#divEditDetails").empty().hide();
+                        $("#divViewDetails").html(results).show();
+                        $("#btnCancelEditDetails").hide();
+                        $("#btnSaveEditDetails").hide();
+                        $("#btnEditDetails").show();
+                    },
+                    error: function error(err) {
+                        alert('fuck me');
+                    }
+                });
+            });
+        }
+        else {
+            $.ajax({
+                url: "/Events/EditDetails",
+                type: 'POST',
+                contentType: "application/json",
+                data: JSON.stringify(obj),
+                async: true,
+                cache: false,
+                dataType: 'html',
+                success: function success(results) {
+                    $("#divEditDetails").empty().hide();
+                    $("#divViewDetails").html(results).show();
+                    $("#btnCancelEditDetails").hide();
+                    $("#btnSaveEditDetails").hide();
+                    $("#btnEditDetails").show();
+                },
+                error: function error(err) {
+                    alert('fuck me');
+                }
+            });
+        }
+
+
     }
     //save details
     $("#btnSaveEditDetails").on("click", function () {
@@ -51,33 +102,12 @@
         for (var x = 0; x < obj.length; x++) {
             newObj[obj[x].name] = obj[x].value;
         }
-
-        console.log('status: ' + $("#Status").val());
-        console.log('original status: ' + $("#OriginalStatus").val());
         if ($("#Status").val() !== $("#OriginalStatus").val()) {
             var saveObject = newObj;
             console.log('calling confirm');
             Confirm("Do you want to change the status of your event from " + $("#OriginalStatus").val() + " to " + $("#Status").val() + "?",
                 function () {
-                    $.ajax({
-                        url: "/Events/EditDetails",
-                        type: 'POST',
-                        contentType: "application/json",
-                        data: JSON.stringify(saveObject),
-                        async: true,
-                        cache: false,
-                        dataType: 'html',
-                        success: function success(results) {
-                            $("#divEditDetails").empty().hide();
-                            $("#divViewDetails").html(results).show();
-                            $("#btnCancelEditDetails").hide();
-                            $("#btnSaveEditDetails").hide();
-                            $("#btnEditDetails").show();
-                        },
-                        error: function error(err) {
-                            alert('fuck me');
-                        }
-                    });
+                    saveDetails(saveObject);
                 },
                 function () {
                     //do nothing
@@ -133,8 +163,6 @@
 
 
     $("html").on("click", ".switch-container.checkin-type > span", function () {
-        console.log('$(".switch-container.checkin-type > span").on("click", function () {');
-        console.log($(this).attr('data-replace-val'));
         switch ($(this).attr('data-replace-val')) {
             case "None":
                 $(".verification-code").hide();

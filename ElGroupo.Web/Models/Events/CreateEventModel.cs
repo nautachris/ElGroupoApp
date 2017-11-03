@@ -8,6 +8,10 @@ namespace ElGroupo.Web.Models.Events
 {
     public class CreateEventModel
     {
+
+        public bool IsRecurring { get; set; } = false;
+        public EventRecurrenceModel Recurrence { get; set; } = new EventRecurrenceModel();
+
         [Required]
         [Display(Description="Event Name")]
         public string Name { get; set; }
@@ -18,9 +22,10 @@ namespace ElGroupo.Web.Models.Events
 
         public string LocationName { get; set; }
 
+        [DataType(DataType.Date)]
         [Required]
         [Display(Description = "Event Date")]
-        public DateTime EventDate { get; set; }
+        public DateTime EventDate { get; set; } = DateTime.Now;
         [Required]
         [Display(Description = "Start Hour")]
         public int StartHour { get; set; }
@@ -60,10 +65,10 @@ namespace ElGroupo.Web.Models.Events
 
         public string GooglePlaceId { get; set; }
 
-        public AttendanceVerificationMethods AttendanceVerificationMethod { get; set; }
+        public AttendanceVerificationMethods AttendanceVerificationMethod { get; set; } = AttendanceVerificationMethods.None;
         public string VerificationCode { get; set; }
         public int? LocationTolerance { get; set; }
 
-        public bool RSVPRequired { get; set; }
+        public bool RSVPRequired { get; set; } = false;
     }
 }

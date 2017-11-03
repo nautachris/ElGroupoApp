@@ -989,47 +989,47 @@ border-radius:10px;
     border-radius: 0 4px 4px 0;
 }
 
-.switch-container{
+.switch-container, .switch-container-multi{
     text-align:center;
 }
 
-.switch-container div {
-    cursor: pointer;
-    background-color: #e4e4e4;
-    color: rgba(0, 0, 0, 0.6);
-    font-size: 14px;
-    font-weight: normal;
-    text-align: center;
-    text-shadow: none;
-    padding: 6px 14px;
-    float:left;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
-    -webkit-transition: all 0.1s ease-in-out;
-    -moz-transition: all 0.1s ease-in-out;
-    -ms-transition: all 0.1s ease-in-out;
-    -o-transition: all 0.1s ease-in-out;
-    transition: all 0.1s ease-in-out;
-}
+    .switch-container div, .switch-container-multi div {
+        cursor: pointer;
+        background-color: #e4e4e4;
+        color: rgba(0, 0, 0, 0.6);
+        font-size: 14px;
+        font-weight: normal;
+        text-align: center;
+        text-shadow: none;
+        padding: 6px 14px;
+        float: left;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
+        -webkit-transition: all 0.1s ease-in-out;
+        -moz-transition: all 0.1s ease-in-out;
+        -ms-transition: all 0.1s ease-in-out;
+        -o-transition: all 0.1s ease-in-out;
+        transition: all 0.1s ease-in-out;
+    }
 
-.switch-container > div.switch-selected {
-    background-color: #A5DC86;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-}
+    .switch-container > div.switch-selected, .switch-container-multi > div.switch-selected {
+        background-color: #A5DC86;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
 
-.switch-container div:first-of-type {
-    border-radius: 4px 0 0 4px;
-}
+    .switch-container div:first-of-type, .switch-container-multi div:first-of-type {
+        border-radius: 4px 0 0 4px;
+    }
 
-.switch-container div:last-of-type {
-    border-radius: 0 4px 4px 0;
-}
+    .switch-container div:last-of-type, .switch-container-multi div:last-of-type {
+        border-radius: 0 4px 4px 0;
+    }
 
 
 
-    .switch-container span {
+    .switch-container span, .switch-container-multi span {
         cursor: pointer;
         background-color: #e4e4e4;
         color: rgba(0, 0, 0, 0.6);
@@ -1047,26 +1047,25 @@ border-radius:10px;
         -ms-transition: all 0.1s ease-in-out;
         -o-transition: all 0.1s ease-in-out;
         transition: all 0.1s ease-in-out;
-
     }
 
-    .switch-container > span.switch-selected {
+    .switch-container > span.switch-selected, .switch-container-multi > span.switch-selected {
         background-color: #A5DC86;
         -webkit-box-shadow: none;
         box-shadow: none;
     }
 
-    .switch-container > span {
+    .switch-container > span, .switch-container-multi > span {
         display: inline-block;
         margin-left: -2px;
         margin-right: -2px;
     }
 
-    .switch-container span:first-of-type {
+    .switch-container span:first-of-type, .switch-container-multi span:first-of-type {
         border-radius: 4px 0 0 4px;
     }
 
-    .switch-container span:last-of-type {
+    .switch-container span:last-of-type, .switch-container-multi span:last-of-type {
         border-radius: 0 4px 4px 0;
     }
 
@@ -1115,4 +1114,18 @@ cursor:pointer;
     overflow-y: auto;
     /* prevent horizontal scrollbar */
     overflow-x: hidden;
+}
+
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+    /*border: 1px solid #ff6b7f;*/
+    border: 1px solid red;
+    /*background: #db4865 url("images/ui-bg_diagonals-small_40_db4865_40x40.png") 50% 50% repeat;*/
+    /*background:none;*/
+    font-weight: bold;
+    color: #ffffff;
 }

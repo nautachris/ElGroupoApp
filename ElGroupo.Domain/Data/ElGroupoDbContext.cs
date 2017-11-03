@@ -26,7 +26,7 @@ namespace ElGroupo.Domain.Data
 
         public DbSet<UnregisteredEventAttendee> UnregisteredEventAttendees { get; set; }
 
-
+        public DbSet<RecurringEvent> RecurringEvents { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<EventAttendee> EventAttendees { get; set; }
         public DbSet<AttendeeGroup> AttendeeGroups { get; set; }

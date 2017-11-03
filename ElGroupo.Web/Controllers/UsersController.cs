@@ -49,11 +49,14 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> SearchUserConnections([FromRoute]string search)
         {
             var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var users = dbContext.UserConnections.Include("ConnectedUser").Where(x => x.User.Id == user.Id && x.ConnectedUser.Name.ToUpper().Contains(search.ToUpper()) || x.ConnectedUser.Email.ToUpper().Contains(search.ToUpper())).Select(x => x.ConnectedUser);
+            var users = dbContext.UserConnections.Include(x=>x.ConnectedUser).Where(x => x.User.Id == user.Id && x.ConnectedUser.Name.ToUpper().Contains(search.ToUpper()) || x.ConnectedUser.Email.ToUpper().Contains(search.ToUpper())).Select(x => x.ConnectedUser);
             var list = new List<ConnectionAutoCompleteModel>();
             await users.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name, Registered = true }));
             var unregisteredUsers = dbContext.UnregisteredUserConnections.Where(x => x.User.Id == user.Id && x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
             await unregisteredUsers.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Name = x.Name, Id = x.Id, Registered = false }));
+
+            var groups = dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).Where(x => x.User.Id == user.Id && x.Name.ToUpper().Contains(search.ToUpper()));
+            await groups.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Group = true, GroupUserCount = x.Attendees.Count, Name = x.Name, Id = x.Id }));
             return Json(list.OrderBy(x => x.Name).ToList());
         }
 

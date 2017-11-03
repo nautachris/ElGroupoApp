@@ -12,5 +12,7 @@ namespace ElGroupo.Web.Models.Events
         public string Email { get; set; }
         //public bool Registered { get; set; }
         public bool Owner { get; set; }
+
+        public bool Group { get; set; }
     }
 }

@@ -48,13 +48,43 @@
 
 
 <input type="hidden" asp-for="EventId" />
+<input type="hidden" asp-for="IsRecurring" />
 <div class="row">
     <h2>@Model.Details.Name</h2>
     <h3 class="centered">Organizer: @Model.OrganizerName</h3>
 </div>
+@if (Model.IsOrganizer)
+{
+    <div class="row width-100 centered">
+
+
+        @if (Model.Details.Status == ElGroupo.Domain.Enums.EventStatus.Active)
+        {
+            <div style="color:darkgreen; font-weight:bold;">Current Status: @Model.Details.Status.ToString()</div>
+
+
+        }
+        else if (Model.Details.Status == ElGroupo.Domain.Enums.EventStatus.Cancelled)
+        {
+            <div style="color:red; font-weight:bold;">Current Status: @Model.Details.Status.ToString()</div>
+        }
+        else
+        {
+            <div style="color:darkorange; font-weight:bold;">Current Status: @Model.Details.Status.ToString()</div>
+        }
+    </div>
+}
+
 <div class="page-nav row">
+    
     @if (Model.IsOrganizer)
     {
+        
+        //event status
+        @*<div class="width-100">
+
+        </div>*@
+
         <div class="col span-1-of-5"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
         <div class="col span-1-of-5"><a class="links" data-link-type="add-attendees" href="#">Add New Attendees</a></div>
         <div class="col span-1-of-5"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>

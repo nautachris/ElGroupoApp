@@ -39,7 +39,7 @@ complete - after event is active, you cannot reset it to draft
 
 partiall complete - uninvite attendee - need to wire edit-attendees.js
 
-started - added DB infrastructure - event groups - allow user to save groups of 30 people (example) to 
+basically complete - added DB infrastructure - event groups - allow user to save groups of 30 people (example) to 
 
 started - added DB onfrastructure - event recurrance - wait for andy's email
 

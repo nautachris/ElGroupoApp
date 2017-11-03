@@ -44,13 +44,27 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col span-1-of-3">
-                    <label asp-for="EventDate">Date:</label>
+                <div class="col span-1-of-4">
+                    <label>Event Is Recurring?</label>
                 </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="EventDate" class="width-100" placeholder="Enter Event Date...">
+                <div data-replace-element="IsRecurring" class="switch-container col span-3-of-4 is-recurring">
+                    <input type="hidden" asp-for="IsRecurring" />
+                    <span data-replace-val="True" class="col span-1-of-2">Yes</span>
+                    <span data-replace-val="False" class="switch-selected col span-1-of-2">No</span>
                 </div>
             </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label id="lblEventDate" asp-for="EventDate">Date:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input type="text" asp-for="EventDate" class="width-100" placeholder="Enter Event Date...">
+                </div>
+            </div>
+            <div id="divRecurrence" style="display:none">
+                @Html.Partial("_EditEventRecurrence", Model)
+            </div>
+
             <div class="row">
                 <div class="col span-1-of-6">
                     <label asp-for="StartHour">Start:</label>
@@ -73,8 +87,8 @@
                 </div>
                 <div data-replace-element="StartAMPM"  class="switch-container start-ampm col span-1-of-6">
                     <input type="hidden" asp-for="StartAMPM" />
-                    <span data-replace-val="0" class="col span-1-of-2">AM</span>
-                    <span data-replace-val="1" class="col span-1-of-2">PM</span>
+                    <span data-replace-val="AM" class="col span-1-of-2">AM</span>
+                    <span data-replace-val="PM" class="col span-1-of-2">PM</span>
                 </div>
 
             </div>
@@ -100,30 +114,33 @@
                 </div>
                 <div data-replace-element="EndAMPM" class="switch-container end-ampm col span-1-of-6">
                     <input type="hidden" asp-for="EndAMPM" />
-                    <span data-replace-val="0" class="col span-1-of-2">AM</span>
-                    <span data-replace-val="1" class="col span-1-of-2">PM</span>
+                    <span data-replace-val="AM" class="col span-1-of-2">AM</span>
+                    <span data-replace-val="PM" class="col span-1-of-2">PM</span>
                 </div>
 
             </div>
+
             <div class="row">
                 <div class="col span-1-of-4">
                     <label>RSVP Required?</label>
                 </div>
                 <div data-replace-element="RSVPRequired" class="switch-container col span-3-of-4 rsvp-required">
-                    <input class="invisible" asp-for="RSVPRequired"/>
-                    <span data-replace-val="true" class="switch-selected col span-1-of-2">Yes</span>
-                    <span data-replace-val="false" class="col span-1-of-2">No</span>
+                    @*if we use input=type hidden, data-replace-val must be True or False, not true or false*@
+                    <input type="hidden" asp-for="RSVPRequired"/>
+                    <span data-replace-val="True" class="switch-selected col span-1-of-2">Yes</span>
+                    <span data-replace-val="False" class="col span-1-of-2">No</span>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col span-1-of-4">
                     <label>Check-In Verification:</label>
                 </div>
                 <div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
                     <input type="hidden" asp-for="AttendanceVerificationMethod" />
-                    <span data-replace-val="0" class="switch-selected col span-1-of-3">None</span>
-                    <span data-replace-val="1" class="col span-1-of-3">Password or Location</span>
-                    <span data-replace-val="2" class="col span-1-of-3">Password Only</span>
+                    <span data-replace-val="None" class="switch-selected col span-1-of-3">None</span>
+                    <span data-replace-val="PasswordAndLocation" class="col span-1-of-3">Password or Location</span>
+                    <span data-replace-val="PasswordOnly" class="col span-1-of-3">Password Only</span>
                 </div>
             </div>
             <div class="row verification-code" style="display:none;">

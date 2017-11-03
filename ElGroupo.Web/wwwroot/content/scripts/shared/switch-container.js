@@ -2,6 +2,9 @@
 
     SwitchContainer.bindClick();
     SwitchContainer.init();
+
+    SwitchContainerMulti.bindClick();
+    SwitchContainerMulti.init();
    
 
 
@@ -66,15 +69,17 @@ SwitchContainer = {
 
         var sel = "div.switch-container[data-replace-element]";
         if (selector) sel = selector + " " + sel;
-        console.log('switchcontainer init: ' + sel);
+
         $(sel).each(function () {
             //this sets the switch container UI based on the model data
-            console.log($(this).attr('data-replace-element'));
+            console.log('init replace element: ' + $(this).attr('data-replace-element'));
             var replaceElId = $(this).attr('data-replace-element');
             var $replaceEl = $("#" + replaceElId);
+            console.log($replaceEl);
             $(this).children('span').removeClass('switch-selected');
             //if checkbox
             if ($replaceEl.attr('type') === 'checkbox') {
+                console.log('replace elelment is checkbox');
                 if ($replaceEl.is(':checked')) {
                     $(this).find('span[data-replace-val=true]').addClass('switch-selected');
                     $(this).find('span[data-replace-val=' + val + ']').click();
@@ -85,7 +90,9 @@ SwitchContainer = {
                 }
             }
             else {
+
                 var val = $replaceEl.val();
+
                 if (val) {
                     $(this).find('span[data-replace-val=' + val + ']').addClass('switch-selected');
                     $(this).find('span[data-replace-val=' + val + ']').click();
@@ -98,3 +105,24 @@ SwitchContainer = {
 
 };
 
+SwitchContainerMulti = {
+    bindClick: function () {
+        $("html").on("click", ".switch-container-multi > span", function () {
+
+            if ($(this).hasClass('switch-selected')) $(this).removeClass('switch-selected');
+            else $(this).addClass('switch-selected');
+
+
+        });
+        $("html").on("click", ".switch-container-multi > div", function () {
+
+            if ($(this).hasClass('switch-selected')) $(this).removeClass('switch-selected');
+            else $(this).addClass('switch-selected');
+        });
+    },
+    init: function (selector) {
+
+
+    }
+
+};

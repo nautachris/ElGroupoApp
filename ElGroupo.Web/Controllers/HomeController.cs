@@ -37,22 +37,27 @@ namespace ElGroupo.Web.Controllers
             //do we want a third "tab" for events I'm organizing?
             var user = await this.CurrentUser;
 
-            var organizedEvents = dbContext.EventAttendees.Include(x=>x.User).Include(x=>x.Event).Where(x => x.User.Id == user.Id && x.IsOrganizer).Select(x => x.Event);
-            var invitedEvents = dbContext.EventAttendees.Include(x=>x.User).Include(x=>x.Event).ThenInclude(x=>x.Attendees).ThenInclude(x=>x.User).Where(x => x.User.Id == user.Id && !x.IsOrganizer);
+            //var test = dbContext.Events.Include(x => x.Recurrence).ToList();
+            //var test2 = dbContext.Events.Include(x => x.Recurrence).Select(x => x).ToList();
+            var organizedEvents = dbContext.EventAttendees.Include(x=>x.User).Where(x => x.User.Id == user.Id && x.IsOrganizer).Select(x => new { ev = x.Event, rec = x.Event.Recurrence }).ToList();
+            
+            var invitedEvents = dbContext.EventAttendees.Include(x=>x.User).Include(x=>x.Event).ThenInclude(x=>x.Attendees).ThenInclude(x=>x.User).Include(x=>x.Event).ThenInclude(x=>x.Recurrence).Where(x => x.User.Id == user.Id && !x.IsOrganizer).ToList();
             foreach (var ev in organizedEvents)
             {
                 allEvents.Add(new EventInformationModel
                 {
-                    EndDate = ev.EndTime,
-                    StartDate = ev.StartTime,
-                    Id = ev.Id,
+                    EndDate = ev.ev.EndTime,
+                    StartDate = ev.ev.StartTime,
+                    Id = ev.ev.Id,
                     OrganizedByUser = true,
                     IsNew = false,
-                    Name = ev.Name,
-                    Status = ev.Status
+                    Name = ev.ev.Name,
+                    Status = ev.ev.Status,
+                    IsRecurring = ev.rec != null
+                    
                 });
             }
-            foreach (var ev in invitedEvents.Where(x => !organizedEvents.Select(y => y.Id).Contains(x.EventId)))
+            foreach (var ev in invitedEvents.Where(x => !organizedEvents.Select(y => y.ev.Id).Contains(x.EventId)))
             {
                 allEvents.Add(new EventInformationModel
                 {
@@ -64,7 +69,8 @@ namespace ElGroupo.Web.Controllers
                     Name = ev.Event.Name,
                     OrganizerName = ev.Event.Attendees.First(x=>x.IsOrganizer).User.Name,
                     Status = ev.Event.Status,
-                    RSVPStatus = ev.ResponseStatus
+                    RSVPStatus = ev.ResponseStatus,
+                    IsRecurring = ev.Event.Recurrence != null
                 });
             }
 

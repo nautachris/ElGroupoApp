@@ -7,6 +7,7 @@ namespace ElGroupo.Web.Models.Events
 {
     public class SavePendingAttendeesModel
     {
+        public bool UpdateRecurring { get; set; }
         public long EventId { get; set; }
         public PendingEventAttendeeModel[] Attendees { get; set; }
     }

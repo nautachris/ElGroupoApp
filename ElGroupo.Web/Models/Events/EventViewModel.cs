@@ -16,8 +16,10 @@ namespace ElGroupo.Web.Models.Events
             this.EventId = e.Id;
             this.Details = new ViewEventDetailsModel(e);
             this.Location = new ViewEventLocationModel(e);
+            this.IsRecurring = e.Recurrence != null;
         }
 
+        public bool IsRecurring { get; set; }
 
         public EventAttendeeRSVPModel RSVPResponse { get; set; }
         public ViewEventDetailsModel Details { get; set; }

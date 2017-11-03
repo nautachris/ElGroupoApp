@@ -17,12 +17,19 @@ using System.IO;
 using ElGroupo.Web.Classes;
 using ElGroupo.Web.Models.Messages;
 using ElGroupo.Web.Models.Notifications;
+using System.Reflection;
+using System.ComponentModel.DataAnnotations;
+using ElGroupo.Domain.Enums;
+using ElGroupo.Web.Models.Shared;
 
 namespace ElGroupo.Web.Controllers
 {
     [Route("Events")]
     public class EventsController : ControllerBase
     {
+
+
+
 
         private SignInManager<User> signInManager;
         private ElGroupoDbContext dbContext;
@@ -42,7 +49,8 @@ namespace ElGroupo.Web.Controllers
         [Route("Create")]
         public async Task<IActionResult> Create()
         {
-            return View();
+
+            return View(new CreateEventModel());
         }
 
 
@@ -60,8 +68,10 @@ namespace ElGroupo.Web.Controllers
         [Route("ViewEventAttendees/{eventId}", Name = "ViewEventAttendees")]
         public async Task<IActionResult> ViewEventAttendees([FromRoute]long eventId)
         {
-            var model = await eventService.GetEventAttendees(eventId);
-            return View("_ViewEventAttendees", model);
+            ViewEventAttendeesModel vm = new ViewEventAttendeesModel();
+            vm.IsOrganizer = await CheckEventAccess(eventId) == EditAccessTypes.Edit;
+            vm.Attendees = await eventService.GetEventAttendees(eventId);
+            return View("_ViewEventAttendees", vm);
         }
 
 
@@ -73,25 +83,19 @@ namespace ElGroupo.Web.Controllers
         [Route("SavePendingAttendees")]
         public async Task<IActionResult> SavePendingAttendees([FromBody]SavePendingAttendeesModel model)
         {
-            if (ModelState.IsValid)
+
+            var user = await CurrentUser();
+            var response = model.UpdateRecurring ? await eventService.UpdateRecurringEventAttendees(model) : await eventService.UpdateEventAttendees(model);
+            if (response.Success)
             {
-                var user = await CurrentUser();
-                //var eventId = await this.eventService.CreateEvent(model, user);
-
-                //move on to Contacts
-                //now lets just redirect to the normal view/edit view
-                var response = await eventService.UpdateEventAttendees(model);
-                if (response.Success)
-                {
-                    return RedirectToRoute("ViewEventAttendees", new { eventId = model.EventId });
-                }
-                else
-                {
-                    return BadRequest(new { message = response.ErrorMessage });
-                }
-
+                return RedirectToRoute("ViewEventAttendees", new { eventId = model.EventId });
             }
-            return View(model);
+            else
+            {
+                return BadRequest(new { message = response.ErrorMessage });
+            }
+
+
 
         }
 
@@ -109,16 +113,16 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> UpdateRSVPStatus([FromBody]UpdateRSVPStatusModel model)
         {
 
-                var user = await CurrentUser();
-                var response = await this.eventService.UpdateRSVP(user, model);
-                if (response.Success)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(new { error = response.ErrorMessage });
-                }
+            var user = await CurrentUser();
+            var response = await this.eventService.UpdateRSVP(user, model);
+            if (response.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new { error = response.ErrorMessage });
+            }
 
 
         }
@@ -131,7 +135,9 @@ namespace ElGroupo.Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = await CurrentUser();
-                var response = await this.eventService.CreateEvent(model, user);
+                SaveDataResponse response = null;
+                if (!model.IsRecurring) response = await this.eventService.CreateEvent(model, user);
+                else response = await this.eventService.CreateRecurringEvent(model, user);
                 if (response.Success)
                 {
                     return RedirectToRoute("ViewEvent", new { eid = Convert.ToInt64(response.ResponseData) });
@@ -401,7 +407,8 @@ namespace ElGroupo.Web.Controllers
         {
             var accessLevel = await CheckEventAccess(model.EventId);
             if (accessLevel != EditAccessTypes.Edit) return BadRequest();
-            await this.eventService.UpdateEventDetails(model);
+            if (model.UpdateRecurring) await this.eventService.UpdateRecurringEventDetails(model);
+            else await this.eventService.UpdateEventDetails(model);
             return RedirectToAction("ViewDetails", new { eid = model.EventId });
         }
 
@@ -416,20 +423,20 @@ namespace ElGroupo.Web.Controllers
         //    return RedirectToAction("OrganizersList", new { id = eid });
         //}
 
-        [Authorize]
-        [HttpPost]
-        [Route("AddRegisteredAttendee", Name = "AddRegisteredAttendee")]
-        public async Task<IActionResult> AddRegisteredEventAttendee([FromBody]AddRegisteredEventAttendeeModel model)
-        {
-            await this.eventService.AddEventAttendee(model);
-            var e = dbContext.Find<Event>(model.eventId);
-            if (e.Status == Domain.Enums.EventStatus.Active)
-            {
-                await SendEventAttendeeEmail(model.userId, model.eventId);
-            }
+        //[Authorize]
+        //[HttpPost]
+        //[Route("AddRegisteredAttendee", Name = "AddRegisteredAttendee")]
+        //public async Task<IActionResult> AddRegisteredEventAttendee([FromBody]AddRegisteredEventAttendeeModel model)
+        //{
+        //    await this.eventService.AddEventAttendee(model);
+        //    var e = dbContext.Find<Event>(model.eventId);
+        //    if (e.Status == Domain.Enums.EventStatus.Active)
+        //    {
+        //        await SendEventAttendeeEmail(model.userId, model.eventId);
+        //    }
 
-            return RedirectToAction("AttendeesList", new { id = model.eventId });
-        }
+        //    return RedirectToAction("AttendeesList", new { id = model.eventId });
+        //}
 
         private MailMetadata CreateMailMetadata(string toEmailAddress, string subject)
         {

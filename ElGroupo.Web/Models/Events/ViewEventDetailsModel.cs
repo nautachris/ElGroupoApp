@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElGroupo.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,9 @@ namespace ElGroupo.Web.Models.Events
             this.Location = e.LocationName;
             this.StartTime = e.StartTime.ToString("d") + " " + e.StartTime.ToString("t");
             this.EndTime = e.EndTime.ToString("d") + " " + e.EndTime.ToString("t");
+            this.Status = e.Status;
         }
+        public EventStatus Status { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
         public string Description { get; set; }

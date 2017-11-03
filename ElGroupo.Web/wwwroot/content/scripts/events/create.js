@@ -1,24 +1,76 @@
 ﻿$(document).ready(function () {
-    $("#EventDate").datepicker();
+    $("#EventDate").datepicker({
+        //dateFormat: "mm/dd/yyyy",
+        //defaultDate: new Date(Date.now())
+    });
 
     $("#btnSubmit").on("click", function () {
         console.log('btn submit click');
         $("#frmCreateEvent").submit();
     });
 
+    $("div.switch-container.is-recurring span").on("click", function () {
+        if ($(this).attr('data-replace-val') === 'True') {
+            $("#divRecurrence").show();
+            $("#lblEventDate").text('Starting Date:');
+        }
+        else {
+            $("#divRecurrence").hide();
+            $("#lblEventDate").text('Event Date:');
+        }
+
+    });
+
+    //shit related to event recurrence
+    $("div.switch-container[data-replace-element='Recurrence_Pattern'] span").on("click", function () {
+        console.log('recur pattern click');
+        console.log($(this).attr('data-replace-val'));
+        var pattern = $(this).attr('data-replace-val');
+        switch (pattern) {
+            case 'Daily':
+                $("#lblInterval").text('Days');
+                $(".row.days-of-week").hide();
+                break;
+            case 'Weekly':
+                $("#lblInterval").text('Weeks');
+                $(".row.days-of-week").show();
+                break;
+            case 'Monthly':
+                $("#lblInterval").text('Months');
+                $(".row.days-of-week").hide();
+                break;
+
+        }
+
+    });
+
+    $(".row.days-of-week span[data-day-index]").on("click", function () {
+        if ($(this).attr('data-selected') === 'false') $(this).attr('data-selected', 'true');
+        else $(this).attr('data-selected', 'false');
+
+        var $chk = $(".row.days-of-week :checkbox[data-day-index=" + $(this).attr('data-day-index') + "]");
+
+        if ($(this).attr('data-selected') === 'true') $chk.prop('checked', true);
+        else $chk.prop('checked', false);
+
+
+
+
+    });
+
 
     $(".switch-container.checkin-type > span").on("click", function () {
 
         switch ($(this).attr('data-replace-val')){
-            case "0":
+            case "None":
                 $(".verification-code").hide();
                 $(".location-tolerance").hide();
                 break;
-            case "1":
+            case "PasswordAndLocation":
                 $(".verification-code").show();
                 $(".location-tolerance").show();
                 break;
-            case "2":
+            case "PasswordOnly":
                 $(".verification-code").show();
                 $(".location-tolerance").hide();
                 break;
