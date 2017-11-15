@@ -55,16 +55,12 @@
     <script type="text/javascript" src="~/content/scripts/shared/switch-container.js"></script>
     <script type="text/javascript">
         var Confirm = function (message, callbackYes, callbackNo) {
-            console.log('in confirm');
             var cbYes = callbackYes;
             var cbNo = callbackNo;
-            console.log(cbYes);
-            console.log(cbNo);
             $("#main").hide();
             $("#divConfirm").show();
             $("#spanConfirmationMessage").text(message);
             $("#btnConfirmYes").on("click", function () {
-                console.log('confirm yes clicked');
                 $("#divConfirm").hide();
                 $("#main").show();
                 $("#btnConfirmYes").off("click");

@@ -68,6 +68,19 @@ namespace ElGroupo.Web.Controllers
         }
 
 
+        [Authorize]
+        [HttpPost("RemoveRegisteredConnection/{uid}")]
+        public async Task<IActionResult> RemoveRegisteredConnection([FromRoute]long uid)
+        {
+
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var toRemove = await dbContext.UserConnections.FirstOrDefaultAsync(x => x.User.Id == user.Id && x.ConnectedUser.Id == uid);
+            dbContext.Remove(toRemove);
+            await dbContext.SaveChangesAsync();
+
+            return RedirectToAction("GetConnectionList", new { uid = user.Id });
+        }
+
 
 
 
@@ -904,10 +917,10 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> Contacts()
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include("Contacts.ContactType").First(x => x.Id == user.Id);
+            var userRecord = dbContext.Set<User>().Include(x=>x.ContactMethods).ThenInclude(x=>x.ContactMethod).First(x => x.Id == user.Id);
 
 
-            return View("_EditContacts", GetContacts(userRecord));
+            return View("_ContactMethods", GetContacts(userRecord));
         }
 
         [HttpPost]
@@ -915,7 +928,7 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> CreateContact([FromBody]EditContactModel model)
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include("Contacts.ContactType").First(x => x.Id == user.Id);
+            var userRecord = dbContext.Set<User>().Include(x=>x.ContactMethods).First(x => x.Id == user.Id);
             var ct = dbContext.ContactTypes.First(x => x.Id == model.ContactTypeId);
             userRecord.AddContact(ct, model.Value);
             dbContext.Update(userRecord);

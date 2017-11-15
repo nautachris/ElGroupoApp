@@ -359,13 +359,33 @@
       
     });
 
-    $(".connection-links").on("click", "a", function () {
+    $("html").on("click", ".connection-links a", function () {
         var $infoDiv = $(this).closest("div[data-user-id]").find("div.connection-info");
+        var $this = $(this);
         if ($(this).attr('data-action') == 'profile') {
             //profile link
+            window.open($(this).attr('data-profile-link'), '_blank');
         }
         else {
+            var name = $(this).closest('div[data-user-id]').find('span.connected-user-name').text();
+            Confirm("Do you want to remove " + name + " from your list of connections?", function () {
+                $.ajax({
+                    url: "/Account/RemoveRegisteredConnection/" + $this.closest('div[data-user-id]').attr('data-user-id'),
+                    type: 'POST',
+                    async: true,
+                    cache: false,
+                    dataType: "html",
+                    success: function success(results) {
+                        $("#divConnectionList").html(results);
+                    },
+                    error: function error(err) {
+                        alert('fuck me');
+                    }
+                });
+
+            });
             //remove
+
 
         }
         $(this).closest("div.connection-links").hide();

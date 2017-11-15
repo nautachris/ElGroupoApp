@@ -166,6 +166,46 @@ namespace ElGroupo.Web.Services
 
         }
 
+        public async Task<SaveDataResponse> RemoveRecurringEventAttendee(RemoveAttendeeModel model)
+        {
+            try
+            {
+                var e = await dbContext.Events.FirstAsync(x => x.Id == model.EventId);
+                var rec = dbContext.RecurringEvents.Include(x => x.Events).First(x => x.Id == e.RecurrenceId.Value).Events.Select(x => x.Id).ToList();
+
+                var eas = dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).Where(x => rec.Contains(x.Event.Id) && x.User.Id == model.UserId).ToList();
+
+                foreach (var ea in eas)
+                {
+                    dbContext.Remove(ea);
+                }
+                await dbContext.SaveChangesAsync();
+                return new SaveDataResponse { Success = true };
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResponse { Success = false, ErrorMessage = ex.ToString() };
+            }
+
+
+        }
+        public async Task<SaveDataResponse> RemoveEventAttendee(RemoveAttendeeModel model)
+        {
+            try
+            {
+                var ea = await dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == model.EventId && x.User.Id == model.UserId);
+                dbContext.Remove(ea);
+                await dbContext.SaveChangesAsync();
+                return new SaveDataResponse { Success = true };
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResponse { Success = false, ErrorMessage = ex.ToString() };
+            }
+
+
+        }
+
         private async Task AddEventAttendee(Event e, PendingEventAttendeeModel model)
         {
             if (model.Id == -1)
@@ -277,7 +317,65 @@ namespace ElGroupo.Web.Services
             }
 
         }
+        public async Task<SaveDataResponse> UpdateRecurringRSVP(User user, UpdateRSVPStatusModel model)
+        {
+            try
+            {
+                //dbContext.RecurringEvents.First().
+                var eids = dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).First(x => x.Id == model.EventId).Recurrence.Events.Select(x => x.Id).ToList();
+                foreach (var ea in dbContext.EventAttendees.Where(x => eids.Contains(x.EventId) && x.User.Id == user.Id))
+                {
+                    ea.ResponseStatus = model.Status;
+                    ea.Viewed = true;
+                    if (ea.ResponseStatus != RSVPTypes.None) ea.ShowRSVPReminder = false;
+                    dbContext.Update(ea);
+                }
 
+                //var ea = dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
+                //if (ea == null) return SaveDataResponse.FromErrorMessage("User not found");
+
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+        }
+        public async Task<SaveDataResponse> SendRSVPReminders(User user, SendRSVPRequestModel model)
+        {
+            try
+            {
+                
+                if (model.UpdateRecurring)
+                {
+                    var e = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x=>x.Recurrence).ThenInclude(x=>x.Events).ThenInclude(x=>x.Attendees).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    foreach(var rev in e.Recurrence.Events.SelectMany(x=>x.Attendees).Where(x=>x.ResponseStatus == RSVPTypes.None))
+                    {
+                        rev.ShowRSVPReminder = true;
+                        //send email
+                        dbContext.Update(rev);
+                    }
+                }
+                else
+                {
+                    var e = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    foreach(var ea in e.Attendees.Where(x=>x.ResponseStatus == RSVPTypes.None))
+                    {
+                        ea.ShowRSVPReminder = true;
+                        //send email
+                        dbContext.Update(ea);
+                    }
+                }
+
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+        }
         public async Task<SaveDataResponse> UpdateRSVP(User user, UpdateRSVPStatusModel model)
         {
             try
@@ -285,6 +383,8 @@ namespace ElGroupo.Web.Services
                 var ea = dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
                 if (ea == null) return SaveDataResponse.FromErrorMessage("User not found");
                 ea.ResponseStatus = model.Status;
+                ea.Viewed = true;
+                if (model.Status != RSVPTypes.None) ea.ShowRSVPReminder = false;
                 await dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
@@ -620,12 +720,43 @@ namespace ElGroupo.Web.Services
             }
             else if (model.Pattern == Domain.Enums.RecurrencePatterns.Monthly)
             {
-                for (var cnt = 0; cnt < model.RecurrenceLimit; cnt++)
+                var daysOfMonth = new List<int>();
+                foreach (var d in model.DaysOfMonth.Split(','))
                 {
-                    list.Add(currentDate);
-                    currentDate = currentDate.AddMonths(model.RecurrenceInterval);
-                    cnt++;
+                    int testInt;
+                    if (int.TryParse(d.Trim(), out testInt))
+                    {
+                        if (testInt > 0 && testInt <= 31 && !daysOfMonth.Contains(testInt)) daysOfMonth.Add(testInt);
+                    }
                 }
+                daysOfMonth.Sort();
+
+                var baseDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+                //var eventCount = 1;
+                var monthCount = 0;
+                while (list.Count < model.RecurrenceLimit)
+                {
+                    var baseMonthDate = baseDate.AddMonths(monthCount);
+                    for (var dayCount = 0; dayCount < daysOfMonth.Count; dayCount++)
+                    {
+                        var daysInMonth = DateTime.DaysInMonth(baseMonthDate.Year, baseMonthDate.Month);
+                        if (daysInMonth < daysOfMonth[dayCount]) currentDate = new DateTime(baseMonthDate.Year, baseMonthDate.Month, daysInMonth);
+                        else currentDate = new DateTime(baseMonthDate.Year, baseMonthDate.Month, daysOfMonth[dayCount]);
+
+                        //in case some idiot choose 30 and 31 and we're in february
+                        if (!list.Contains(currentDate) && currentDate.Date >= DateTime.Today.Date) list.Add(currentDate);
+
+                        //eventCount++;
+                    }
+                    monthCount += model.RecurrenceInterval;
+
+                }
+                //for (var cnt = 0; cnt < model.RecurrenceLimit; cnt++)
+                //{
+                //    list.Add(currentDate);
+                //    currentDate = currentDate.AddMonths(model.RecurrenceInterval);
+                //    cnt++;
+                //}
             }
             else if (model.Pattern == Domain.Enums.RecurrencePatterns.Weekly)
             {
@@ -707,7 +838,7 @@ namespace ElGroupo.Web.Services
                     eventCount++;
                 }
                 int multiplier = model.RecurrenceInterval;
-                while (eventCount < model.RecurrenceLimit)
+                while (list.Count < model.RecurrenceLimit)
                 {
                     for (var seedCount = 0; seedCount < seedDates.Count; seedCount++)
                     {
@@ -733,32 +864,32 @@ namespace ElGroupo.Web.Services
             }
             if (model[1] == true)
             {
-                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Monday : patternDays | Domain.Enums.DaysOfWeek.Tuesday;
+                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Tuesday : patternDays | Domain.Enums.DaysOfWeek.Tuesday;
 
             }
             if (model[2] == true)
             {
-                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Monday : patternDays | Domain.Enums.DaysOfWeek.Wednesday;
+                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Wednesday : patternDays | Domain.Enums.DaysOfWeek.Wednesday;
 
             }
             if (model[3] == true)
             {
-                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Monday : patternDays | Domain.Enums.DaysOfWeek.Thursday;
+                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Thursday : patternDays | Domain.Enums.DaysOfWeek.Thursday;
 
             }
             if (model[4] == true)
             {
-                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Monday : patternDays | Domain.Enums.DaysOfWeek.Friday;
+                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Friday : patternDays | Domain.Enums.DaysOfWeek.Friday;
 
             }
             if (model[5] == true)
             {
-                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Monday : patternDays | Domain.Enums.DaysOfWeek.Saturday;
+                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Saturday : patternDays | Domain.Enums.DaysOfWeek.Saturday;
 
             }
             if (model[6] == true)
             {
-                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Monday : patternDays | Domain.Enums.DaysOfWeek.Sunday;
+                patternDays = patternDays == Domain.Enums.DaysOfWeek.None ? Domain.Enums.DaysOfWeek.Sunday : patternDays | Domain.Enums.DaysOfWeek.Sunday;
 
             }
             return patternDays;
@@ -768,6 +899,12 @@ namespace ElGroupo.Web.Services
         {
             try
             {
+                if (model.Recurrence.DaysOfMonth != null)
+                {
+                    var uniqueDays = model.Recurrence.DaysOfMonth.Split(',').Distinct().ToList();
+                    uniqueDays.ForEach(x => x = x.Trim());
+                    model.Recurrence.DaysOfMonth = string.Join(",", uniqueDays);
+                }
                 var dates = GetRecurrenceDates(model.Recurrence, model.EventDate);
                 long firstEventId = 0;
 
@@ -776,7 +913,8 @@ namespace ElGroupo.Web.Services
                     Pattern = model.Recurrence.Pattern,
                     RecurrenceInterval = model.Recurrence.RecurrenceInterval,
                     RecurrenceLimit = model.Recurrence.RecurrenceLimit,
-                    RecurrenceDays = model.Recurrence.Pattern == RecurrencePatterns.Weekly ? GetDaysOfWeek(model.Recurrence.Days) : DaysOfWeek.None
+                    RecurrenceDays = model.Recurrence.Pattern == RecurrencePatterns.Weekly ? GetDaysOfWeek(model.Recurrence.Days) : DaysOfWeek.None,
+                    DaysInMonth = model.Recurrence.DaysOfMonth
                 };
                 dbContext.RecurringEvents.Add(recur);
                 foreach (var eventDate in dates)
@@ -876,7 +1014,7 @@ namespace ElGroupo.Web.Services
         }
         public async Task<ViewEventDetailsModel> ViewEventDetails(long eventId)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await dbContext.Events.Include(x => x.Recurrence).FirstOrDefaultAsync(x => x.Id == eventId);
             var model = new ViewEventDetailsModel(e);
             return model;
         }
@@ -960,8 +1098,18 @@ namespace ElGroupo.Web.Services
                     else startHour = model.StartHour + 12;
 
 
-                    e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
-                    e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+                    if (e.Id == model.EventId)
+                    {
+                        //we don't want to change the dates for other events if recurring
+                        e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
+                        e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+                    }
+                    else
+                    {
+                        e.StartTime = new DateTime(e.StartTime.Year, e.StartTime.Month, e.StartTime.Day, startHour, model.StartMinute, 0);
+                        e.EndTime = new DateTime(e.EndTime.Year, e.EndTime.Month, e.EndTime.Day, endHour, model.EndMinute, 0);
+                    }
+
                     e.Status = model.Status;
                     dbContext.Update(e);
 
@@ -988,7 +1136,42 @@ namespace ElGroupo.Web.Services
             }
 
         }
+        public async Task<SaveDataResponse> UpdateEventStatus(UpdateEventStatusModel model)
+        {
+            try
+            {
+                if (model.UpdateRecurring)
+                {
+                    var ev = await dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    foreach (var e in ev.Recurrence.Events)
+                    {
+                        e.Status = model.Status;
+                        if (e.Status == EventStatus.Active)
+                        {
 
+                        }
+                        dbContext.Update(e);
+                    }
+                }
+                else
+                {
+                    var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    e.Status = model.Status;
+                    if (e.Status == EventStatus.Active)
+                    {
+                        //emails
+                    }
+                    dbContext.Update(e);
+
+                }
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+        }
         public async Task<SaveDataResponse> UpdateEventDetails(EditEventDetailsModel model)
         {
             try
@@ -1072,6 +1255,8 @@ namespace ElGroupo.Web.Services
         public async Task<EventViewModel> GetEventViewModel(long eventId, long userId, EditAccessTypes accessLevel)
         {
             //var e = await dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).Include("Attendees.MessageBoardItems.MessageBoardItem.PostedBy").FirstOrDefaultAsync(x => x.Id == eventId);
+
+
             var e = await dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).
                 Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).ThenInclude(x => x.PostedBy).
                 FirstOrDefaultAsync(x => x.Id == eventId);
@@ -1100,7 +1285,8 @@ namespace ElGroupo.Web.Services
             }
             model.Attendees.IsOrganizer = model.IsOrganizer;
 
-            model.OrganizerName = e.Attendees.First(x => x.IsOrganizer).User.Name;
+            model.Organizers = e.Attendees.Where(x => x.IsOrganizer).Select(y => new EventOrganizerModel { Name = y.User.Name, Id = y.User.Id }).ToList();
+            //model.OrganizerName = e.Attendees.First(x => x.IsOrganizer).User.Name;
 
             model.Messages = new List<EventMessageModel>();
 
@@ -1134,6 +1320,20 @@ namespace ElGroupo.Web.Services
                     IsNew = !ean.Viewed,
                     Id = ean.Id
                 });
+            }
+
+            if (e.RecurrenceId.HasValue)
+            {
+                model.EventRecurrence = dbContext.RecurringEvents.Include(x => x.Events).FirstOrDefault(x => x.Id == e.RecurrenceId.Value).Events.Select(y =>
+                new RecurrenceListModel
+                {
+                    Name = y.Name,
+                    StartDate = y.StartTime,
+                    EndDate = y.EndTime,
+                    Id = y.Id
+                }).ToArray();
+
+                model.Details.RecurrenceText += " Until " + model.EventRecurrence.OrderBy(x => x.EndDate).Last().EndDate.ToShortDateString() + ".";
             }
 
             return model;
@@ -1175,14 +1375,33 @@ namespace ElGroupo.Web.Services
 
         //}
 
-        public async Task<List<EventAttendeeModel>> GetEventAttendees(long eventId)
+        public async Task<ViewEventAttendeesModel> GetEventAttendees(long eventId, long activeId)
         {
-            var atts = await dbContext.Events.Include("Attendees.User").Include("UnregisteredAttendees").FirstOrDefaultAsync(x => x.Id == eventId);
+            var atts = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.UnregisteredAttendees).FirstOrDefaultAsync(x => x.Id == eventId);
             if (atts == null) throw new Exception("Event Not Found");
-            var model = new List<EventAttendeeModel>();
-            atts.Attendees.ToList().ForEach(x => model.Add(new EventAttendeeModel { Id = x.Id, Name = x.User.Name, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id, RSVPStatus = x.ResponseStatus }));
-            atts.UnregisteredAttendees.ToList().ForEach(x => model.Add(new EventAttendeeModel { Name = x.Name, Email = x.Email, RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration }));
+            var model = new ViewEventAttendeesModel();
+            atts.Attendees.ToList().Where(x => x.User.Id != activeId).ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { Id = x.Id, Name = x.User.Name, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id, RSVPStatus = x.ResponseStatus }));
+            atts.UnregisteredAttendees.ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { Name = x.Name, Email = x.Email, RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration }));
+
             return model;
+
+
+
+
+            //            model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
+            //model.Attendees = new ViewEventAttendeesModel();
+            //foreach (var att in e.Attendees.Where(x => x.User.Id != userId))
+            //{
+            //    model.Attendees.Attendees.Add(new EventAttendeeModel
+            //    {
+            //        Id = att.Id,
+            //        UserId = att.User.Id,
+            //        RSVPStatus = att.ResponseStatus,
+            //        Name = att.User.Name,
+            //        IsOrganizer = att.IsOrganizer
+            //    });
+            //}
+            //model.Attendees.IsOrganizer = model.IsOrganizer;
         }
 
         public async Task<SaveDataResponse> DeleteEventAttendee(long attendee, long eventId)

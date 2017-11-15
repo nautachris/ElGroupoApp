@@ -16,7 +16,7 @@ COMPLETE - delete event button - "modal" confirmation
 
 event owner needs a request RSVP button that will send out emails to all users who's rsvp status is "none/pending" or "maybe"
 
-event attendee list - color code user image border based on rsvp status
+COMPLETE - event attendee list - color code user image border based on rsvp status
 
 COMPLETE (added status) - user dashboard - denote events that user has not rsvpd to
 
@@ -26,22 +26,21 @@ COMPLETE - widget that sets the propery switch-container switch-selected class  
 
 COMPLETE - add fake users
 
-partially complete - my connection list - finish code for "remove connection" click
+COMPLETE - partially complete - my connection list - finish code for "remove connection" click
 
 
-organizer text on view event page, show primary organizer, then list of secondary organizers
+COMPLETE - organizer text on view event page, show primary organizer, then list of secondary organizers
 
-make organizer text a hyperlink to their profile
+COMPLETE - make organizer text a hyperlink to their profile
 
-move "saved as draft" outside of "edit event details" view - make it more obvious
+COMPLETE - need more javascript - move "saved as draft" outside of "edit event details" view - make it more obvious
 
 complete - after event is active, you cannot reset it to draft
-
-partiall complete - uninvite attendee - need to wire edit-attendees.js
+COMPLETE - uninvite attendee - need to wire edit-attendees.js
 
 basically complete - added DB infrastructure - event groups - allow user to save groups of 30 people (example) to 
 
-started - added DB onfrastructure - event recurrance - wait for andy's email
+mostly complete - started - added DB onfrastructure - event recurrance - wait for andy's email
 
 
 request checkin - button that automatically appears when a time buffer
@@ -49,8 +48,20 @@ request rsvp - send email and show on users dashboard
 
 rsvp requests - show to user as separate tab in dahsboard to left of "upcoming events" OR show driectly under title - should we also show new messages, notifications, etc?
 
+add attendee autocomplete, when selecting group, color code the group select element differently
 
 
+loading modal to show async process
+
+only uninvite after responding?
+
+monthyl recurrence - if choosing 31st - round down
+
+free text, comma separated days of month (i.e. 1,3,15)- add tooltip explanation
+
+contact methods no longer seem to work 
+
+AWS!!!
 
 
 

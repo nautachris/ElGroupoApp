@@ -14,25 +14,72 @@
                 Status: $("#Status").val(),
                 EventId: $("#EventId").val()
             };
+            if ($("#IsRecurring").val() == "True") {
+                Confirm("Do you want to change your RSVP status for all other associated events?", function () {
+                    model.UpdateRecurring = true;
+                    $.ajax({
+                        url: "/Events/UpdateRSVPStatus",
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        async: true,
+                        cache: false,
+                        //dataType: "application/json",
+                        data: JSON.stringify(model),
+                        success: function success() {
+                            console.log('success');
+                            //$("#divMessages").html(results);
+                        },
+                        error: function error(err) {
+                            console.log('error in saving response');
+                            console.log(err);
+                            alert('fuck me');
+                        }
+                    });
+                }, function () {
+                    model.UpdateRecurring = false;
+                    $.ajax({
+                        url: "/Events/UpdateRSVPStatus",
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        async: true,
+                        cache: false,
+                        //dataType: "application/json",
+                        data: JSON.stringify(model),
+                        success: function success() {
+                            console.log('success');
+                            //$("#divMessages").html(results);
+                        },
+                        error: function error(err) {
+                            console.log('error in saving response');
+                            console.log(err);
+                            alert('fuck me');
+                        }
+                    });
+                });
+            }
+            else {
+                model.UpdateRecurring = false;
+                $.ajax({
+                    url: "/Events/UpdateRSVPStatus",
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    async: true,
+                    cache: false,
+                    //dataType: "application/json",
+                    data: JSON.stringify(model),
+                    success: function success() {
+                        console.log('success');
+                        //$("#divMessages").html(results);
+                    },
+                    error: function error(err) {
+                        console.log('error in saving response');
+                        console.log(err);
+                        alert('fuck me');
+                    }
+                });
+            }
             console.log(model);
-            $.ajax({
-                url: "/Events/UpdateRSVPStatus",
-                type: 'POST',
-                contentType: "application/json; charset=utf-8",
-                async: true,
-                cache: false,
-                //dataType: "application/json",
-                data: JSON.stringify(model),
-                success: function success() {
-                    console.log('success');
-                    //$("#divMessages").html(results);
-                },
-                error: function error(err) {
-                    console.log('error in saving response');
-                    console.log(err);
-                    alert('fuck me');
-                }
-            });
+
         });
     });
 
@@ -40,24 +87,56 @@
 
     $("#btnDeleteEvent").on("click", function () {
         console.log('delete event');
+
+        Confirm('Do you want to delete the event ' + $("#lblEventName").text() + '?', function () {
+            if ($("#IsRecurring").val() == "True") {
+                Confirm('Do you want to delete all associated recurring events?', function () {
+                    $.ajax({
+                        url: "/Events/" + $("#EventId").val(),
+                        type: 'DELETE',
+                        async: true,
+                        cache: false,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function success(results) {
+                            console.log('delete results');
+                            console.log(results);
+                            window.location = results.url;
+                        },
+                        error: function error(err) {
+                            alert('fuck me');
+                        }
+                    });
+
+                }, function () { });
+            }
+            else {
+                $.ajax({
+                    url: "/Events/" + $("#EventId").val(),
+                    type: 'DELETE',
+                    async: true,
+                    cache: false,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function success(results) {
+                        console.log('delete results');
+                        console.log(results);
+                        window.location = results.url;
+                    },
+                    error: function error(err) {
+                        alert('fuck me');
+                    }
+                });
+            }
+
+        });
+
+
+
+
         Confirm("Do you want to delete this event?", function () {
 
-            $.ajax({
-                url: "/Events/" + $("#EventId").val(),
-                type: 'DELETE',
-                async: true,
-                cache: false,
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function success(results) {
-                    console.log('delete results');
-                    console.log(results);
-                    window.location = results.url;
-                },
-                error: function error(err) {
-                    alert('fuck me');
-                }
-            });
+
         }, function () { });
 
 

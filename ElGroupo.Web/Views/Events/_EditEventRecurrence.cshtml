@@ -55,7 +55,14 @@
 
     </div>
 </div>
-
+<div class="row monthly-recurrence" style="display:none;">
+    <div class="col span-1-of-4">
+        <label>Day(s) of Month (separate by commas)</label>
+    </div>
+    <div class="col span-3-of-4">
+        <input class="width-100" asp-for="Recurrence.DaysOfMonth" />
+    </div>
+</div>
 <div class="row">
     <div class="col span-1-of-6">
         <label asp-for="Recurrence.RecurrenceInterval">Recur Every:</label>

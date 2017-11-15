@@ -1,4 +1,5 @@
 ﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Domain.Enums
 @model ViewEventAttendeesModel
 @{
     Layout = null;
@@ -43,6 +44,44 @@
 
     }
 
+    public string GetBackgroundFromRSVPStatus(RSVPTypes status)
+    {
+        switch (status)
+        {
+            case RSVPTypes.Maybe:
+                return "yellow";
+            case RSVPTypes.No:
+                return "red";
+            case RSVPTypes.Yes:
+                return "green";
+            case RSVPTypes.None:
+                return "gray";
+            default:
+                return "transparent";
+
+        }
+
+    }
+    public string GetForegroundFromRSVPStatus(RSVPTypes status)
+    {
+        switch (status)
+        {
+            case RSVPTypes.Maybe:
+                return "black";
+            case RSVPTypes.No:
+                return "white";
+            case RSVPTypes.Yes:
+                return "white";
+            case RSVPTypes.None:
+                return "white";
+            default:
+                return "transparent";
+
+        }
+
+    }
+    //TinaDWallis@fleckens.hu
+
 
 
 }
@@ -54,82 +93,18 @@
         <div class="row">
             @foreach (var att in attGroup)
             {
-                @*<div class="col span-1-of-4" style="text-align:center;">
-                        <a href="@GetUserViewLink(att.UserId)">
-                            <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
-
-                            @if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
-                            {
-                                <span style="font-weight:bold; padding:5px; text-transform:uppercase; border-radius:5px; background-color:yellow">@att.Name</span>
-
-                            }
-                            else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
-                            {
-
-                                <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:red">@att.Name</span>
-                            }
-                            else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
-                            {
-                                <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:green">@att.Name</span>
-
-                            }
-                            else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
-                            {
-                                <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:gray">@att.Name</span>
-
-                            }
-                            else
-                            {
-                                <span style="font-weight:bold;  padding:5px;text-transform:uppercase;">@att.Name</span>
-                            }
-                            @if (att.IsOrganizer)
-                            {
-                                <span>*</span>
-
-                            }
-                        </a>
-
-                    </div>*@
-
-                <div data-user-id="@att.UserId" class="col span-1-of-4 centered rounded-border" style="text-align:center; position:relative; cursor:pointer">
+                <div data-user-id="@att.UserId" class="col span-1-of-4 centered rounded-border attendee-container" style="text-align:center; position:relative; cursor:pointer">
                     <div class="attendee-info" style="z-index:2;">
                         <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
-                        @if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
-                        {
-                            <span style="font-weight:bold; padding:5px; text-transform:uppercase; border-radius:5px; background-color:yellow; color:white;">@att.Name</span>
-
-                        }
-                        else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
-                        {
-
-                            <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:red;color:white;">@att.Name</span>
-                        }
-                        else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
-                        {
-                            <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:green;color:white;">@att.Name</span>
-
-                        }
-                        else if (att.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
-                        {
-                            <span style="font-weight:bold;  padding:5px;text-transform:uppercase;  border-radius:5px; background-color:gray;color:white;">@att.Name</span>
-
-                        }
-                        else
-                        {
-                            <span style="font-weight:bold;  padding:5px;text-transform:uppercase;color:white;">@att.Name</span>
-                        }
+                        <span class="attendee-name" style="color: white; font-weight:bold; padding:5px; text-transform:uppercase; border-radius:5px; background-color:@GetBackgroundFromRSVPStatus(att.RSVPStatus); color:@GetForegroundFromRSVPStatus(att.RSVPStatus)">@att.Name</span>
                         @if (att.IsOrganizer)
                         {
                             <span>*</span>
 
                         }
-
-
-
                     </div>
                     <div class="attendee-links centered" style="z-index:3; display:none; position:absolute; top: 40%; left:5%; width:90%;">
                         <a class="no-decoration" data-action="profile" data-profile-link="@GetUserViewLink(att.UserId)">View Profile</a>
-                        @*this needs to be "is viewer organizer" - not attendee*@
                         @if (Model.IsOrganizer)
                         {
                             <a class="no-decoration" data-action="remove" style="display:inline-block; width:100%;">Remove Attendee</a>
@@ -148,6 +123,16 @@
                 </div>
             }
         </div>
+    }
+
+    @if (Model.IsOrganizer && Model.Attendees.Any(x => x.RSVPStatus == RSVPTypes.None))
+    {
+        <div class="row centered">
+            <div class="col span-2-of-2">
+                <a id="btnSendRSVPReminders" class="btn btn-primary">Send RSVP Reminders</a>
+            </div>
+        </div>
+
     }
 
 }

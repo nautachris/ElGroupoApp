@@ -19,6 +19,7 @@ namespace ElGroupo.Web.Models.Events
             this.IsRecurring = e.Recurrence != null;
         }
 
+        public RecurrenceListModel[] EventRecurrence { get; set; }
         public bool IsRecurring { get; set; }
 
         public EventAttendeeRSVPModel RSVPResponse { get; set; }
@@ -29,7 +30,7 @@ namespace ElGroupo.Web.Models.Events
 
         public bool IsOrganizer { get; set; }
 
-        public string OrganizerName { get; set; }
+        public List<EventOrganizerModel> Organizers { get; set; }
 
 
 

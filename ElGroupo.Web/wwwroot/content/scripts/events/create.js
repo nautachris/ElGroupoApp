@@ -30,14 +30,17 @@
             case 'Daily':
                 $("#lblInterval").text('Days');
                 $(".row.days-of-week").hide();
+                $(".row.monthly-recurrence").hide();
                 break;
             case 'Weekly':
                 $("#lblInterval").text('Weeks');
                 $(".row.days-of-week").show();
+                $(".row.monthly-recurrence").hide();
                 break;
             case 'Monthly':
                 $("#lblInterval").text('Months');
                 $(".row.days-of-week").hide();
+                $(".row.monthly-recurrence").show();
                 break;
 
         }

@@ -68,12 +68,54 @@ namespace ElGroupo.Web.Controllers
         [Route("ViewEventAttendees/{eventId}", Name = "ViewEventAttendees")]
         public async Task<IActionResult> ViewEventAttendees([FromRoute]long eventId)
         {
-            ViewEventAttendeesModel vm = new ViewEventAttendeesModel();
-            vm.IsOrganizer = await CheckEventAccess(eventId) == EditAccessTypes.Edit;
-            vm.Attendees = await eventService.GetEventAttendees(eventId);
-            return View("_ViewEventAttendees", vm);
+            var user = await CurrentUser();
+            var model = await eventService.GetEventAttendees(eventId, user.Id);
+            model.IsOrganizer = await CheckEventAccess(eventId) == EditAccessTypes.Edit;
+            return View("_ViewEventAttendees", model);
         }
 
+
+        [HttpPost]
+        [Authorize]
+        [Route("UpdateEventStatus")]
+        public async Task<IActionResult> UpdateEventStatus([FromBody]UpdateEventStatusModel model)
+        {
+            //var eid = Convert.ToInt64(model["eventId"]);
+            //var status = (EventStatus)Enum.Parse(typeof(EventStatus), model["status"]);
+            //var updateRecurring = bool.Parse(model["updateRecurring"]);
+            if (await CheckEventAccess(model.EventId) != EditAccessTypes.Edit) return BadRequest(new { message = "unauthorized" });
+            var response = await eventService.UpdateEventStatus(model);
+            if (response.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new { message = response.ErrorMessage });
+            }
+
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("SendRSVPReminders")]
+        public async Task<IActionResult> SendRSVPReminders([FromBody]SendRSVPRequestModel model)
+        {
+            //var eid = Convert.ToInt64(model["eventId"]);
+            //var status = (EventStatus)Enum.Parse(typeof(EventStatus), model["status"]);
+            //var updateRecurring = bool.Parse(model["updateRecurring"]);
+            if (await CheckEventAccess(model.EventId) != EditAccessTypes.Edit) return BadRequest(new { message = "unauthorized" });
+            var response = await eventService.SendRSVPReminders(await CurrentUser(), model);
+            if (response.Success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new { message = response.ErrorMessage });
+            }
+
+        }
 
 
 
@@ -94,9 +136,25 @@ namespace ElGroupo.Web.Controllers
             {
                 return BadRequest(new { message = response.ErrorMessage });
             }
+        }
 
 
+        [HttpPost]
+        [Authorize]
+        [Route("RemoveEventAttendee")]
+        public async Task<IActionResult> RemoveEventAttendee([FromBody]RemoveAttendeeModel model)
+        {
 
+            var user = await CurrentUser();
+            var response = model.UpdateRecurring ? await eventService.RemoveRecurringEventAttendee(model) : await eventService.RemoveEventAttendee(model);
+            if (response.Success)
+            {
+                return RedirectToRoute("ViewEventAttendees", new { eventId = model.EventId });
+            }
+            else
+            {
+                return BadRequest(new { message = response.ErrorMessage });
+            }
         }
 
         //[Authorize]
@@ -114,7 +172,7 @@ namespace ElGroupo.Web.Controllers
         {
 
             var user = await CurrentUser();
-            var response = await this.eventService.UpdateRSVP(user, model);
+            var response = model.UpdateRecurring ? await this.eventService.UpdateRecurringRSVP(user, model) : await this.eventService.UpdateRSVP(user, model);
             if (response.Success)
             {
                 return Ok();
@@ -547,14 +605,14 @@ namespace ElGroupo.Web.Controllers
         //    return View("_Organizers", model);
         //}
 
-        [Authorize]
-        [HttpGet, HttpPost]
-        [Route("Contacts/{id}/Attendees")]
-        public async Task<IActionResult> AttendeesList([FromRoute]long id)
-        {
-            var model = await this.eventService.GetEventAttendees(id);
-            return View("_Attendees", model.OrderBy(x => x.Name));
-        }
+        //[Authorize]
+        //[HttpGet, HttpPost]
+        //[Route("Contacts/{id}/Attendees")]
+        //public async Task<IActionResult> AttendeesList([FromRoute]long id)
+        //{
+        //    var model = await this.eventService.GetEventAttendees(id);
+        //    return View("_Attendees", model.OrderBy(x => x.Name));
+        //}
 
         private async Task<EditAccessTypes> CheckEventAccess(long eventId)
         {

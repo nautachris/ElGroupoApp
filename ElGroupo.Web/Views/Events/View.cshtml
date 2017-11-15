@@ -50,46 +50,74 @@
 <input type="hidden" asp-for="EventId" />
 <input type="hidden" asp-for="IsRecurring" />
 <div class="row">
-    <h2>@Model.Details.Name</h2>
-    <h3 class="centered">Organizer: @Model.OrganizerName</h3>
+    <h2 id="lblEventName">@Model.Details.Name</h2>
+
+    @*<h3 class="centered">
+        Organizer(s):
+        @foreach (var org in Model.Organizers)
+        {
+            <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a>
+
+        }
+    </h3>*@
 </div>
-@if (Model.IsOrganizer)
+<h3 class="centered">Organizers</h3>
+<li style="list-style:none; text-align:center;">
+    @foreach (var org in Model.Organizers)
+    {
+        <ul><a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a></ul>
+
+
+    }
+</li>
+@if (Model.IsOrganizer && Model.Details.Status != ElGroupo.Domain.Enums.EventStatus.Active)
 {
-    <div class="row width-100 centered">
+    <div class="row">
+        <div class="col span-1-of-4">
+            <label>Event Status:</label>
+        </div>
 
-
-        @if (Model.Details.Status == ElGroupo.Domain.Enums.EventStatus.Active)
-        {
-            <div style="color:darkgreen; font-weight:bold;">Current Status: @Model.Details.Status.ToString()</div>
-
-
-        }
-        else if (Model.Details.Status == ElGroupo.Domain.Enums.EventStatus.Cancelled)
-        {
-            <div style="color:red; font-weight:bold;">Current Status: @Model.Details.Status.ToString()</div>
-        }
-        else
-        {
-            <div style="color:darkorange; font-weight:bold;">Current Status: @Model.Details.Status.ToString()</div>
-        }
+        <div data-replace-element="iptStatus" class="switch-container ignore-switch event-status col span-3-of-4">
+            <input type="hidden" asp-for="Details.Status" id="iptStatus" />
+            <span data-replace-val="Cancelled" class="switch-selected col span-1-of-3">Cancelled</span>
+            <span data-replace-val="Draft" class="col span-1-of-3">Draft</span>
+            <span data-replace-val="Active" class="col span-1-of-3">Active</span>
+        </div>
     </div>
+
 }
 
 <div class="page-nav row">
-    
+
+
     @if (Model.IsOrganizer)
     {
-        
+
         //event status
         @*<div class="width-100">
 
-        </div>*@
+            </div>*@
 
-        <div class="col span-1-of-5"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
-        <div class="col span-1-of-5"><a class="links" data-link-type="add-attendees" href="#">Add New Attendees</a></div>
-        <div class="col span-1-of-5"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
-        <div class="col span-1-of-5"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
-        <div class="col span-1-of-5"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+
+        @if (Model.IsRecurring && Model.EventRecurrence?.Length > 0)
+        {
+            <div class="col span-1-of-6"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+            <div class="col span-1-of-6"><a class="links" data-link-type="add-attendees" href="#">Add New Attendees</a></div>
+            <div class="col span-1-of-6"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
+            <div class="col span-1-of-6"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+            <div class="col span-1-of-6"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+            <div class="col span-1-of-6"><a class="links" data-link-type="recurrence" href="#">Recurrence</a></div>
+
+        }
+        else
+        {
+            <div class="col span-1-of-5"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+            <div class="col span-1-of-5"><a class="links" data-link-type="add-attendees" href="#">Add New Attendees</a></div>
+            <div class="col span-1-of-5"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
+                        <div class="col span-1-of-5"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+                        <div class="col span-1-of-5"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+
+        }
 
     }
     else
@@ -97,10 +125,24 @@
         //something where the user can set their rsvp status
         @Html.Partial("_EditAttendeeRSVPResponse", Model.RSVPResponse)
         <div class="row">
-            <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
-            <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
-            <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
-            <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+
+            @if (Model.IsRecurring && Model.EventRecurrence?.Length > 0)
+            {
+                <div class="col span-1-of-5"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+                <div class="col span-1-of-5"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
+                <div class="col span-1-of-5"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+                <div class="col span-1-of-5"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+                <div class="col span-1-of-5"><a class="links" data-link-type="recurrence" href="#">Recurrence</a></div>
+            }
+            else
+            {
+                <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+                <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
+                            <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+                            <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+
+
+            }
         </div>
 
 
@@ -198,6 +240,43 @@
     @Html.Partial("_AddEventMessage")
 </div>
 
+
+@if (Model.IsRecurring)
+{
+    <div class="row tab recurrence contact-form" style="display:none;">
+        @if (Model.EventRecurrence?.Length > 0)
+        {
+
+            <ul style="list-style:none;">
+                @foreach (var e in Model.EventRecurrence)
+                {
+                    <li data-event-id="@e.Id">
+                        <div class="row">
+                            <div class="col">
+                                <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="no-decoration">
+                                    <span id="spanEventName" style="font-weight:bold; ">
+                                        @e.Name
+                                    </span>
+                                    <span>@e.StartDate.DayOfWeek.ToString(), @e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
+                                </a>
+                            </div>
+                        </div>
+
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <h2>There should be recurring events here...</h2>
+
+        }
+
+    </div>
+
+}
+
+
 @if (Model.IsOrganizer)
 {
     <div class="row centered" style="margin-top:20px; margin-bottom:40px;">
@@ -211,11 +290,12 @@
     <script type="text/javascript" src="~/content/scripts/events/view.js"></script>
     <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
     <script type="text/javascript" src="~/content/scripts/events/view-notifications.js"></script>
+<script type="text/javascript" src="~/content/scripts/events/edit-attendees.js"></script>
     @if (Model.IsOrganizer)
     {
         <script type="text/javascript" src="~/content/scripts/events/edit-notifications.js"></script>
         <script type="text/javascript" src="~/content/scripts/events/edit.js"></script>
-        <script type="text/javascript" src="~/content/scripts/events/edit-attendees.js"></script>
+            @*<script type="text/javascript" src="~/content/scripts/events/edit-attendees.js"></script>*@
 
     }
     <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>

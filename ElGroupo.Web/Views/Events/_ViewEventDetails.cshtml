@@ -31,20 +31,33 @@
     </div>
 </div>
 <div class="row">
-    <div class="col span-3-of-6">
+    <div class="col span-2-of-6">
         <label>Start:</label>
     </div>
-    <div class="col span-3-of-6">
+    <div class="col span-4-of-6">
         <span>@Model.StartTime</span>
     </div>
 
 </div>
 <div class="row">
-    <div class="col span-3-of-6">
+    <div class="col span-2-of-6">
         <label>End:</label>
     </div>
-    <div class="col span-3-of-6">
+    <div class="col span-4-of-6">
         <span>@Model.EndTime</span>
     </div>
 
 </div>
+@if (Model.IsRecurring)
+{
+    <div class="row">
+        <div class="col span-2-of-6">
+            <label>Recurrence:</label>
+        </div>
+        <div class="col span-4-of-6">
+            <span>@Model.RecurrenceText</span>
+        </div>
+    </div>
+
+
+}

@@ -22,6 +22,7 @@ namespace ElGroupo.Web.Models.Events
         public RSVPTypes RSVPStatus { get; set; }
 
         public string OrganizerName { get; set; }
+        public bool RSVPRequested { get; set; }
 
     }
 }

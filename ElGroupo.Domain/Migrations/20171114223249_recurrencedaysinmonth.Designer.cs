@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171114223249_recurrencedaysinmonth")]
+    partial class recurrencedaysinmonth
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -167,8 +168,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<int>("ResponseStatus");
 
                     b.Property<string>("ResponseText");
-
-                    b.Property<bool?>("ShowRSVPReminder");
 
                     b.Property<string>("UserCreated");
 

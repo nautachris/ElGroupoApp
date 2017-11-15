@@ -70,13 +70,15 @@ namespace ElGroupo.Web.Controllers
                     OrganizerName = ev.Event.Attendees.First(x=>x.IsOrganizer).User.Name,
                     Status = ev.Event.Status,
                     RSVPStatus = ev.ResponseStatus,
-                    IsRecurring = ev.Event.Recurrence != null
+                    IsRecurring = ev.Event.Recurrence != null,
+                    RSVPRequested = ev.ShowRSVPReminder == true
                 });
             }
 
             model.Drafts = allEvents.Where(x => x.OrganizedByUser && x.Status == Domain.Enums.EventStatus.Draft).OrderBy(x => x.StartDate).ToList();
             model.PastEvents = allEvents.Where(x => x.Status != Domain.Enums.EventStatus.Draft && x.StartDate < DateTime.Now).OrderBy(x => x.StartDate).ToList();
             model.FutureEvents = allEvents.Where(x => x.Status != Domain.Enums.EventStatus.Draft && x.StartDate >= DateTime.Now).OrderBy(x => x.StartDate).ToList();
+            model.RSVPRequestedEvents = allEvents.Where(x => x.RSVPRequested).ToList();
             return View(model);
         }
 

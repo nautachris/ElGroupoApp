@@ -4,8 +4,39 @@
 
 EditEventAttendees = {
     EventId: -1,
+    SendRSVPReminders: function (recurring) {
+        var model = { EventId: EditEventAttendees.EventId, UpdateRecurring: recurring };
+        $.ajax({
+            url: '/Events/SendRSVPReminders',
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(model),
+            async: true,
+            cache: false,
+            success: function success(results) {
+                console.log('remidners sent');
+            },
+            error: function error(err) {
+                alert('fuck me');
+            }
+        });
+    },
     Init: function () {
         EditEventAttendees.EventId = Number($("#EventId").val());
+
+        $("#btnSendRSVPReminders").on("click", function () {
+            if ($("#IsRecurring").val() == "True") {
+                Confirm('Do you also want to send reminders for all other recurring events?', function () {
+                    EditEventAttendees.SendRSVPReminders(true);
+                }, function () {
+                    EditEventAttendees.SendRSVPReminders(false);
+                });
+            }
+            else {
+                EditEventAttendees.SendRSVPReminders(false);
+            }
+        });
+
 
         $("#btnSaveAttendeeChanges").on("click", function () {
             if ($("#IsRecurring").val() == "True") {
@@ -133,15 +164,86 @@ EditEventAttendees = {
 
             }
         });
-        $(".attendee-links").on("click", "a", function () {
-            console.log('attendee links click');
+        $("html").on("click", ".attendee-links a", function () {
+            var $this = $(this);
             var $infoDiv = $(this).closest("div[data-user-id]").find("div.attendee-info");
             if ($(this).attr('data-action') == 'profile') {
                 //profile link
+                window.open($(this).attr('data-profile-link'), '_blank');
             }
             else {
                 //remove
-                Confirm("Do you want to remove this attendee from this event?", function () { }, function () { });
+                var name = $this.closest('div.attendee-container').find('span.attendee-name').text();
+                Confirm("Do you want to remove " + name + " from this event?", function () {
+                    if ($("#IsRecurring").val() == "True") {
+                        Confirm('Do you want to remove ' + name + ' from all recurring events?', function () {
+                            $.ajax({
+                                url: "/Events/RemoveEventAttendee",
+                                type: 'POST',
+                                contentType: "application/json",
+                                data: JSON.stringify({
+                                    eventId: Number($("#EventId").val()),
+                                    userId: $this.closest('div[data-user-id]').attr('data-user-id'),
+                                    updateRecurring: true
+                                }),
+                                async: true,
+                                cache: false,
+                                dataType: 'html',
+                                success: function success(results) {
+                                    $("#divViewAttendees").html(results);
+                                },
+                                error: function error(err) {
+                                    alert('fuck me');
+                                }
+                            });
+
+
+                        }, function () {
+                            $.ajax({
+                                url: "/Events/RemoveEventAttendee",
+                                type: 'POST',
+                                contentType: "application/json",
+                                data: JSON.stringify({
+                                    eventId: Number($("#EventId").val()),
+                                    userId: $this.closest('div[data-user-id]').attr('data-user-id'),
+                                    updateRecurring: false
+                                }),
+                                async: true,
+                                cache: false,
+                                dataType: 'html',
+                                success: function success(results) {
+                                    $("#divViewAttendees").html(results);
+                                },
+                                error: function error(err) {
+                                    alert('fuck me');
+                                }
+                            });
+
+                        });
+                    }
+                    else {
+                        $.ajax({
+                            url: "/Events/RemoveEventAttendee",
+                            type: 'POST',
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                eventId: Number($("#EventId").val()),
+                                userId: $this.closest('div[data-user-id]').attr('data-user-id'),
+                                updateRecurring: false
+                            }),
+                            async: true,
+                            cache: false,
+                            dataType: 'html',
+                            success: function success(results) {
+                                $("#divViewAttendees").html(results);
+                            },
+                            error: function error(err) {
+                                alert('fuck me');
+                            }
+                        });
+
+                    }
+                });
 
             }
             $(this).closest("div.attendee-links").hide();
@@ -182,28 +284,7 @@ EditEventAttendees = {
             EditEventAttendees.AddAttendee(attendee);
 
         });
-        $("#divAttendees").on("click", "a[data-contact-id]", function () {
-            var eid = Number($("#Event_Id").val());
-            var oid = Number($(this).attr('data-contact-id'));
-            $.ajax({
-                url: "/Events/Attendees/" + eid.toString() + '/Delete/' + oid.toString(),
-                type: 'POST',
-                //contentType: "application/json; charset=utf-8",
-                async: true,
-                cache: false,
-                dataType: "html",
-                //data: JSON.stringify(obj),
-                success: function success(results) {
-                    $("#divAttendees").html(results);
-                    $("#txtAttendees").val('');
 
-                },
-                error: function error(err) {
-                    alert('fuck me');
-                }
-            });
-
-        });
         $("#btnAddAttendee").on('click', function () {
 
 

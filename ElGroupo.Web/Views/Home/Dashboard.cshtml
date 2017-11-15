@@ -2,12 +2,6 @@
 @model DashboardModel
 
 <style type="text/css">
-    .row.past-events, .row.draft-events {
-        display: none;
-    }
-
-
-
     li.new-event {
         background-color: aquamarine;
         border-radius: 25px;
@@ -41,51 +35,64 @@
     .bold {
         font-weight: bold;
     }
-    #secDeleteDialog{
-        display:none;
+
+    #secDeleteDialog {
+        display: none;
     }
-
 </style>
-<section id="secDeleteDialog">
-    <div style="text-align:center">
-        <div class="row">
-            <h2><span id="spanDeleteEventName">Do you want to delete the event?</span></h2>
-        </div>
-        <div class="row">
-            <div class="col span-1-of-2">
-                <button class="btn btn-primary width-100" id="btnConfirmDelete">Yes</button>
-            </div>
-            <div class="col span-1-of-2">
-                <button class="btn btn-ghost width-100" id="btnCancelDelete">No</button>
-            </div>
-        </div>
-    </div>
 
-     
-</section>
 <section id="secMain">
 
     <h2>My Fuckin' Bitchin' Events</h2>
     <div class="page-nav">
-        <div class="col span-1-of-3">
-            <a class="links bold" data-link-type="future-events" href="#">Upcoming Events (@Model.FutureEvents.Count.ToString())</a>
-        </div>
-        <div class="col span-1-of-3">
-            <a class="links" data-link-type="past-events" href="#">Past Events (@Model.PastEvents.Count.ToString())</a>
-        </div>
-        <div class="col span-1-of-3">
-            <a class="links" data-link-type="draft-events" href="#">Drafts  (@Model.Drafts.Count.ToString())</a>
-        </div>
-        
+        @if (Model.RSVPRequestedEvents.Count > 0)
+        {
+            <div class="col span-1-of-4">
+                <a class="links" data-link-type="action-items" href="#">RSVP Needed (@Model.RSVPRequestedEvents.Count.ToString())</a>
+            </div>
+            <div class="col span-1-of-4">
+                <a class="links bold" data-link-type="future-events" href="#">Upcoming Events (@Model.FutureEvents.Count.ToString())</a>
+            </div>
+            <div class="col span-1-of-4">
+                <a class="links" data-link-type="past-events" href="#">Past Events (@Model.PastEvents.Count.ToString())</a>
+            </div>
+            <div class="col span-1-of-4">
+                <a class="links" data-link-type="draft-events" href="#">Drafts  (@Model.Drafts.Count.ToString())</a>
+            </div>
 
-       
+        }
+        else
+        {
+            <div class="col span-1-of-3">
+                <a class="links bold" data-link-type="future-events" href="#">Upcoming Events (@Model.FutureEvents.Count.ToString())</a>
+            </div>
+            <div class="col span-1-of-3">
+                <a class="links" data-link-type="past-events" href="#">Past Events (@Model.PastEvents.Count.ToString())</a>
+            </div>
+            <div class="col span-1-of-3">
+                <a class="links" data-link-type="draft-events" href="#">Drafts  (@Model.Drafts.Count.ToString())</a>
+            </div>
 
-        
+        }
+
+
+
+
+
+
 
     </div>
+    @if (Model.RSVPRequestedEvents.Count > 0)
+    {
+        <div class="row tab action-items" style="display:none;">
+            @Html.Partial("_DashboardEventList", Model.RSVPRequestedEvents)
+        </div>
+
+    }
+
     <div class="row tab future-events">
         @if (Model.FutureEvents.Count > 0)
-        {
+            {
             @Html.Partial("_DashboardEventList", Model.FutureEvents)
 
         }
@@ -98,9 +105,9 @@
         }
 
     </div>
-    <div class="row tab past-events">
+    <div class="row tab past-events" style="display:none;">
         @if (Model.PastEvents.Count > 0)
-        {
+            {
             @Html.Partial("_DashboardEventList", Model.PastEvents)
 
 
@@ -114,19 +121,19 @@
         }
 
     </div>
-    <div class="row tab draft-events">
-@if (Model.Drafts.Count > 0)
-{
-    @Html.Partial("_DashboardEventList", Model.Drafts)
+    <div class="row tab draft-events" style="display:none;">
+        @if (Model.Drafts.Count > 0)
+            {
+            @Html.Partial("_DashboardEventList", Model.Drafts)
 
-}
-else
-{
-    <div class="col width-100" style="text-align:center;">
-        <h3>You have no draft events</h3>
-    </div>
+        }
+        else
+        {
+            <div class="col width-100" style="text-align:center;">
+                <h3>You have no draft events</h3>
+            </div>
 
-}
+        }
 
     </div>
 </section>

@@ -17,6 +17,8 @@ namespace ElGroupo.Domain
         public int RecurrenceLimit { get; set; }
         public RecurrencePatterns Pattern { get; set; }
 
+        public string DaysInMonth { get; set; }
+
         public DaysOfWeek RecurrenceDays { get; set; }
     }
 }

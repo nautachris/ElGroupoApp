@@ -24,6 +24,9 @@ namespace ElGroupo.Domain
         public string ResponseText { get; set; }
         public bool? AllowEventUpdates { get; set; }
 
+        public bool? ShowRSVPReminder { get; set; }
+
+
         public DateTime? CheckInTime { get; set; }
         public double? CheckInCoordinateX { get; set; }
         public double? CheckInCoordinateY { get; set; }

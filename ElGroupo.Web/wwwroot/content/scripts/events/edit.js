@@ -27,7 +27,7 @@
 
         if ($("#IsRecurring").val() == "True") {
             var saveObj = obj;
-            
+
             Confirm('Do you want to update all recurring events?', function () {
                 saveObj.updateRecurring = true;
                 $.ajax({
@@ -177,6 +177,119 @@
                 $(".location-tolerance").hide();
                 break;
         }
+    });
+    $("html").on("click", "#btnDeleteEvent", function (evt) {
+        Confirm('Do you want to delete the event ' + $("#lblEventName").text() + '?', function () {
+            if ($("#IsRecurring").val() == "True") {
+                Confirm('Do you want to delete all associated recurring events?', function () { }, function () { });
+            }
+            else {
+
+            }
+
+        });
+
+    });
+    $("html").on("click", ".switch-container.event-status > span", function (evt) {
+        var $this = $(this);
+        console.log('event status change');
+
+        var currentVal = $("#" + $(this).closest('div[data-replace-element]').attr('data-replace-element')).val();
+        if (currentVal === $(this).attr('data-replace-val')) {
+
+            return false;
+        }
+
+        Confirm("Do you want to change the status of this event to " + $(this).attr('data-replace-val') + "?  This action cannot be undone!", function () {
+            if ($("#IsRecurring").val() == "True") {
+                Confirm("Do you to update all recurring events?", function () {
+                    $.ajax({
+                        url: "/Events/UpdateEventStatus",
+                        type: 'POST',
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            eventId: Number($("#EventId").val()),
+                            status: $this.attr('data-replace-val'),
+                            updateRecurring: true
+                        }),
+                        async: true,
+                        cache: false,
+                        dataType: 'html',
+                        success: function success(results) {
+                            location.reload(true);
+                        },
+                        error: function error(err) {
+                            alert('fuck me');
+                        }
+                    });
+                }, function () {
+                    $.ajax({
+                        url: "/Events/UpdateEventStatus",
+                        type: 'POST',
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            eventId: Number($("#EventId").val()),
+                            status: $this.attr('data-replace-val'),
+                            updateRecurring: false
+                        }),
+                        async: true,
+                        cache: false,
+                        //dataType: 'html',
+                        success: function success(results) {
+                            location.reload(true);
+                        },
+                        error: function error(err) {
+                            alert('fuck me');
+                        }
+                    });
+                });
+
+            }
+            else {
+                $.ajax({
+                    url: "/Events/UpdateEventStatus",
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        eventId: Number($("#EventId").val()),
+                        status: $this.attr('data-replace-val'),
+                        updateRecurring: false
+                    }),
+                    async: true,
+                    cache: false,
+                    //dataType: 'html',
+                    success: function success(results) {
+                        location.reload(true);
+                    },
+                    error: function error(err) {
+                        alert('fuck me');
+                    }
+                });
+            }
+        }, function () {
+
+
+
+            //reset selected container
+            $this.closest('.switch-container').find('span').removeClass('switch-selected');
+            var $replaceEl = $("#" + $this.closest('div.switch-container').attr('data-replace-element'));
+            $this.closest('.switch-container').find('span[data-replace-val='+ $replaceEl.val() + ']').addClass('switch-selected');
+        });
+
+        //switch ($(this).attr('data-replace-val')) {
+        //    case "Cancelled":
+        //        $(".verification-code").hide();
+        //        $(".location-tolerance").hide();
+        //        break;
+        //    case "Draft":
+        //        $(".verification-code").show();
+        //        $(".location-tolerance").show();
+        //        break;
+        //    case "Active":
+        //        $(".verification-code").show();
+        //        $(".location-tolerance").hide();
+        //        break;
+        //}
     });
 
 

@@ -14,8 +14,16 @@
 SwitchContainer = {
     bindClick: function () {
         $("html").on("click", ".switch-container > span", function () {
-            console.log('switch container click');
+
+            //event-status
+
+
+
             var $parent = $(this).closest("div.switch-container");
+            if ($parent.hasClass('ignore-switch')) return false;
+
+            console.log('switch container click');
+
             $parent.find(".switch-selected").removeClass("switch-selected");
             $(this).addClass("switch-selected");
 
@@ -39,7 +47,8 @@ SwitchContainer = {
 
 
         });
-        $("html").on("click", ".switch-container > div", function () {
+        $("html").on("click", ".switch-container > div", function (evt) {
+            console.log(evt.defaultPrevented);
             console.log('switch container click');
             var $parent = $(this).closest("div.switch-container");
             $parent.find(".switch-selected").removeClass("switch-selected");
