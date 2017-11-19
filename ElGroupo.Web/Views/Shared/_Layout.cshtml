@@ -1,6 +1,6 @@
 ﻿<html>
 <head>
-    <title>El Groupo!</title>
+    <title>Footprint</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="~/content/vendors/css/normalize.css">
     <link rel="stylesheet" type="text/css" href="~/content/vendors/css/Grid.css">
@@ -25,6 +25,18 @@
             <div class="col span-1-of-4"></div>
                 <div class="col span-1-of-4"><button id="btnConfirmYes" class="btn-primary width-100">Yes</button></div>
                 <div class="col span-1-of-4"><button id="btnConfirmNo" class="btn-primary width-100">No</button></div>
+            <div class="col span-1-of-4"></div>
+        </div>
+    </div>
+    <div id="divConfirmRecurrence" style="display:none;">
+        <div class="row">
+            <div class="col span-2-of-2 centered">
+                <span id="spanConfirmationMessageRecurrence"></span>
+            </div>
+            <div class="col span-1-of-5"></div>
+            <div class="col span-1-of-5"><button id="btnConfirmRecurrenceYes" class="btn-primary width-100">All Recurring Events</button></div>
+            <div class="col span-1-of-5"><button id="btnConfirmRecurrenceNo" class="btn-primary width-100">This Event Only</button></div>
+            <div class="col span-1-of-5"><button id="btnConfirmRecurrenceCancel" class="btn-primary width-100">Cancel</button></div>
             <div class="col span-1-of-4"></div>
         </div>
     </div>
@@ -53,6 +65,7 @@
     </script>
     <script type="text/javascript" src="~/content/scripts/shared/header.js"></script>
     <script type="text/javascript" src="~/content/scripts/shared/switch-container.js"></script>
+    <script type="text/javascript" src="~/content/scripts/shared/tab-links.js"></script>
     <script type="text/javascript">
         var Confirm = function (message, callbackYes, callbackNo) {
             var cbYes = callbackYes;
@@ -76,8 +89,38 @@
                 if (cbNo) cbNo();
             });
         }
+        var ConfirmRecurrence = function (message, callbackYesRecurrence, callbackNoRecurrence) {
+            var cbYes = callbackYesRecurrence;
+            var cbNo = callbackNoRecurrence;
+            $("#main").hide();
+            $("#divConfirmRecurrence").show();
+            $("#spanConfirmationMessageRecurrence").text(message);
+            $("#btnConfirmRecurrenceYes").on("click", function () {
+                $("#divConfirmRecurrence").hide();
+                $("#main").show();
+                $("#btnConfirmRecurrenceYes").off("click");
+                $("#btnConfirmRecurrenceNo").off("click");
+                $("#btnConfirmRecurrenceCancel").off("click");
+                if (cbYes) cbYes();
+            });
+            $("#btnConfirmRecurrenceNo").on("click", function () {
 
+                $("#main").show();
+                $("#divConfirmRecurrence").hide();
+                $("#btnConfirmRecurrenceYes").off("click");
+                $("#btnConfirmRecurrenceNo").off("click");
+                $("#btnConfirmRecurrenceCancel").off("click");
+                if (cbNo) cbNo();
+            });
+            $("#btnConfirmRecurrenceCancel").on("click", function () {
 
+                $("#main").show();
+                $("#divConfirmRecurrence").hide();
+                $("#btnConfirmRecurrenceYes").off("click");
+                $("#btnConfirmRecurrenceNo").off("click");
+                $("#btnConfirmRecurrenceCancel").off("click");
+            });
+        }
     </script>
 </body>
 </html>

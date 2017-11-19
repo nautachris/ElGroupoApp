@@ -38,32 +38,39 @@ COMPLETE - need more javascript - move "saved as draft" outside of "edit event d
 complete - after event is active, you cannot reset it to draft
 COMPLETE - uninvite attendee - need to wire edit-attendees.js
 
-basically complete - added DB infrastructure - event groups - allow user to save groups of 30 people (example) to 
+COMPLETE - event groups - allow user to save groups of 30 people (example) to 
+COMPLETE - started - added DB onfrastructure - event recurrance - wait for andy's email
 
-mostly complete - started - added DB onfrastructure - event recurrance - wait for andy's email
 
-
-request checkin - button that automatically appears when a time buffer
-request rsvp - send email and show on users dashboard
+DO THIS NOW - request checkin - button that automatically appears when a time buffer
+request rsvp - send email and show on users dashboard - in the attendees view
 
 rsvp requests - show to user as separate tab in dahsboard to left of "upcoming events" OR show driectly under title - should we also show new messages, notifications, etc?
 
-add attendee autocomplete, when selecting group, color code the group select element differently
+PARTIALLY COMPLETE - add attendee autocomplete, when selecting group, color code the group select element differently
 
+COMPLETE - event view - readonly recurrence view
 
 loading modal to show async process
 
 only uninvite after responding?
 
-monthyl recurrence - if choosing 31st - round down
+COMPLETE - monthyl recurrence - if choosing 31st - round down
 
-free text, comma separated days of month (i.e. 1,3,15)- add tooltip explanation
+COMPLETE - free text, comma separated days of month (i.e. 1,3,15)- add tooltip explanation
 
-contact methods no longer seem to work 
+COMPLETE - contact methods no longer seem to work 
 
 AWS!!!
 
 
+iframe calls auth URL, which then calls authorizeCallback()
+
+https://devidentity.pa1call.org/connect/authorize?response_type=id_token%20token&client_id=Coordinate&login_hint=00A00D42-F5CF-4FE7-90CD-2996E59FDC88&redirect_uri=http://localhost:9629/tokenrefresh&scope=contacts%20wte%20coordinate%20profile%20openid&nonce=N0.75215055420159521510775224817&state=15107752248170.9215662185325719
+
+
+AWS env vars
+ConnectionStrings:DefaultConnection <conn string>
 
 
 

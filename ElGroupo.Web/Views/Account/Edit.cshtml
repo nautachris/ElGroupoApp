@@ -5,7 +5,7 @@
 
 <section id="sectionEditAccount" class="section-form">
     <div class="row">
-        <h2>Edit your account bitch!</h2>
+        <h2>Edit your account!</h2>
     </div>
     @if (Model.IsAdminEditing)
     {
@@ -127,7 +127,8 @@
 
 
 
-    <script type="text/javascript" src="~/content/scripts/account/edit.js"></script>
+    <script type="text/javascript" src="~/content/scripts/account/edit-account.js"></script>
+<script type="text/javascript" src="~/content/scripts/account/google-contacts.js"></script>
     <script type="text/javascript" src="~/content/scripts/account/attendee-groups.js"></script>
 <script async defer src="https://apis.google.com/js/api.js" onload="GoogleContacts.HandleClientLoad('@Model.apiKey','@Model.clientId');" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
 }

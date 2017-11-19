@@ -17,7 +17,7 @@
 
             },
             error: function error(err) {
-                alert('fuck me');
+                alert('error');
             }
         });
 

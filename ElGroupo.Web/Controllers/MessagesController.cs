@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using ElGroupo.Domain.Data;
 using ElGroupo.Web.Services;
 using System.IO;
-
+using Amazon.SimpleEmail;
 namespace ElGroupo.Web.Controllers
 {
     [Authorize]
@@ -21,9 +21,10 @@ namespace ElGroupo.Web.Controllers
         private UserManager<User> userManager;
         private SignInManager<User> signInManager;
         private ElGroupoDbContext dbContext;
-        private IEmailSender emailSender;
+        //private IEmailSender emailSender;
+        private IAmazonSimpleEmailService emailSender;
         public MessagesController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, ElGroupoDbContext ctx, IEmailSender sndr)
+                SignInManager<User> signinMgr, ElGroupoDbContext ctx, IAmazonSimpleEmailService sndr)
         {
             userManager = userMgr;
             signInManager = signinMgr;

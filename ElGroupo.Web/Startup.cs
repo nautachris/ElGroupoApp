@@ -17,6 +17,9 @@ using ElGroupo.Domain;
 using ElGroupo.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.FileProviders;
+using Amazon.Runtime;
+using Amazon.SimpleEmail;
+using Microsoft.Extensions.Options;
 
 namespace ElGroupo.Web
 {
@@ -49,17 +52,41 @@ namespace ElGroupo.Web
             }).AddEntityFrameworkStores<ElGroupoDbContext, long>();
             services.AddMvc();
             //services.AddTransient<IEmailSender, SendGridEmailSender>();
-            services.AddTransient<IEmailSender, MailgunEmailSender>();
+
+
+
+
+
+            services.Configure<AmazonSESConfig>(Configuration.GetSection("Email"));
+            services.Configure<GoogleConfigOptions>(Configuration);
+            services.AddSingleton(Configuration);
+
+            //amazon email
+            services.AddSingleton<AWSCredentials>(sp => {
+                var opts = sp.GetRequiredService<IOptions<AmazonSESConfig>>();
+                return new BasicAWSCredentials(opts.Value.AmazonEmailKey, opts.Value.AmazonEmailSecret);
+
+            });
+            //services.AddSingleton<AWSCredentials>(new BasicAWSCredentials(Configuration["AmazonEmailKey"], Configuration["AmazonEmailSecret"]));
+            services.AddSingleton<Amazon.RegionEndpoint>(Amazon.RegionEndpoint.USEast1);
+            services.AddSingleton<IAmazonSimpleEmailService>(x => 
+                new AmazonSimpleEmailServiceClient(x.GetRequiredService<AWSCredentials>(), x.GetRequiredService<Amazon.RegionEndpoint>())
+            );
+
+
+            //services.AddTransient<IEmailSender, MailgunEmailSender>();
             services.AddTransient<EventService, EventService>();
 
             services.AddSingleton(EngineFactory.CreateEmbedded(typeof(Mail.Templates.TemplatePointer)));
             services.AddSingleton<IEmailService, MailService>();
-            services.Configure<EmailConfigOptions>(Configuration);
-            services.Configure<GoogleConfigOptions>(Configuration);
 
             //filters
 
             services.AddScoped<ElGroupo.Web.Filters.EventOrganizerFilterAttribute>();
+
+
+
+
 
             var idBuilder = new IdentityBuilder(typeof(User), typeof(IdentityRole<int>), services);
             idBuilder.AddDefaultTokenProviders();
@@ -70,12 +97,12 @@ namespace ElGroupo.Web
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
+            app.UseDeveloperExceptionPage();
+            app.UseDatabaseErrorPage();
+            //if (env.IsDevelopment())
+            //{
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-            }
+            //}
 
             app.UseStaticFiles();
 
@@ -99,8 +126,9 @@ namespace ElGroupo.Web
 
 
             //Models.Configuration.EmailConfigOptions.SendTestEmail().Wait();
-            ElGroupoDbContext.AddUserPhotos(app.ApplicationServices).Wait();
             //ElGroupoDbContext.CreateUsers(app.ApplicationServices).Wait();
+            //ElGroupoDbContext.AddUserPhotos(app.ApplicationServices).Wait();
+            //
             //ElGroupoDbContext.PopulateUserContacts(app.ApplicationServices).Wait();
             //ElGroupoDbContext.CreateAdminAccount(app.ApplicationServices, Configuration).Wait();
             //ElGroupoDbContext.CreateContactTypes(app.ApplicationServices).Wait();

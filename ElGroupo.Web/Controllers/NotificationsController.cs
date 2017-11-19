@@ -10,6 +10,7 @@ using ElGroupo.Web.Models.Notifications;
 using Microsoft.EntityFrameworkCore;
 using ElGroupo.Domain.Data;
 using ElGroupo.Web.Services;
+using Amazon.SimpleEmail;
 using System.IO;
 
 namespace ElGroupo.Web.Controllers
@@ -21,9 +22,10 @@ namespace ElGroupo.Web.Controllers
         private UserManager<User> userManager;
         private SignInManager<User> signInManager;
         private ElGroupoDbContext dbContext;
-        private IEmailSender emailSender;
+        //private IEmailSender emailSender;
+                private IAmazonSimpleEmailService emailSender;
         public NotificationsController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, ElGroupoDbContext ctx, IEmailSender sndr)
+                SignInManager<User> signinMgr, ElGroupoDbContext ctx, IAmazonSimpleEmailService sndr)
         {
             userManager = userMgr;
             signInManager = signinMgr;

@@ -206,59 +206,83 @@ namespace ElGroupo.Domain.Data
             var ctx = provider.GetRequiredService<ElGroupoDbContext>();
             UserManager<User> userManager = provider.GetRequiredService<UserManager<User>>();
             RoleManager<IdentityRole<long>> roleManager = provider.GetRequiredService<RoleManager<IdentityRole<long>>>();
-            var count = 0;
-            string filePath = @"C:\Projects\ElGroupo\ElGroupoApp\fakecontacts.csv";
-            var reader = File.OpenText(filePath);
-            var line = reader.ReadLine();
-            line = reader.ReadLine();
-            while (line != null)
-            {
-                count++;
-                var ary = line.Split('|');
-                string name = ary[4] + " " + ary[6];
-                string zip = ary[11];
-                string email = ary[14];
-                string username = ary[15];
-                var phone = ary[18];
-                if (zip.Length < 5)
-                {
-                    var dddid = 4;
-                    zip = "0" + zip;
-                }
-                var newUser = new User { UserName = username, Name = name, Email = email, ZipCode = zip, EmailConfirmed = true, PhoneNumber = phone };
-                var result = await userManager.CreateAsync(newUser, "flyguy23");
-                if (!result.Succeeded)
-                {
-                    var fff = 4;
-                }
 
-                line = reader.ReadLine();
-            }
+            //var user = new User { UserName = "andy", Name = "Andy Ortegon", Email = "aoimba21@gmail.com", ZipCode = "87103", EmailConfirmed = true, PhoneNumber = "5022350804" };
+            //await userManager.CreateAsync(user, "505Albuquerque");
+
+            //user = new User { UserName = "eric", Name = "Eric Reskin", Email = "eric40222@gmail.com", ZipCode = "40018", EmailConfirmed = true, PhoneNumber = "5024724294" };
+            //await userManager.CreateAsync(user, "505Albuquerque");
+
+            //user = new User { UserName = "chris", Name = "Chris Saylor", Email = "nautachris@gmail.com", ZipCode = "87111", EmailConfirmed = true, PhoneNumber = "3039083635" };
+            //await userManager.CreateAsync(user, "505Albuquerque");
+
+            //user = new User { UserName = "user1", Name = "user1", Email = "elgroupouser1@gmail.com", ZipCode = "87111", EmailConfirmed = true, PhoneNumber = "3039083635" };
+            //await userManager.CreateAsync(user, "flyguy23");
+
+            //user = new User { UserName = "user2", Name = "user2", Email = "elgroupouser2@gmail.com", ZipCode = "87111", EmailConfirmed = true, PhoneNumber = "3039083635" };
+            //await userManager.CreateAsync(user, "flyguy23");
+            var user = new User { UserName = "user3", Name = "user3", Email = "elgroupouser3@gmail.com", ZipCode = "87111", EmailConfirmed = true, PhoneNumber = "3039083635" };
+            await userManager.CreateAsync(user, "flyguy23");
+
+            user = new User { UserName = "user4", Name = "user4", Email = "elgroupouser4@gmail.com", ZipCode = "87111", EmailConfirmed = true, PhoneNumber = "3039083635" };
+            await userManager.CreateAsync(user, "flyguy23");
+            user = new User { UserName = "user5", Name = "user5", Email = "elgroupouser5@gmail.com", ZipCode = "87111", EmailConfirmed = true, PhoneNumber = "3039083635" };
+            await userManager.CreateAsync(user, "flyguy23");
 
 
-            count = 0;
-            foreach (var u in await ctx.Users.Include(x => x.ContactMethods).Where(x => !x.ContactMethods.Any()).ToListAsync())
-            {
-                count++;
-                foreach (var ct in ctx.ContactTypes)
-                {
-                    var cm = new UserContactMethod
-                    {
-                        User = u,
-                        ContactMethod = ct,
-                        Value = "contact"
-                    };
-                    ctx.Add(cm);
+            //var count = 0;
+            //string filePath = @"C:\Projects\ElGroupo\ElGroupoApp\fakecontacts.csv";
+            //var reader = File.OpenText(filePath);
+            //var line = reader.ReadLine();
+            //line = reader.ReadLine();
+            //while (line != null)
+            //{
+            //    count++;
+            //    var ary = line.Split('|');
+            //    string name = ary[4] + " " + ary[6];
+            //    string zip = ary[11];
+            //    string email = ary[14];
+            //    string username = ary[15];
+            //    var phone = ary[18];
+            //    if (zip.Length < 5)
+            //    {
+            //        var dddid = 4;
+            //        zip = "0" + zip;
+            //    }
+            //    var newUser = new User { UserName = username, Name = name, Email = email, ZipCode = zip, EmailConfirmed = true, PhoneNumber = phone };
+            //    var result = await userManager.CreateAsync(newUser, "flyguy23");
+            //    if (!result.Succeeded)
+            //    {
+            //        var fff = 4;
+            //    }
 
-                }
+            //    line = reader.ReadLine();
+            //}
 
-                if (count % 100 == 0)
-                {
-                    await ctx.SaveChangesAsync();
-                    count = 0;
-                }
-            }
-            await ctx.SaveChangesAsync();
+
+            //count = 0;
+            //foreach (var u in await ctx.Users.Include(x => x.ContactMethods).Where(x => !x.ContactMethods.Any()).ToListAsync())
+            //{
+            //    count++;
+            //    foreach (var ct in ctx.ContactTypes)
+            //    {
+            //        var cm = new UserContactMethod
+            //        {
+            //            User = u,
+            //            ContactMethod = ct,
+            //            Value = "contact"
+            //        };
+            //        ctx.Add(cm);
+
+            //    }
+
+            //    if (count % 100 == 0)
+            //    {
+            //        await ctx.SaveChangesAsync();
+            //        count = 0;
+            //    }
+            //}
+            //await ctx.SaveChangesAsync();
 
 
         }
@@ -328,7 +352,8 @@ namespace ElGroupo.Domain.Data
         public ElGroupoDbContext Create(DbContextFactoryOptions options)
         {
             var builder = new DbContextOptionsBuilder<ElGroupoDbContext>();
-            builder.UseSqlServer("Server=(local);Database=Tribes;Trusted_Connection=True;MultipleActiveResultSets=true");
+            //builder.UseSqlServer("Server=(local);Database=Tribes;Trusted_Connection=True;MultipleActiveResultSets=true");
+            builder.UseSqlServer("Server=aa1ewoc6epra7at.chazths3rr6k.us-east-2.rds.amazonaws.com,1433;Database=Footprint;UID=footprintapp;PWD=505Albuquerque;MultipleActiveResultSets=true");
             return new ElGroupoDbContext(builder.Options);
         }
     }

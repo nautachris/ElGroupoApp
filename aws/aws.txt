@@ -1,0 +1,77 @@
+account id
+footprintapp
+pw
+505Albuquerque
+email
+nautachris@gmail.com
+account id
+974743526401
+
+
+users
+chris
+access key id
+AKIAJPQUZK4IB3MC57EQ
+secret access key
+mWYBNRHrNDxmp95suIrVGW/cH8ktrFv5C1w/9/+n
+password
+W&pvSeg4Wq[T
+
+andy
+access key id
+AKIAJRMNB3NDD4AVY3GQ
+secret access key
+XbkaDDwzHhHU9vLy1iPActcmzNfb11SAVdm+pbPB
+password
+r4WyKTC)1]Q8
+
+eric
+access key id
+AKIAJXOTEEH4VPTUPXYA
+secret access key
+UbyFLhfvVMWOKIVzMB0MBok/oNVL+ftZWUXOGXXL
+password
+3q+b[MWllLO(
+
+
+DB
+username
+footprintapp
+password
+505Albuquerque
+
+
+
+db instance identifier
+aa1ewoc6epra7at
+
+
+ec2 footprint instance
+dns
+ec2-13-59-82-164.us-east-2.compute.amazonaws.com
+username
+Administrator
+password
+MyK52oo9ik?4Vuyr27O%lVSaIpH&U$W6
+
+
+SES IAM Username
+ses-smtp-user.20171117-114610
+access key id
+AKIAIZUF7QKXBGL37MJA
+secret access key
+K8k9UAkW/0Wf6Bx1Gvnz7CtDcMjpxJIP9mofmBmW
+
+
+SMTP username
+AKIAIDU3DI37WINJ3UZQ
+SMTP password
+AkDZnpP08k13LK4isfDFsHPgYpNL1adIJ6vD5mPU5wGZ
+
+
+Server Name:	
+email-smtp.us-east-1.amazonaws.com
+Port:	25, 465 or 587
+Use Transport Layer Security (TLS):	Yes
+Authentication:	Your SMTP credentials - see below.
+

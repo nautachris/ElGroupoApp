@@ -17,14 +17,12 @@ EditEventAttendees = {
                 console.log('remidners sent');
             },
             error: function error(err) {
-                alert('fuck me');
+                alert('error');
             }
         });
     },
-    Init: function () {
-        EditEventAttendees.EventId = Number($("#EventId").val());
-
-        $("#btnSendRSVPReminders").on("click", function () {
+    EventHandlers: {
+        SendRSVPClicked: function () {
             if ($("#IsRecurring").val() == "True") {
                 Confirm('Do you also want to send reminders for all other recurring events?', function () {
                     EditEventAttendees.SendRSVPReminders(true);
@@ -35,10 +33,8 @@ EditEventAttendees = {
             else {
                 EditEventAttendees.SendRSVPReminders(false);
             }
-        });
-
-
-        $("#btnSaveAttendeeChanges").on("click", function () {
+        },
+        SaveAttendeeChangesClicked: function () {
             if ($("#IsRecurring").val() == "True") {
                 Confirm('Do you want to update all recurring events?', function () {
                     EditEventAttendees.SaveChanges(true);
@@ -49,8 +45,8 @@ EditEventAttendees = {
             else {
                 EditEventAttendees.SaveChanges(false);
             }
-        });
-        $("html").on("click", ".pending-attendee-links a", function () {
+        },
+        PendingAttendeeLinkClicked: function () {
             console.log('link clicked');
             var $infoDiv = $(this).closest("div[data-user-id]").find("div.pending-attendee-info");
             if ($(this).attr('data-action') == 'profile') {
@@ -60,9 +56,8 @@ EditEventAttendees = {
                 //remove
                 $(this).closest(".pending-attendee-container").remove();
             }
-        });
-        //pending users
-        $("html").on("click", "div.pending-attendee-info", function () {
+        },
+        PendingAttendeeDivClicked: function () {
             var $links = $(this).closest("div[data-user-id]").find("div.pending-attendee-links");
             if ($(this).css('opacity') == 0.5) {
                 $links.hide();
@@ -77,76 +72,13 @@ EditEventAttendees = {
                 $(this).css('opacity', 0.5);
                 $links.show();
             }
-        });
-        $("#txtAttendees").autocomplete({
-            minLength: 3,
-            autoFocus: true,
-            delay: 300,
-            select: function (e, i) {
-                console.log(i);
-                $("#txtAttendees").attr('data-contact-id', i.item.id);
-                $("#txtAttendees").attr('data-group', i.item.group);
-                $("#btnAddAttendee").attr('disabled', false);
-            },
-            source: function (request, response) {
-                var _response = response;
-                var urlPrefix = null;
-                if ($("div.search-method div.switch-selected").attr('data-action') === 'all') urlPrefix = "/Users/SearchAllUsers/";
-                else urlPrefix = "/Users/SearchUserConnections/";
-
-                console.log(urlPrefix + request.term);
-                $.ajax({
-                    url: urlPrefix + request.term,
-                    type: 'GET',
-                    //dataType: "application/json; charset=utf-8",
-                    async: true,
-                    cache: false,
-                    success: function success(results) {
-                        var output = [];
-                        console.log('autocomplete results');
-                        console.log(results);
-                        for (var x = 0; x < results.length; x++) {
-                            if (results[x].hasOwnProperty('group') && Boolean(results[x].group) === true) {
-                                var item = {
-                                    value: results[x].name,
-                                    label: results[x].name + ' (' + results[x].groupUserCount + ')',
-                                    id: results[x].id,
-                                    group: true
-                                };
-                                output.push(item);
-                            }
-                            else {
-                                var item = {
-                                    value: results[x].name,
-                                    label: results[x].name + ' (' + results[x].email + ')',
-                                    id: results[x].id,
-                                    group: false
-                                };
-                                if (results[x].hasOwnProperty('registered')) item.isRegistered = results[x].registered;
-                                output.push(item);
-                            }
-
-                        }
-                        _response(output);
-                    },
-                    error: function error(err) {
-                        alert('fuck me');
-                    }
-                });
-            }
-        });
-
-        $("#btnCancelAddAttendee").on("click", function () {
-
+        },
+        CancelAddAttendeeClicked: function () {
             Confirm("Do you want to cancel your event attendee list edits?", function () {
                 $("#divAddedAttendeeList").empty();
             });
-
-
-        });
-
-        //attendee remove/view profile
-        $("html").on("click", "div.attendee-info", function () {
+        },
+        AttendeeInfoDivClicked: function () {
             console.log('attendee info click');
             var $links = $(this).closest("div[data-user-id]").find("div.attendee-links");
             if ($(this).css('opacity') == 0.5) {
@@ -163,8 +95,8 @@ EditEventAttendees = {
                 $links.show();
 
             }
-        });
-        $("html").on("click", ".attendee-links a", function () {
+        },
+        AttendeeInfoLinkClicked: function () {
             var $this = $(this);
             var $infoDiv = $(this).closest("div[data-user-id]").find("div.attendee-info");
             if ($(this).attr('data-action') == 'profile') {
@@ -193,7 +125,7 @@ EditEventAttendees = {
                                     $("#divViewAttendees").html(results);
                                 },
                                 error: function error(err) {
-                                    alert('fuck me');
+                                    alert('error');
                                 }
                             });
 
@@ -215,7 +147,7 @@ EditEventAttendees = {
                                     $("#divViewAttendees").html(results);
                                 },
                                 error: function error(err) {
-                                    alert('fuck me');
+                                    alert('error');
                                 }
                             });
 
@@ -238,7 +170,7 @@ EditEventAttendees = {
                                 $("#divViewAttendees").html(results);
                             },
                             error: function error(err) {
-                                alert('fuck me');
+                                alert('error');
                             }
                         });
 
@@ -248,9 +180,8 @@ EditEventAttendees = {
             }
             $(this).closest("div.attendee-links").hide();
             $infoDiv.css('opacity', 1);
-
-        });
-        $("#divEditEventAttendees div").on("click", ".switch-container > div", function () {
+        },
+        AutocompleteSourceChanged: function () {
             if ($(this).attr('data-action') === 'manual') {
                 console.log('hiding autocomplete');
                 $('.row.select-existing-contacts').hide();
@@ -261,8 +192,8 @@ EditEventAttendees = {
                 $('.row.select-existing-contacts').show();
                 $('.row.manual-search').hide();
             }
-        });
-        $("#btnAddNewUser").on("click", function () {
+        },
+        AddNewUserClicked: function () {
             var nameVal = $("#txtNewUserName").val();
             var emailVal = $("#txtNewUserEmail").val()
             if (nameVal === '') {
@@ -282,12 +213,8 @@ EditEventAttendees = {
                 Group: false
             };
             EditEventAttendees.AddAttendee(attendee);
-
-        });
-
-        $("#btnAddAttendee").on('click', function () {
-
-
+        },
+        AddAttendeeClicked: function () {
             //we need to post the list of pending event attendees - or just refresh the pending event list client-side
             var attendee = {
                 Id: Number($("#txtAttendees").attr("data-contact-id")),
@@ -297,16 +224,87 @@ EditEventAttendees = {
                 Email: null
             };
             EditEventAttendees.AddAttendee(attendee);
-
-
-
-        });
-        $("#txtAttendees").on("input", function () {
+        },
+        AttendeeSearchTextChanged: function () {
             if ($(this).val() === '') {
                 $(this).removeAttr('data-contact-id');
                 $("#btnAddAttendee").attr('disabled', true);
             }
+        }
+    },
+    Init: function () {
+        EditEventAttendees.EventId = Number($("#EventId").val());
+
+        $("#btnSendRSVPReminders").on("click", EditEventAttendees.EventHandlers.SendRSVPClicked);
+        $("#btnSaveAttendeeChanges").on("click", EditEventAttendees.EventHandlers.SaveAttendeeChangesClicked);
+        $("html").on("click", ".pending-attendee-links a", EditEventAttendees.EventHandlers.PendingAttendeeLinkClicked);
+        $("html").on("click", "div.pending-attendee-info", EditEventAttendees.EventHandlers.PendingAttendeeDivClicked);
+        $("#btnCancelAddAttendee").on("click", EditEventAttendees.EventHandlers.CancelAddAttendeeClicked);
+        //attendee remove/view profile
+        $("html").on("click", "div.attendee-info", EditEventAttendees.EventHandlers.AttendeeInfoDivClicked);
+        $("html").on("click", ".attendee-links a", EditEventAttendees.EventHandlers.AttendeeInfoLinkClicked);
+        $("#divEditEventAttendees div").on("click", ".switch-container > div", EditEventAttendees.EventHandlers.AutocompleteSourceChanged);
+        $("#btnAddNewUser").on("click", EditEventAttendees.EventHandlers.AddNewUserClicked);
+        $("#btnAddAttendee").on('click', EditEventAttendees.EventHandlers.AddAttendeeClicked);
+        $("#txtAttendees").on("input", EditEventAttendees.EventHandlers.AttendeeSearchTextChanged);
+        EditEventAttendees.InitAutocomplete();
+    },
+    InitAutocomplete: function () {
+        $("#txtAttendees").autocomplete({
+            minLength: 3,
+            autoFocus: true,
+            delay: 300,
+            select: function (e, i) {
+                console.log(i);
+                $("#txtAttendees").attr('data-contact-id', i.item.id);
+                $("#txtAttendees").attr('data-group', i.item.group);
+                $("#btnAddAttendee").attr('disabled', false);
+            },
+            source: function (request, response) {
+                var _response = response;
+                var urlPrefix = null;
+                if ($("div.search-method div.switch-selected").attr('data-action') === 'all') urlPrefix = "/Users/SearchAllUsers/";
+                else urlPrefix = "/Users/SearchUserConnections/";
+
+                console.log(urlPrefix + request.term);
+                $.ajax({
+                    url: urlPrefix + request.term,
+                    type: 'GET',
+                    async: true,
+                    cache: false,
+                    success: function success(results) {
+                        var output = [];
+                        for (var x = 0; x < results.length; x++) {
+                            if (results[x].hasOwnProperty('group') && Boolean(results[x].group) === true) {
+                                var item = {
+                                    value: results[x].name,
+                                    label: results[x].name + ' (' + results[x].groupUserCount + ')',
+                                    id: results[x].id,
+                                    group: true
+                                };
+                                output.push(item);
+                            }
+                            else {
+                                var item = {
+                                    value: results[x].name,
+                                    label: results[x].name + ' (' + results[x].email + ')',
+                                    id: results[x].id,
+                                    group: false
+                                };
+                                if (results[x].hasOwnProperty('registered')) item.isRegistered = results[x].registered;
+                                output.push(item);
+                            }
+
+                        }
+                        _response(output);
+                    },
+                    error: function error(err) {
+                        alert('error');
+                    }
+                });
+            }
         });
+
     },
     GetAddedAttendees: function () {
 
@@ -353,7 +351,7 @@ EditEventAttendees = {
                 $("#txtAttendees").removeAttr('data-contact-id')
             },
             error: function error(err) {
-                alert('fuck me');
+                alert('error');
             }
         });
     },
@@ -381,7 +379,7 @@ EditEventAttendees = {
             },
             error: function error(err) {
                 console.log(err);
-                alert('fuck me');
+                alert('error');
             }
         });
     }
