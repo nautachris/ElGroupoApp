@@ -11,6 +11,7 @@ using ElGroupo.Web.Models.Home;
 using ElGroupo.Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using ElGroupo.Web.Models.Events;
+using ElGroupo.Domain.Enums;
 
 namespace ElGroupo.Web.Controllers
 {
@@ -28,6 +29,13 @@ namespace ElGroupo.Web.Controllers
         }
 
 
+        private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
+        {
+            if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessfull;
+            if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) >= DateTime.Now) return CheckInStatuses.AvailableForCheckIn;
+            return CheckInStatuses.NotAvailableForCheckIn;
+        }
+
         [HttpGet, HttpPost]
         [Route("Dashboard")]
         public async Task<IActionResult> Dashboard()
@@ -36,38 +44,42 @@ namespace ElGroupo.Web.Controllers
             var allEvents = new List<EventInformationModel>();
             //do we want a third "tab" for events I'm organizing?
             var user = await this.CurrentUser;
+            var organizedEvents = dbContext.EventAttendees.Include(x => x.User).Where(x => x.User.Id == user.Id && x.IsOrganizer).Select(x =>
+            new
+            {
+                ea = x,
+                ev = x.Event,
+                rec = x.Event.Recurrence
+            }).ToList();
 
-            //var test = dbContext.Events.Include(x => x.Recurrence).ToList();
-            //var test2 = dbContext.Events.Include(x => x.Recurrence).Select(x => x).ToList();
-            var organizedEvents = dbContext.EventAttendees.Include(x=>x.User).Where(x => x.User.Id == user.Id && x.IsOrganizer).Select(x => new { ev = x.Event, rec = x.Event.Recurrence }).ToList();
-            
-            var invitedEvents = dbContext.EventAttendees.Include(x=>x.User).Include(x=>x.Event).ThenInclude(x=>x.Attendees).ThenInclude(x=>x.User).Include(x=>x.Event).ThenInclude(x=>x.Recurrence).Where(x => x.User.Id == user.Id && !x.IsOrganizer).ToList();
+            var invitedEvents = dbContext.EventAttendees.Include(x => x.User).Include(x => x.Event).ThenInclude(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Event).ThenInclude(x => x.Recurrence).Where(x => x.User.Id == user.Id && !x.IsOrganizer).ToList();
             foreach (var ev in organizedEvents)
             {
                 allEvents.Add(new EventInformationModel
                 {
-                    EndDate = ev.ev.EndTime,
-                    StartDate = ev.ev.StartTime,
+                    EndDate = ev.ev.EndTime.ToLocalTime(),
+                    StartDate = ev.ev.StartTime.ToLocalTime(),
                     Id = ev.ev.Id,
+                    CheckInStatus = GetCheckInStatus(ev.ev, ev.ea),
                     OrganizedByUser = true,
                     IsNew = false,
                     Name = ev.ev.Name,
                     Status = ev.ev.Status,
                     IsRecurring = ev.rec != null
-                    
+
                 });
             }
             foreach (var ev in invitedEvents.Where(x => !organizedEvents.Select(y => y.ev.Id).Contains(x.EventId)))
             {
                 allEvents.Add(new EventInformationModel
                 {
-                    EndDate = ev.Event.EndTime,
-                    StartDate = ev.Event.StartTime,
+                    EndDate = ev.Event.EndTime.ToLocalTime(),
+                    StartDate = ev.Event.StartTime.ToLocalTime(),
                     Id = ev.Event.Id,
                     OrganizedByUser = false,
                     IsNew = !ev.Viewed,
                     Name = ev.Event.Name,
-                    OrganizerName = ev.Event.Attendees.First(x=>x.IsOrganizer).User.Name,
+                    OrganizerName = ev.Event.Attendees.First(x => x.IsOrganizer).User.Name,
                     Status = ev.Event.Status,
                     RSVPStatus = ev.ResponseStatus,
                     IsRecurring = ev.Event.Recurrence != null,

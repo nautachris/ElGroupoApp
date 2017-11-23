@@ -14,131 +14,15 @@ EditEvent = {
         $("#btnCancelEditLocation").on("click", EditEvent.EventHandlers.HandleCancelLocationEditClick);
         $("#btnSaveEditLocation").on("click", EditEvent.EventHandlers.HandleSaveLocationEditClick);
         $("#btnSubmit").on("click", EditEvent.EventHandlers.HandleSubmitClick);
-        $("html").on("click", "#btnDeleteEvent", EditEvent.HandleDeleteEventClick);
+        $("html").on("click", "#btnDeleteEvent", EditEvent.EventHandlers.HandleDeleteEventClick);
         $("html").on("click", ".switch-container.event-status > span", EditEvent.EventHandlers.HandleEventStatusChanged);
         $("html").on("click", ".switch-container.checkin-type > span", EditEvent.EventHandlers.HandleCheckinTypeChanged);
     },
-    HandleSubmitClick: function () {
-        $("#frmEditEvent").submit();
-    },
-    HandleEventStatusChanged: function () {
-        var $this = $(this);
-        console.log('event status change');
 
-        var currentVal = $("#" + $(this).closest('div[data-replace-element]').attr('data-replace-element')).val();
-        if (currentVal === $(this).attr('data-replace-val')) {
-
-            return false;
-        }
-
-        Confirm("Do you want to change the status of this event to " + $(this).attr('data-replace-val') + "?  This action cannot be undone!", function () {
-            if ($("#IsRecurring").val() == "True") {
-                Confirm("Do you to update all recurring events?", function () {
-                    $.ajax({
-                        url: "/Events/UpdateEventStatus",
-                        type: 'POST',
-                        contentType: "application/json",
-                        data: JSON.stringify({
-                            eventId: Number($("#EventId").val()),
-                            status: $this.attr('data-replace-val'),
-                            updateRecurring: true
-                        }),
-                        async: true,
-                        cache: false,
-                        dataType: 'html',
-                        success: function success(results) {
-                            location.reload(true);
-                        },
-                        error: function error(err) {
-                            alert('error');
-                        }
-                    });
-                }, function () {
-                    $.ajax({
-                        url: "/Events/UpdateEventStatus",
-                        type: 'POST',
-                        contentType: "application/json",
-                        data: JSON.stringify({
-                            eventId: Number($("#EventId").val()),
-                            status: $this.attr('data-replace-val'),
-                            updateRecurring: false
-                        }),
-                        async: true,
-                        cache: false,
-                        //dataType: 'html',
-                        success: function success(results) {
-                            location.reload(true);
-                        },
-                        error: function error(err) {
-                            alert('error');
-                        }
-                    });
-                });
-
-            }
-            else {
-                $.ajax({
-                    url: "/Events/UpdateEventStatus",
-                    type: 'POST',
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        eventId: Number($("#EventId").val()),
-                        status: $this.attr('data-replace-val'),
-                        updateRecurring: false
-                    }),
-                    async: true,
-                    cache: false,
-                    //dataType: 'html',
-                    success: function success(results) {
-                        location.reload(true);
-                    },
-                    error: function error(err) {
-                        alert('error');
-                    }
-                });
-            }
-        }, function () {
-
-
-
-            //reset selected container
-            $this.closest('.switch-container').find('span').removeClass('switch-selected');
-            var $replaceEl = $("#" + $this.closest('div.switch-container').attr('data-replace-element'));
-            $this.closest('.switch-container').find('span[data-replace-val=' + $replaceEl.val() + ']').addClass('switch-selected');
-        });
-    },
-    HandleCheckinTypeChanged: function () {
-        switch ($(this).attr('data-replace-val')) {
-            case "None":
-                $(".verification-code").hide();
-                $(".location-tolerance").hide();
-                break;
-            case "PasswordAndLocation":
-                $(".verification-code").show();
-                $(".location-tolerance").show();
-                break;
-            case "PasswordOnly":
-                $(".verification-code").show();
-                $(".location-tolerance").hide();
-                break;
-        }
-    },
-
-    HandleDeleteEventClick: function () {
-        Confirm('Do you want to delete the event ' + EditEvent.EventName + '?', function () {
-            if (EditEvent.IsRecurring === true) {
-                Confirm('Do you want to delete all associated recurring events?', function () { }, function () { });
-            }
-            else {
-
-            }
-
-        });
-    },
     DeleteEvent: function (recurring) {
 
     },
-    EventHandlers{
+    EventHandlers: {
         HandleSaveLocationEditClick: function () { },
         HandleCancelLocationEditClick: function () { },
         HandleEditLocationClick: function () {
@@ -215,7 +99,124 @@ EditEvent = {
                 EditEvent.SaveDetails(newObj);
             }
 
-        }
+        },
+        HandleSubmitClick: function () {
+            $("#frmEditEvent").submit();
+        },
+        HandleEventStatusChanged: function () {
+            var $this = $(this);
+            console.log('event status change');
+
+            var currentVal = $("#" + $(this).closest('div[data-replace-element]').attr('data-replace-element')).val();
+            if (currentVal === $(this).attr('data-replace-val')) {
+
+                return false;
+            }
+
+            Confirm("Do you want to change the status of this event to " + $(this).attr('data-replace-val') + "?  This action cannot be undone!", function () {
+                if ($("#IsRecurring").val() == "True") {
+                    Confirm("Do you to update all recurring events?", function () {
+                        $.ajax({
+                            url: "/Events/UpdateEventStatus",
+                            type: 'POST',
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                eventId: Number($("#EventId").val()),
+                                status: $this.attr('data-replace-val'),
+                                updateRecurring: true
+                            }),
+                            async: true,
+                            cache: false,
+                            dataType: 'html',
+                            success: function success(results) {
+                                location.reload(true);
+                            },
+                            error: function error(err) {
+                                alert('error');
+                            }
+                        });
+                    }, function () {
+                        $.ajax({
+                            url: "/Events/UpdateEventStatus",
+                            type: 'POST',
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                eventId: Number($("#EventId").val()),
+                                status: $this.attr('data-replace-val'),
+                                updateRecurring: false
+                            }),
+                            async: true,
+                            cache: false,
+                            //dataType: 'html',
+                            success: function success(results) {
+                                location.reload(true);
+                            },
+                            error: function error(err) {
+                                alert('error');
+                            }
+                        });
+                    });
+
+                }
+                else {
+                    $.ajax({
+                        url: "/Events/UpdateEventStatus",
+                        type: 'POST',
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            eventId: Number($("#EventId").val()),
+                            status: $this.attr('data-replace-val'),
+                            updateRecurring: false
+                        }),
+                        async: true,
+                        cache: false,
+                        //dataType: 'html',
+                        success: function success(results) {
+                            location.reload(true);
+                        },
+                        error: function error(err) {
+                            alert('error');
+                        }
+                    });
+                }
+            }, function () {
+
+
+
+                //reset selected container
+                $this.closest('.switch-container').find('span').removeClass('switch-selected');
+                var $replaceEl = $("#" + $this.closest('div.switch-container').attr('data-replace-element'));
+                $this.closest('.switch-container').find('span[data-replace-val=' + $replaceEl.val() + ']').addClass('switch-selected');
+            });
+        },
+        HandleCheckinTypeChanged: function () {
+            switch ($(this).attr('data-replace-val')) {
+                case "None":
+                    $(".verification-code").hide();
+                    $(".location-tolerance").hide();
+                    break;
+                case "PasswordAndLocation":
+                    $(".verification-code").show();
+                    $(".location-tolerance").show();
+                    break;
+                case "PasswordOnly":
+                    $(".verification-code").show();
+                    $(".location-tolerance").hide();
+                    break;
+            }
+        },
+
+        HandleDeleteEventClick: function () {
+            Confirm('Do you want to delete the event ' + EditEvent.EventName + '?', function () {
+                if (EditEvent.IsRecurring === true) {
+                    Confirm('Do you want to delete all associated recurring events?', function () { }, function () { });
+                }
+                else {
+
+                }
+
+            });
+        },
     },
    
     SaveDetails: function (obj) {

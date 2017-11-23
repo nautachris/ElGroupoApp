@@ -26,7 +26,7 @@ namespace ElGroupo.Domain
 
         public bool? ShowRSVPReminder { get; set; }
 
-
+        public bool CheckedIn { get; set; }
         public DateTime? CheckInTime { get; set; }
         public double? CheckInCoordinateX { get; set; }
         public double? CheckInCoordinateY { get; set; }

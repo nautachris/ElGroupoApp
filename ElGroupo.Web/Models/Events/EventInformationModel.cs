@@ -8,6 +8,9 @@ namespace ElGroupo.Web.Models.Events
 {
     public class EventInformationModel
     {
+        public CheckInStatuses CheckInStatus { get; set; }
+
+
         public bool IsRecurring { get; set; }
         public string Name { get; set; }
         public DateTime StartDate { get; set; }

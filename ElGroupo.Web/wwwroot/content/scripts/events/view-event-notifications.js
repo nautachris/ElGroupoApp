@@ -4,7 +4,7 @@
 
 ViewEventNotifications = {
     Init: function () {
-        $("#divNotifications").on("click", ".unread-notification-subject", EventNotifications.EventHandlers.UnreadNotificationClicked);
+        $("#divNotifications").on("click", ".unread-notification-subject", ViewEventNotifications.EventHandlers.UnreadNotificationClicked);
     },
     EventHandlers: {
         UnreadNotificationClicked: function () {

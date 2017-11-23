@@ -15,9 +15,9 @@
         display: inline;
     }
 
-    .row.manual-search {
+    /*.row.manual-search input[type=text] {
         display: none;
-    }
+    }*/
 </style>
 
 <section class="section-form">
@@ -167,17 +167,18 @@
                     <label>Location Search Method:</label>
                 </div>
                 <div class="switch-container map-select col span-3-of-4">
-                    <span data-map-select="address" class="switch-selected col span-1-of-3">Address</span>
-                    <span data-map-select="business" class="col span-1-of-3">Business</span>
-                    <span data-map-select="manual" class="col span-1-of-3">Manual</span>
+                    <span data-map-select="address" class="switch-selected col span-1-of-4">Address</span>
+                    <span data-map-select="business" class="col span-1-of-4">Business</span>
+                    <span data-map-select="draw" class="col span-1-of-4">Draw</span>
+                    <span data-map-select="manual" class="col span-1-of-4">Manual</span>
                 </div>
             </div>
-            <div class="row">
+            <div class="row location-search">
                 <div class="col span-1-of-4">
-                    <label asp-for="LocationName">Search Location:</label>
+                    <label>Search Location:</label>
                 </div>
                 <div class="col span-3-of-4">
-                    <input style="width:100%;" asp-for="LocationName" type="text" />
+                    <input style="width:100%;" id="txtAutocompleteSearch" type="text" />
                 </div>
             </div>
             <div class="row map-search">
@@ -192,12 +193,20 @@
                 </div>
 
             </div>
+            <div class="row">
+                <div class="col span-1-of-4">
+                    <label asp-for="LocationName">Location Name:</label>
+                </div>
+                <div class="col span-3-of-4">
+                    <input class="width-100" asp-for="LocationName">
+                </div>
+            </div>
             <div class="row manual-search">
                 <div class="col span-1-of-4">
                     <label asp-for="Address1">Address 1:</label>
                 </div>
                 <div class="col span-3-of-4">
-                    <input class="width-100" asp-for="Address1">
+                    <input disabled class="width-100" asp-for="Address1">
                 </div>
             </div>
             <div class="row manual-search">
@@ -205,7 +214,7 @@
                     <label asp-for="Address2">Address 2:</label>
                 </div>
                 <div class="col span-3-of-4">
-                    <input class="width-100" asp-for="Address2">
+                    <input disabled class="width-100" asp-for="Address2">
                 </div>
             </div>
             <div class="row manual-search">
@@ -213,7 +222,7 @@
                     <label asp-for="City">City:</label>
                 </div>
                 <div class="col span-3-of-4">
-                    <input class="width-100" asp-for="City">
+                    <input disabled class="width-100" asp-for="City">
                 </div>
             </div>
             <div class="row manual-search">
@@ -221,21 +230,24 @@
                     <label asp-for="State">State:</label>
                 </div>
                 <div class="col span-3-of-8">
-                    <input asp-for="State">
+                    <input disabled asp-for="State">
                 </div>
                 <div class="col span-1-of-8">
                     <label asp-for="ZipCode">Zip:</label>
                 </div>
                 <div class="col span-3-of-8">
-                    <input asp-for="ZipCode">
+                    <input disabled asp-for="ZipCode">
                 </div>
+            </div>
+            <div class="row manual-search-button centered" style="display:none;">
+                <input type="button" class="btn btn-primary" id="btnSearchAddress" value="Search Address" />
             </div>
             <input type="hidden" asp-for="XCoord" />
             <input type="hidden" asp-for="YCoord" />
             <input type="hidden" asp-for="GooglePlaceId" />
 
             <div class="row">
-                <div class="col span-3-of-3">
+                <div class="col span-3-of-3 centered">
                     <a class="btn btn-primary" id="btnSubmit">Save and Invite!</a>
                 </div>
             </div>
@@ -254,8 +266,10 @@
         $(document).ready(function () {
             Maps.Init({
                 mapDiv: 'divMap',
-                txtAutocomplete: 'LocationName',
-                placeChangeCallback: CreateEvent.PlaceChange
+                txtAutocomplete: 'txtAutocompleteSearch',
+                placeChangeCallback: CreateEvent.PlaceChange,
+                createDrawTools: true,
+                showDrawTools: false
             });
 
         });

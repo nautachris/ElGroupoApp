@@ -352,8 +352,8 @@ namespace ElGroupo.Domain.Data
         public ElGroupoDbContext Create(DbContextFactoryOptions options)
         {
             var builder = new DbContextOptionsBuilder<ElGroupoDbContext>();
-            //builder.UseSqlServer("Server=(local);Database=Tribes;Trusted_Connection=True;MultipleActiveResultSets=true");
-            builder.UseSqlServer("Server=aa1ewoc6epra7at.chazths3rr6k.us-east-2.rds.amazonaws.com,1433;Database=Footprint;UID=footprintapp;PWD=505Albuquerque;MultipleActiveResultSets=true");
+            builder.UseSqlServer("Server=(local);Database=Tribes;Trusted_Connection=True;MultipleActiveResultSets=true");
+            //builder.UseSqlServer("Server=aa1ewoc6epra7at.chazths3rr6k.us-east-2.rds.amazonaws.com,1433;Database=Footprint;UID=footprintapp;PWD=505Albuquerque;MultipleActiveResultSets=true");
             return new ElGroupoDbContext(builder.Options);
         }
     }

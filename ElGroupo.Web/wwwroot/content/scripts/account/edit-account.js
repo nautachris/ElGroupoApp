@@ -251,7 +251,7 @@ EditAccount = {
             }
             else {
                 //$("#divNewPhoto").hide();
-                $("#divImg").css('background-image', originalImageUrl);
+                $("#divImg").css('background-image', EditAccount.OriginalImageUrl);
             }
         },
         ChangePhotoClicked: function () {

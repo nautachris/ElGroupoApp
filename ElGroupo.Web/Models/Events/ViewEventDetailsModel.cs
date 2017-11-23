@@ -14,8 +14,8 @@ namespace ElGroupo.Web.Models.Events
             this.Name = e.Name;
             this.Description = e.Description;
             this.Location = e.LocationName;
-            this.StartTime = e.StartTime.DayOfWeek.ToString() + " " + e.StartTime.ToString("d") + " " + e.StartTime.ToString("t");
-            this.EndTime = e.EndTime.DayOfWeek.ToString() + " "  +e.EndTime.ToString("d") + " " + e.EndTime.ToString("t");
+            this.StartTime = e.StartTime.ToLocalTime().DayOfWeek.ToString() + " " + e.StartTime.ToLocalTime().ToString("d") + " " + e.StartTime.ToLocalTime().ToString("t");
+            this.EndTime = e.EndTime.ToLocalTime().DayOfWeek.ToString() + " "  +e.EndTime.ToLocalTime().ToString("d") + " " + e.EndTime.ToLocalTime().ToString("t");
             this.Status = e.Status;
             this.IsRecurring = e.Recurrence != null;
             if (this.IsRecurring) this.RecurrenceText = GetRecurrenceText(e.Recurrence);

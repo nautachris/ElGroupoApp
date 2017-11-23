@@ -15,8 +15,21 @@ CreateEvent = {
         $("div.switch-container[data-replace-element='Recurrence_Pattern'] span").on("click", CreateEvent.EventHandlers.RecurrencePatternChanged);
         $("div.switch-container.is-recurring span").on("click", CreateEvent.EventHandlers.RecurrenceChanged);
         $("#btnSubmit").on("click", CreateEvent.EventHandlers.SubmitClicked);
+        $("#btnSearchAddress").on("click", CreateEvent.EventHandlers.AddressSearchClicked);
     },
     EventHandlers: {
+        AddressSearchClicked: function () {
+            var addressText = [];
+            if ($("#Address1").val() !== '') addressText.push($("#Address1").val());
+            if ($("#Address2").val() !== '') addressText.push($("#Address2").val());
+            if ($("#City").val() !== '') addressText.push($("#City").val());
+            if ($("#State").val() !== '') addressText.push($("#State").val());
+            if ($("#ZipCode").val() !== '') addressText.push($("#ZipCode").val());
+            if (addressText.length === 0) {
+                alert('Please enter address info');
+            }
+            Maps.GeocodeAddress(addressText.join(' '));
+        },
         SubmitClicked: function () {
             $("#frmCreateEvent").submit();
         },
@@ -79,26 +92,42 @@ CreateEvent = {
             }
         },
         MapSelectionModeChanged: function () {
+            $("#txtAutocompleteSearch").val('');
+            $(".row.manual-search input[type=text]").val('');
+            Maps.RemoveMarker();
             switch ($(this).attr('data-map-select')) {
                 case 'address':
-                    $(".row.map-search").show();
-                    $(".row.manual-search").hide();
+                    Maps.UpdateDrawingVisibility(false);
+                    //$(".row.map-search").show();
+                    $(".row.location-search").show();
+                    $(".row.manual-search-button").hide();
+                    $(".row.manual-search input[type=text]").prop('disabled', true);
                     Maps.autocomplete.setTypes(['geocode']);
                     $("#LocationName").val('');
-                    $(".row.map-search").show();
-                    $(".row.manual-search").hide();
+                    break;
+                case 'draw':
+                    Maps.UpdateDrawingVisibility(true);
+                    //$(".row.map-search").show();
+                    $(".row.location-search").hide();
+                    $(".row.manual-search-button").hide();
+                    $(".row.manual-search input[type=text]").prop('disabled', true);
                     break;
                 case 'business':
-                    $(".row.map-search").show();
-                    $(".row.manual-search").hide();
+                    Maps.UpdateDrawingVisibility(false);
+                    //$(".row.map-search").show();
+                    $(".row.location-search").show();
+                    //$(".row.manual-search").hide();
+                    $(".row.manual-search input[type=text]").prop('disabled', true);
+                    $(".row.manual-search-button").hide();
                     Maps.autocomplete.setTypes(['establishment']);
                     $("#LocationName").val('');
-                    $(".row.map-search").show();
-                    $(".row.manual-search").hide();
                     break;
                 case 'manual':
-                    $(".row.map-search").hide();
-                    $(".row.manual-search").show();
+                    Maps.UpdateDrawingVisibility(false);
+                    //$(".row.map-search").show();
+                    $(".row.location-search").hide();
+                    $(".row.manual-search input[type=text]").prop('disabled', false);
+                    $(".row.manual-search-button").show();
                     break;
             }
         }
@@ -106,6 +135,9 @@ CreateEvent = {
     PlaceChange: function (place) {
         console.log('in CreateEvent.PlaceChange');
         console.log(place);
+        if (place.name !== undefined && place.name !== null && place.name !== '') {
+            $("#LocationName").val(place.name);
+        }
 
         $("#Address1").val('');
         $("#City").val('');
@@ -119,6 +151,7 @@ CreateEvent = {
         var zip = '';;
 
         if (!place.address_components) return;
+        
         for (var x = 0; x < place.address_components.length; x++) {
             for (var y = 0; y < place.address_components[x].types.length; y++) {
                 switch (place.address_components[x].types[y].toString()) {

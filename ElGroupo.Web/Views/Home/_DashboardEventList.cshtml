@@ -22,6 +22,11 @@
                     }
                     else
                     {
+                        if (e.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.AvailableForCheckIn)
+                        {
+                            <a class="col span-1-of-8" style="background-color:red; color:white; border: 1px solid black; padding:4px;">Check In Now!</a>
+
+                        }
                         if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
                         {
                             <div class="col span-1-of-8" style="background-color:gray; color:white; border: 1px solid black; padding:4px;">Response Pending</div>
@@ -55,10 +60,6 @@
                     <div class="col span-6-of-8">
                         <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="no-decoration">
                             <span id="spanEventName" style="font-weight:bold; ">
-                                @*@if (e.OrganizedByUser)
-                                        {
-                                            @:*&nbsp;
-                                    }*@
                                 @e.Name
                             </span>
                             @if (!e.OrganizedByUser)
@@ -71,17 +72,6 @@
                         </a>
                     </div>
                 </div>
-
-                @*<div class="col span-1-of-8">
-                        @if (e.OrganizedByUser)
-                        {
-                            <a href="#" class="btn btn-primary width-100 event-delete">Delete</a>
-
-                        }
-                    </div>
-                    <div class="col span-1-of-8">
-                        <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="btn btn-primary width-100">View</a>
-                    </div>*@
             </li>
     }
 </ul>

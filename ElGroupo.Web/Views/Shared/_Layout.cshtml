@@ -14,19 +14,22 @@
 </head>
 <body class="panel-body">
     @await Component.InvokeAsync("HeaderComponent")
-    <div id="main" style="min-height:65%;">
+    <div id="main" style="min-height:65%;z-index:1">
         @RenderBody()
     </div>
-    <div id="divConfirm" style="display:none;">
-        <div class="row">
-            <div class="col span-2-of-2 centered">
-                <span id="spanConfirmationMessage"></span>
-            </div>
-            <div class="col span-1-of-4"></div>
+    <div id="divConfirm" style="display:none; z-index:999; height:100%;width:100%;position:absolute;top:0px;left:0px;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);padding:30px; border:3px solid gray; border-radius:25px; background-color:white;">
+            <div class="row">
+                <div class="col span-2-of-2 centered">
+                    <span id="spanConfirmationMessage"></span>
+                </div>
+                <div class="col span-1-of-4"></div>
                 <div class="col span-1-of-4"><button id="btnConfirmYes" class="btn-primary width-100">Yes</button></div>
                 <div class="col span-1-of-4"><button id="btnConfirmNo" class="btn-primary width-100">No</button></div>
-            <div class="col span-1-of-4"></div>
+                <div class="col span-1-of-4"></div>
+            </div>
         </div>
+
     </div>
     <div id="divConfirmRecurrence" style="display:none;">
         <div class="row">
@@ -70,7 +73,8 @@
         var Confirm = function (message, callbackYes, callbackNo) {
             var cbYes = callbackYes;
             var cbNo = callbackNo;
-            $("#main").hide();
+            //$("#main").hide();
+            $("#main").css('opacity', 0.2);
             $("#divConfirm").show();
             $("#spanConfirmationMessage").text(message);
             $("#btnConfirmYes").on("click", function () {
@@ -82,7 +86,8 @@
             });
             $("#btnConfirmNo").on("click", function () {
 
-                $("#main").show();
+                //$("#main").show();
+                $("#main").css('opacity', 1);
                 $("#divConfirm").hide();
                 $("#btnConfirmYes").off("click");
                 $("#btnConfirmNo").off("click");

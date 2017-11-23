@@ -5,11 +5,11 @@
 ViewEvent = {
     Init: function () {
         $("div.rsvp-required span").on("click", ViewEvent.EventHandlers.RSVPClicked);
-        $("#divMessages").on("click", ".delete-message", ViewEvent.EventHandlers.DeleteMessageClicked);
-        $("#btnPostMessage").on("click", ViewEvent.EventHandlers.PostMessageClicked);
-        $("#divMessages").on("click", ".unread-message-subject", ViewEvent.EventHandlers.UnreadMessageClicked);
-        $("#btnCancelMessage").on("click", ViewEvent.EventHandlers.CancelMessageClicked);
-        $("#btnShowMessageDiv").on("click", ViewEvent.EventHandlers.ShowMessagesClicked);
+        //$("#divMessages").on("click", ".delete-message", ViewEvent.EventHandlers.DeleteMessageClicked);
+        //$("#btnPostMessage").on("click", ViewEvent.EventHandlers.PostMessageClicked);
+        //$("#divMessages").on("click", ".unread-message-subject", ViewEvent.EventHandlers.UnreadMessageClicked);
+        //$("#btnCancelMessage").on("click", ViewEvent.EventHandlers.CancelMessageClicked);
+        //$("#btnShowMessageDiv").on("click", ViewEvent.EventHandlers.ShowMessagesClicked);
     },
     EventHandlers: {
         RSVPClicked: function () {

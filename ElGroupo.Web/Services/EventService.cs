@@ -437,8 +437,8 @@ namespace ElGroupo.Web.Services
                 else startHour = model.StartHour + 12;
 
 
-                e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
-                e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+                e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0).ToUniversalTime();
+                e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0).ToUniversalTime();
 
                 dbContext.Events.Add(e);
 
@@ -1299,6 +1299,7 @@ namespace ElGroupo.Web.Services
                     PostedDate = mba.MessageBoardItem.PostedDate,
                     Subject = mba.MessageBoardItem.Subject,
                     MessageText = mba.MessageBoardItem.MessageText,
+                    CanEdit = mba.MessageBoardItem.PostedBy.Id == userId,
                     IsNew = !mba.Viewed,
                     Id = mba.Id
                 });

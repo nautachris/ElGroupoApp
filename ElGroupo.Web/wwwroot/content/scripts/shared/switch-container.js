@@ -22,15 +22,15 @@ SwitchContainer = {
             var $parent = $(this).closest("div.switch-container");
             if ($parent.hasClass('ignore-switch')) return false;
 
-            console.log('switch container click');
+            //console.log('switch container click');
 
             $parent.find(".switch-selected").removeClass("switch-selected");
             $(this).addClass("switch-selected");
 
             if ($parent.attr('data-replace-element') && $(this).attr('data-replace-val')) {
                 //this sets the model-bound hidden to what the user has clicked
-                console.log('replace element: ' + $parent.attr('data-replace-element'));
-                console.log('replace val: ' + $(this).attr('data-replace-val'));
+                //console.log('replace element: ' + $parent.attr('data-replace-element'));
+                //console.log('replace val: ' + $(this).attr('data-replace-val'));
                 var $replaceEl = $("#" + $parent.attr('data-replace-element'));
                 if ($replaceEl.attr('type') === 'checkbox') {
                     if ($(this).attr('data-replace-val') == 'true') {
@@ -48,8 +48,8 @@ SwitchContainer = {
 
         });
         $("html").on("click", ".switch-container > div", function (evt) {
-            console.log(evt.defaultPrevented);
-            console.log('switch container click');
+            //console.log(evt.defaultPrevented);
+            //console.log('switch container click');
             var $parent = $(this).closest("div.switch-container");
             $parent.find(".switch-selected").removeClass("switch-selected");
             $(this).addClass("switch-selected");
@@ -57,8 +57,8 @@ SwitchContainer = {
 
             if ($parent.attr('data-replace-element') && $(this).attr('data-replace-val')) {
                 //this sets the model-bound hidden to what the user has clicked
-                console.log('replace element: ' + $parent.attr('data-replace-element'));
-                console.log('replace val: ' + $(this).attr('data-replace-val'));
+                //console.log('replace element: ' + $parent.attr('data-replace-element'));
+                //console.log('replace val: ' + $(this).attr('data-replace-val'));
                 var $replaceEl = $("#" + $parent.attr('data-replace-element'));
                 if ($replaceEl.attr('type') === 'checkbox') {
                     if ($(this).attr('data-replace-val') == 'true') {
@@ -81,10 +81,10 @@ SwitchContainer = {
 
         $(sel).each(function () {
             //this sets the switch container UI based on the model data
-            console.log('init replace element: ' + $(this).attr('data-replace-element'));
+            //console.log('init replace element: ' + $(this).attr('data-replace-element'));
             var replaceElId = $(this).attr('data-replace-element');
             var $replaceEl = $("#" + replaceElId);
-            console.log($replaceEl);
+            //console.log($replaceEl);
             $(this).children('span').removeClass('switch-selected');
             //if checkbox
             if ($replaceEl.attr('type') === 'checkbox') {
