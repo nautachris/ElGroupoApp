@@ -44,6 +44,13 @@
         return url;
 
     }
+    private string GetCheckInUrl(long eid)
+    {
+
+        var url = Url.Action("CheckIn", "Events", new { eid = eid });
+        return url;
+
+    }
 }
 
 
@@ -122,6 +129,29 @@
     }
     else
     {
+
+        if (Model.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.AvailableForCheckIn && Model.RSVPResponse.Status != ElGroupo.Domain.Enums.RSVPTypes.None)
+        {
+            <div class="row centered">
+                @*<a>bears</a>*@
+                <a href="@GetCheckInUrl(Model.EventId)" style="background-color:red; color:white; font-weight:bold; border: 1px solid black; margin:14px; padding:4px;">Check In Now!</a>
+                @*<span class="centered width-100">
+                    
+                </span>*@
+                
+            </div>
+
+
+        }
+        else if (Model.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.CheckInSuccessful)
+        {
+            <div class="row centered">
+                <span class="width-100" style="font-weight:bold; color:green;">You have been checked in for this event!</span>
+            </div>
+
+        }
+
+
         //something where the user can set their rsvp status
         @Html.Partial("_EditAttendeeRSVPResponse", Model.RSVPResponse)
         <div class="row">
@@ -204,7 +234,7 @@
 {
 
     <div class="row tab add-attendees contact-form" style="display:none;">
-        <h2>Invite more shitheads to your lame event</h2>
+        <h2>Invite more people to your event</h2>
         @Html.Partial("_EditEventAttendees", Model.Details)
 
     </div>

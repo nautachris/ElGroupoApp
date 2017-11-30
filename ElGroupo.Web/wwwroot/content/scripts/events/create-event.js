@@ -31,6 +31,11 @@ CreateEvent = {
             Maps.GeocodeAddress(addressText.join(' '));
         },
         SubmitClicked: function () {
+            //var frm = $("#frmCreateEvent").serialize();
+            //console.log(frm);
+            //var frm2 = $("#frmCreateEvent").serialize();
+            //console.log(frm2);
+
             $("#frmCreateEvent").submit();
         },
         RecurrenceChanged: function () {
@@ -101,7 +106,7 @@ CreateEvent = {
                     //$(".row.map-search").show();
                     $(".row.location-search").show();
                     $(".row.manual-search-button").hide();
-                    $(".row.manual-search input[type=text]").prop('disabled', true);
+                    //$(".row.manual-search input[type=text]").prop('disabled', true);
                     Maps.autocomplete.setTypes(['geocode']);
                     $("#LocationName").val('');
                     break;
@@ -110,14 +115,14 @@ CreateEvent = {
                     //$(".row.map-search").show();
                     $(".row.location-search").hide();
                     $(".row.manual-search-button").hide();
-                    $(".row.manual-search input[type=text]").prop('disabled', true);
+                    //$(".row.manual-search input[type=text]").prop('disabled', true);
                     break;
                 case 'business':
                     Maps.UpdateDrawingVisibility(false);
                     //$(".row.map-search").show();
                     $(".row.location-search").show();
                     //$(".row.manual-search").hide();
-                    $(".row.manual-search input[type=text]").prop('disabled', true);
+                    //$(".row.manual-search input[type=text]").prop('disabled', true);
                     $(".row.manual-search-button").hide();
                     Maps.autocomplete.setTypes(['establishment']);
                     $("#LocationName").val('');
@@ -126,7 +131,7 @@ CreateEvent = {
                     Maps.UpdateDrawingVisibility(false);
                     //$(".row.map-search").show();
                     $(".row.location-search").hide();
-                    $(".row.manual-search input[type=text]").prop('disabled', false);
+                    //$(".row.manual-search input[type=text]").prop('disabled', false);
                     $(".row.manual-search-button").show();
                     break;
             }

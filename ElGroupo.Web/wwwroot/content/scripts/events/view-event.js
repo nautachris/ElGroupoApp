@@ -16,6 +16,7 @@ ViewEvent = {
             console.log('rsvp changed!');
             var newStatus = $(this).attr('data-replace-val');
             var oldStatus = $("#OriginalStatus").val();
+            var $this = $(this);
             if (newStatus === oldStatus) return false;
             Confirm("Do you want to change your RSVP status from " + oldStatus + " to " + newStatus + "?", function () {
                 var model = {
@@ -34,7 +35,9 @@ ViewEvent = {
                             //dataType: "application/json",
                             data: JSON.stringify(model),
                             success: function success() {
-                                console.log('success');
+                                window.location.reload();
+                                //$("#OriginalStatus").val(newStatus);
+                                //console.log('success');
                                 //$("#divMessages").html(results);
                             },
                             error: function error(err) {
@@ -54,7 +57,9 @@ ViewEvent = {
                             //dataType: "application/json",
                             data: JSON.stringify(model),
                             success: function success() {
-                                console.log('success');
+                                window.location.reload();
+                                //$("#OriginalStatus").val(newStatus);
+                                //console.log('success');
                                 //$("#divMessages").html(results);
                             },
                             error: function error(err) {
@@ -76,7 +81,9 @@ ViewEvent = {
                         //dataType: "application/json",
                         data: JSON.stringify(model),
                         success: function success() {
-                            console.log('success');
+                            window.location.reload();
+                            //console.log('success');
+                            //$("#OriginalStatus").val(newStatus);
                             //$("#divMessages").html(results);
                         },
                         error: function error(err) {
@@ -88,6 +95,10 @@ ViewEvent = {
                 }
                 console.log(model);
 
+            }, function () {
+                //if they say no
+                $this.removeClass('switch-selected');
+                $this.closest('div').find('span[data-replace-val=' + $("#OriginalStatus").val() + ']').addClass('switch-selected');
             });
         },
         ShowMessagesClicked: function () {

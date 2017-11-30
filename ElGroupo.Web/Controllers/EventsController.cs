@@ -355,6 +355,60 @@ namespace ElGroupo.Web.Controllers
             return View(model);
         }
 
+        [Authorize]
+        [HttpGet]
+        [Route("{eid}/CheckIn", Name = "CheckIn")]
+        public async Task<IActionResult> CheckIn([FromRoute]long eid)
+        {
+            var accessLevel = await CheckEventAccess(eid);
+            if (accessLevel == EditAccessTypes.None) return BadRequest();
+            var model = await this.eventService.GetEventCheckInModel(eid);
+            return View(model);
+        }
+
+
+        [Authorize]
+        [HttpPost]
+        [Route("CheckInLocation", Name = "CheckInLocation")]
+        public async Task<IActionResult> CheckInLocation([FromBody]LocationCheckInModel model)
+        {
+            var user = await CurrentUser();
+
+            if (await CheckEventAccess(model.EventId, user.Id) == EditAccessTypes.None) return BadRequest(new { message = "unauthorized event" });
+            var response = await eventService.CheckInLocation(user.Id, model.EventId, model.CoordinateX, model.CoordinateY);
+            if (response.Success)
+            {
+                return Json(new { success = true });
+            }
+            else
+            {
+                return Json(new { success = false, message = response.ErrorMessage });
+            }
+            //var accessLevel = await CheckEventAccess(eid);
+            //var user = await CurrentUser();
+            ////coords
+            //var model = await this.eventService.GetEventCheckInModel(eid);
+            //return View(model);
+        }
+        [Authorize]
+        [HttpPost]
+        [Route("CheckInPassword", Name = "CheckInPassword")]
+        public async Task<IActionResult> CheckInPassword([FromBody]PasswordCheckInModel model)
+        {
+            var user = await CurrentUser();
+
+
+            if (await CheckEventAccess(model.EventId, user.Id) == EditAccessTypes.None) return BadRequest(new { message = "unauthorized event" });
+            var response = await eventService.CheckInPassword(user.Id, model.EventId, model.Password);
+            if (response.Success)
+            {
+                return Json(new { success = true });
+            }
+            else
+            {
+                return Json(new { success = false, message = response.ErrorMessage });
+            }
+        }
 
 
 
@@ -620,6 +674,13 @@ namespace ElGroupo.Web.Controllers
             var user = await this.userManager.GetUserAsync(HttpContext.User);
             if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
             if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId)) return EditAccessTypes.View;
+            return EditAccessTypes.None;
+        }
+        private async Task<EditAccessTypes> CheckEventAccess(long eventId, long userId)
+        {
+            if (HttpContext.User.IsInRole("admin")) return EditAccessTypes.Edit;
+            if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == userId && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
+            if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == userId && x.EventId == eventId)) return EditAccessTypes.View;
             return EditAccessTypes.None;
         }
 

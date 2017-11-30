@@ -10,7 +10,7 @@ namespace ElGroupo.Domain.Enums
     {
         NotAvailableForCheckIn,
         AvailableForCheckIn,
-        CheckInSuccessfull,
+        CheckInSuccessful,
         CheckInFailed
     }
 }

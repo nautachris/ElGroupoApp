@@ -18,7 +18,7 @@ namespace ElGroupo.Web.Models.Events
             this.Location = new ViewEventLocationModel(e);
             this.IsRecurring = e.Recurrence != null;
         }
-
+                public CheckInStatuses CheckInStatus { get; set; }
         public RecurrenceListModel[] EventRecurrence { get; set; }
         public bool IsRecurring { get; set; }
 

@@ -1,38 +1,6 @@
 ﻿@using ElGroupo.Web.Models.Account
 @model LoginModel
-<style type="text/css">
-    .no-margin {
-        margin-top: 0;
-        margin-bottom: 0;
-    }
 
-    .top-margin-1 {
-        margin-top: 1%;
-        margin-bottom: 1%;
-    }
-    #divSignUp input {
-        border: none transparent;
-    }
-
-    div.col{
-        text-align:left;
-    }
-    .larger-text {
-        font-size: 1.4em;
-    }
-
-    .bold {
-        font-weight: bold;
-    }
-
-    #divSignUp {
-        display: none;
-    }
-
-    .pointer{
-        cursor:pointer;
-    }
-</style>
 <section class="section-features" style="text-align:center;">
     @if (ViewBag.Message != null)
     {

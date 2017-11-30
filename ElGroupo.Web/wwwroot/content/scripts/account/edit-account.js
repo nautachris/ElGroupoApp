@@ -206,7 +206,7 @@ EditAccount = {
             if ($("#divConnectionList").find("div[data-user-id=" + cid + "]").length > 0) return;
 
             //active user id
-
+            Loading.Start();
             $.ajax({
                 url: "/Account/AddConnection/" + cid.toString(),
                 type: 'POST',
@@ -214,12 +214,14 @@ EditAccount = {
                 cache: false,
                 dataType: "html",
                 success: function success(results) {
+                    Loading.Stop();
                     $("#divConnectionList").html(results);
                     $("#txtSelectConnection").val('');
                     $("#txtSelectConnection").removeAttr('data-contact-id');
                     $("#txtSelectConnection").removeClass('light-blue');
                 },
                 error: function error(err) {
+                    Loading.Stop();
                     alert('error');
                 }
             });

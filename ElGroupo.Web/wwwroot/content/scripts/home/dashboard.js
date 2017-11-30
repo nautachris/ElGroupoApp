@@ -3,6 +3,10 @@
 
 });
 Dashboard = {
-    Init: function () { },
-    EventHandlers: {}
+    Init: function () {
+
+    },
+    EventHandlers: {
+
+    }
 };

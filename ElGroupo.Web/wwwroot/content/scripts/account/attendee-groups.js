@@ -23,8 +23,9 @@ AttendeeGroups = {
                 Name: $("#txtSelectUser").val(),
                 Email: $("#txtSelectUser").attr("data-contact-email")
             };
-            var otherAttendees = GetGroupUsers();
+            var otherAttendees = AttendeeGroups.GetGroupUsers();
             otherAttendees.push(attendee);
+            Loading.Start();
             $.ajax({
                 url: "/Account/AttendeeGroupUserList",
                 type: 'POST',
@@ -34,6 +35,7 @@ AttendeeGroups = {
                 contentType: 'application/json',
                 dataType: "html",
                 success: function success(results) {
+                    Loading.Stop();
                     $("#divAttendeeGroupUsersList").empty().html(results);
                     $("#txtSelectUser").val('');
                     $("#txtSelectUser").removeAttr('data-contact-id');
@@ -41,6 +43,7 @@ AttendeeGroups = {
                     $("#btnAddUser").attr('disabled', true);
                 },
                 error: function error(err) {
+                    Loading.Stop();
                     alert('error');
                 }
             });
@@ -116,7 +119,7 @@ AttendeeGroups = {
                     dataType: "html",
                     success: function success(results) {
                         $("#divEditAttendeeGroup").empty().html(results);
-                        SetUserAutoComplete();
+                        AttendeeGroups.SetUserAutoComplete();
                         $("#divViewAttendeeGroups").hide();
                         $("#divEditAttendeeGroup").show();
                     },
@@ -137,10 +140,10 @@ AttendeeGroups = {
                 UserId: Number($("#Id").val()),
                 Id: Number($("#iptGroupId").val()),
                 Name: $("#txtAttendeeGroupName").val(),
-                Users: GetGroupUsers()
+                Users: AttendeeGroups.GetGroupUsers()
             };
 
-
+            Loading.Start();
             $.ajax({
                 url: "/Account/EditAttendeeGroup",
                 type: 'POST',
@@ -150,10 +153,12 @@ AttendeeGroups = {
                 contentType: 'application/json',
                 dataType: "html",
                 success: function success(results) {
+                    Loading.Stop();
                     $("#divViewAttendeeGroups").empty().html(results);
 
                 },
                 error: function error(err) {
+                    Loading.Stop();
                     alert('error');
                 }
             });
@@ -172,7 +177,7 @@ AttendeeGroups = {
                 dataType: "html",
                 success: function success(results) {
                     $("#divEditAttendeeGroup").html(results);
-                    SetUserAutoComplete();
+                    AttendeeGroups.SetUserAutoComplete();
                     $("#divViewAttendeeGroups").hide();
                     $("#divEditAttendeeGroup").show();
                 },
@@ -182,7 +187,7 @@ AttendeeGroups = {
             });
         }
     },
-    SetUserAutoComplete = function () {
+    SetUserAutoComplete : function () {
         $("#txtSelectUser").autocomplete({
             minLength: 3,
             autoFocus: true,
@@ -232,14 +237,14 @@ AttendeeGroups = {
         });
 
     },
-    GetGroupUserIds = function () {
+    GetGroupUserIds : function () {
         var ids = [];
         $("#divAttendeeGroupUsersList div.pending-attendee-group-container").each(function () {
             ids.push(Number($(this).attr('data-user-id')));
         });
         return ids;
     },
-    GetGroupUsers = function () {
+    GetGroupUsers : function () {
         var list = [];
         $("#divAttendeeGroupUsersList div.pending-attendee-group-container").each(function () {
             var obj = {

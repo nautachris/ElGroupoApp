@@ -1,0 +1,95 @@
+﻿@using ElGroupo.Web.Models.Events
+@model EventCheckInModel
+@functions{
+    private string GetCheckinTypeAttribute(ElGroupo.Domain.Enums.AttendanceVerificationMethods method)
+    {
+        if (method == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordAndLocation) return "location";
+        return "password";
+
+
+    }
+
+}
+<input type="hidden" asp-for="EventId" />
+<input type="hidden" asp-for="CheckInMethod" />
+<input type="hidden" asp-for="DistanceTolerance" />
+<input type="hidden" asp-for="EventCoordX" />
+<input type="hidden" asp-for="EventCoordY" />
+<section class="section-features centered">
+    <div class="row">
+        Check In to @Model.EventName
+    </div>
+    @if (Model.CheckInMethod == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordAndLocation)
+    {
+        <div class="row">
+            <div style="font-weight:bold;" class="width-100 larger-text current-location pointer">Use Current Location</div>
+        </div>
+        <div class="row top-margin-1">
+            <div class="col span-5-of-12" style="height:5px; background-color:red; vertical-align:middle;"></div>
+            <div class="col span-2-of-12 no-margin" style="vertical-align:middle; text-align:center;">or</div>
+            <div class="col span-5-of-12" style="height:5px; background-color:red; vertical-align:middle;"></div>
+        </div>
+
+    }
+
+    <div class="row">
+        <div class="width-100 larger-text bold event-password pointer">Use Event Password</div>
+    </div>
+
+    <div class="row" style="height:50px"></div>
+    @if (Model.CheckInMethod == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordAndLocation)
+    {
+        <div id="divLocation">
+            <div class="row" id="divLocationMessage"></div>
+            <div class="row" id="divCoordinates">
+                <div class="col span-1-of-3">
+                    <label>Current Location</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <span id="spanLatDegree"></span>&deg;<span style="margin-left:5px;" id="spanLatHemisphere"></span>
+                    <span style="margin-left:10px;" id="spanLonDegree"></span>&deg;<span style="margin-left:5px;" id="spanLonHemisphere"></span>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label>Distance to Event:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <span id="spanDistanceToEvent"></span><span style="margin-left:5px;">Ft.</span>
+                </div>
+
+            </div>
+
+        </div>
+    }
+    <div id="divPassword" class="row">
+        <div class="row">
+            <div class="col span-1-of-3">
+                <label asp-for="UserPassword">Password:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="UserPassword">
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row" id="divCheckinStatus" style="display:none;">
+
+    </div>
+
+    <div class="row" style="height:100px"></div>
+    <div class="row">
+        <button class="btn btn-primary width-100" data-checkin-method="@GetCheckinTypeAttribute(Model.CheckInMethod)" id="btnCheckIn">Check In</button>
+
+    </div>
+
+    <a asp-controller="Events" asp-action="View" asp-route-eid="@Model.EventId">Event Details</a>
+    <a asp-controller="Home" asp-action="Dashboard">Back to Dashboard</a>
+</section>
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/events/event-checkin.js"></script>
+
+}

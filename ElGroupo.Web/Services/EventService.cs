@@ -346,11 +346,11 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                
+
                 if (model.UpdateRecurring)
                 {
-                    var e = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x=>x.Recurrence).ThenInclude(x=>x.Events).ThenInclude(x=>x.Attendees).FirstOrDefaultAsync(x => x.Id == model.EventId);
-                    foreach(var rev in e.Recurrence.Events.SelectMany(x=>x.Attendees).Where(x=>x.ResponseStatus == RSVPTypes.None))
+                    var e = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Recurrence).ThenInclude(x => x.Events).ThenInclude(x => x.Attendees).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    foreach (var rev in e.Recurrence.Events.SelectMany(x => x.Attendees).Where(x => x.ResponseStatus == RSVPTypes.None))
                     {
                         rev.ShowRSVPReminder = true;
                         //send email
@@ -360,7 +360,7 @@ namespace ElGroupo.Web.Services
                 else
                 {
                     var e = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == model.EventId);
-                    foreach(var ea in e.Attendees.Where(x=>x.ResponseStatus == RSVPTypes.None))
+                    foreach (var ea in e.Attendees.Where(x => x.ResponseStatus == RSVPTypes.None))
                     {
                         ea.ShowRSVPReminder = true;
                         //send email
@@ -1251,7 +1251,27 @@ namespace ElGroupo.Web.Services
             }
 
         }
-
+        private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
+        {
+            if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessful;
+            if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) return CheckInStatuses.AvailableForCheckIn;
+            return CheckInStatuses.NotAvailableForCheckIn;
+        }
+        public async Task<EventCheckInModel> GetEventCheckInModel(long eventId)
+        {
+            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            if (e == null) return null;
+            return new EventCheckInModel
+            {
+                EventId = eventId,
+                CheckInMethod = e.VerificationMethod,
+                DistanceTolerance = e.CheckInLocationTolerance,
+                TimeTolerance = e.CheckInTimeTolerance,
+                EventCoordX = e.CoordinateX,
+                EventCoordY = e.CoordinateY,
+                EventName = e.Name
+            };
+        }
         public async Task<EventViewModel> GetEventViewModel(long eventId, long userId, EditAccessTypes accessLevel)
         {
             //var e = await dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).Include("Attendees.MessageBoardItems.MessageBoardItem.PostedBy").FirstOrDefaultAsync(x => x.Id == eventId);
@@ -1269,6 +1289,12 @@ namespace ElGroupo.Web.Services
             }
             //var isOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
             var model = new EventViewModel(e);
+
+
+            if (thisAttendee.CheckedIn) model.CheckInStatus = CheckInStatuses.CheckInSuccessful;
+            else if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) model.CheckInStatus = CheckInStatuses.AvailableForCheckIn;
+            else model.CheckInStatus = CheckInStatuses.NotAvailableForCheckIn;
+
             model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             model.Attendees = new ViewEventAttendeesModel();
@@ -1403,6 +1429,73 @@ namespace ElGroupo.Web.Services
             //    });
             //}
             //model.Attendees.IsOrganizer = model.IsOrganizer;
+        }
+
+
+        public async Task<SaveDataResponse> CheckInLocation(long userId, long eventId, double lon, double lat)
+        {
+            try
+            {
+                var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+                if (e == null) return SaveDataResponse.FromErrorMessage("Event Not Found");
+                var ea = await dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
+                if (ea == null) return SaveDataResponse.FromErrorMessage("Event Attendee Not Found");
+                if (e.VerificationMethod != AttendanceVerificationMethods.PasswordAndLocation) return SaveDataResponse.FromErrorMessage("This event requires a password to check in");
+                if (GetDistance(lat, lon, e.CoordinateY, e.CoordinateX) > e.CheckInLocationTolerance) return SaveDataResponse.FromErrorMessage("Distance is outside the tolerace");
+
+
+                ea.CheckedIn = true;
+                ea.CheckInCoordinateX = lon;
+                ea.CheckInCoordinateY = lat;
+                ea.CheckInTime = DateTime.Now.ToUniversalTime();
+                dbContext.Update(ea);
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
+        }
+        private double GetDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            var radlat1 = Math.PI * lat1 / 180;
+            var radlat2 = Math.PI * lat2 / 180;
+            var radlon1 = Math.PI * lon1 / 180;
+            var radlon2 = Math.PI * lon2 / 180;
+            var theta = lon1 - lon2;
+            var radtheta = Math.PI * theta / 180;
+            var dist = Math.Sin(radlat1) * Math.Sin(radlat2) + Math.Cos(radlat1) * Math.Cos(radlat2) * Math.Cos(radtheta);
+            dist = Math.Acos(dist);
+            dist = dist * 180 / Math.PI;
+            dist = dist * 60 * 1.1515;
+            dist = dist * 5280;
+            return dist;
+        }
+        public async Task<SaveDataResponse> CheckInPassword(long userId, long eventId, string password)
+        {
+            try
+            {
+                var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+                if (e == null) return SaveDataResponse.FromErrorMessage("Event Not Found");
+                var ea = await dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
+                if (ea == null) return SaveDataResponse.FromErrorMessage("Event Attendee Not Found");
+
+                if (password.ToUpper() != e.VerificationCode.ToUpper()) return SaveDataResponse.FromErrorMessage("Incorrect Password");
+
+                ea.CheckInTime = DateTime.Now.ToUniversalTime();
+                ea.CheckedIn = true;
+                dbContext.Update(ea);
+
+                await dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
         }
 
         public async Task<SaveDataResponse> DeleteEventAttendee(long attendee, long eventId)

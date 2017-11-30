@@ -4,8 +4,8 @@
 
 var GoogleContacts = {
     Init: function () {
-        GoogleContacts.$SignInButton = $("#authorize-button");
-        GoogleContacts.$SignOutButton = $("#signout-button");
+        GoogleContacts.$SignInButton = $("#btnImportGoogleApi");
+        //GoogleContacts.$SignOutButton = $("#signout-button");
     },
     UpdateTableCallback: null,
     $SignInButton: null,
@@ -15,6 +15,7 @@ var GoogleContacts = {
     DISCOVERY_DOCS: ["https://www.googleapis.com/discovery/v1/apis/people/v1/rest"],
     SCOPES: "https://www.googleapis.com/auth/contacts.readonly",
     HandleClientLoad: function (apiKey, clientSecret) {
+        GoogleContacts.$SignInButton = $("#btnImportGoogleApi");
         GoogleContacts.ApiKey = apiKey;
         GoogleContacts.ClientSecret = clientSecret;
         gapi.load('client:auth2', GoogleContacts.InitClient);

@@ -69,6 +69,7 @@ EventMessageBoard = {
                 Subject: subject,
                 Text: text
             };
+            Loading.Start();
             $.ajax({
                 url: "/Messages/Create",
                 type: 'POST',
@@ -78,11 +79,13 @@ EventMessageBoard = {
                 dataType: "html",
                 data: JSON.stringify(obj),
                 success: function success(results) {
+                    Loading.Stop();
                     $("#divMessages").html(results);
                     $("#divCreateMessage").hide();
                     $("#btnShowMessageDiv").show();
                 },
                 error: function error(err) {
+                    Loading.Stop();
                     alert('error');
                 }
             });

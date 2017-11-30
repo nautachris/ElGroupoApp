@@ -31,8 +31,8 @@ namespace ElGroupo.Web.Controllers
 
         private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
         {
-            if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessfull;
-            if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) >= DateTime.Now) return CheckInStatuses.AvailableForCheckIn;
+            if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessful;
+            if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) return CheckInStatuses.AvailableForCheckIn;
             return CheckInStatuses.NotAvailableForCheckIn;
         }
 
@@ -77,6 +77,7 @@ namespace ElGroupo.Web.Controllers
                     StartDate = ev.Event.StartTime.ToLocalTime(),
                     Id = ev.Event.Id,
                     OrganizedByUser = false,
+                    CheckInStatus = GetCheckInStatus(ev.Event, ev),
                     IsNew = !ev.Viewed,
                     Name = ev.Event.Name,
                     OrganizerName = ev.Event.Attendees.First(x => x.IsOrganizer).User.Name,
