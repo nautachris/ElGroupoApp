@@ -11,10 +11,10 @@ namespace ElGroupo.Web.Models.Events
 {
     public class EventViewModel
     {
-        public EventViewModel(ElGroupo.Domain.Event e)
+        public EventViewModel(ElGroupo.Domain.Event e, string timeZoneId)
         {
             this.EventId = e.Id;
-            this.Details = new ViewEventDetailsModel(e);
+            this.Details = new ViewEventDetailsModel(e, timeZoneId);
             this.Location = new ViewEventLocationModel(e);
             this.IsRecurring = e.Recurrence != null;
         }

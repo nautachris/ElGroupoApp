@@ -22,233 +22,255 @@
 
 <section class="section-form">
     <div class="row">
-        <h2>Create a new event...</h2>
+        <h2>Create a new event</h2>
     </div>
     <div class="row">
         <div asp-validation-summary="All" class="text-danger"></div>
         <form id="frmCreateEvent" asp-controller="Events" asp-action="Create" method="post" class="contact-form">
-            <div class="row">
-                <div class="col span-1-of-3">
+            <h3 id="create-step" style="text-align:center;">Step 1 of 4</h3>
+            <h4 id="create-step-title">Name &amp; Description</h4>
+            <h5 id="create-step-description" style="text-align:center; font-family:'Source Sans Pro'">Give your even a name and brief description of what it's about</h5>
+            @*start 1*@
+            <div data-create-step="1">
+
+
+                <div class="row">
                     <label asp-for="Name">Name:</label>
-                </div>
-                <div class="col span-2-of-3">
                     <input class="width-100" asp-for="Name" placeholder="Enter Event Name...">
                 </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-3">
+                <div class="row">
                     <label asp-for="Description">Description:</label>
-                </div>
-                <div class="col span-2-of-3">
                     <textarea class="width-100" asp-for="Description" placeholder="Enter Event Description..."></textarea>
                 </div>
             </div>
-            <div class="row">
-                <div class="col span-1-of-4">
+            @*end 1
+                start 2*@
+            <div data-create-step="2" style="display:none;">
+
+
+                <div class="row">
                     <label>Event Is Recurring?</label>
-                </div>
-                <div data-replace-element="IsRecurring" class="switch-container col span-3-of-4 is-recurring">
-                    <input type="hidden" asp-for="IsRecurring" />
-                    <span data-replace-val="True" class="col span-1-of-2">Yes</span>
-                    <span data-replace-val="False" class="switch-selected col span-1-of-2">No</span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label id="lblEventDate" asp-for="EventDate">Date:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input type="text" asp-for="EventDate" class="width-100" placeholder="Enter Event Date...">
-                </div>
-            </div>
-            <div id="divRecurrence" style="display:none">
-                @Html.Partial("_EditEventRecurrence", Model)
-            </div>
-
-            <div class="row">
-                <div class="col span-1-of-6">
-                    <label asp-for="StartHour">Start:</label>
-                </div>
-                <div class="col span-2-of-6">
-                    <select asp-for="StartHour" style="float:right;">
-                        <option value="12" selected>12</option>
-                        @for (int hour = 1; hour <= 11; hour++)
-                        {
-                            <option value="@hour">@hour.ToString()</option>
-                        }
-                    </select>
-                </div>
-                <div data-replace-element="StartMinute"  class="switch-container start-minute col span-2-of-6">
-                    <input type="hidden" asp-for="StartMinute" />
-                    <span data-replace-val="0" class="col span-1-of-4">00</span>
-                    <span data-replace-val="15" class="col span-1-of-4">15</span>
-                    <span data-replace-val="30" class="col span-1-of-4">30</span>
-                    <span data-replace-val="45" class="col span-1-of-4">45</span>
-                </div>
-                <div data-replace-element="StartAMPM"  class="switch-container start-ampm col span-1-of-6">
-                    <input type="hidden" asp-for="StartAMPM" />
-                    <span data-replace-val="AM" class="col span-1-of-2">AM</span>
-                    <span data-replace-val="PM" class="col span-1-of-2">PM</span>
-                </div>
-
-            </div>
-            <div class="row">
-                <div class="col span-1-of-6">
-                    <label asp-for="EndHour">End:</label>
-                </div>
-                <div class="col span-2-of-6">
-                    <select asp-for="EndHour" style="float:right;">
-                        <option value="12" selected>12</option>
-                        @for (int hour = 1; hour <= 11; hour++)
-                        {
-                            <option value="@hour">@hour.ToString()</option>
-                        }
-                    </select>
-                </div>
-                <div data-replace-element="EndMinute" class="switch-container end-minute col span-2-of-6">
-                    <input type="hidden" asp-for="EndMinute" />
-                    <span data-replace-val="0" class="col span-1-of-4">00</span>
-                    <span data-replace-val="15" class="col span-1-of-4">15</span>
-                    <span data-replace-val="30" class="col span-1-of-4">30</span>
-                    <span data-replace-val="45" class="col span-1-of-4">45</span>
-                </div>
-                <div data-replace-element="EndAMPM" class="switch-container end-ampm col span-1-of-6">
-                    <input type="hidden" asp-for="EndAMPM" />
-                    <span data-replace-val="AM" class="col span-1-of-2">AM</span>
-                    <span data-replace-val="PM" class="col span-1-of-2">PM</span>
-                </div>
-
-            </div>
-
-            <div class="row">
-                <div class="col span-1-of-4">
-                    <label>RSVP Required?</label>
-                </div>
-                <div data-replace-element="RSVPRequired" class="switch-container col span-3-of-4 rsvp-required">
-                    @*if we use input=type hidden, data-replace-val must be True or False, not true or false*@
-                    <input type="hidden" asp-for="RSVPRequired"/>
-                    <span data-replace-val="True" class="switch-selected col span-1-of-2">Yes</span>
-                    <span data-replace-val="False" class="col span-1-of-2">No</span>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col span-1-of-4">
-                    <label>Check-In Verification:</label>
-                </div>
-                <div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
-                    <input type="hidden" asp-for="AttendanceVerificationMethod" />
-                    <span data-replace-val="None" class="switch-selected col span-1-of-3">None</span>
-                    <span data-replace-val="PasswordAndLocation" class="col span-1-of-3">Password or Location</span>
-                    <span data-replace-val="PasswordOnly" class="col span-1-of-3">Password Only</span>
-                </div>
-            </div>
-            <div class="row verification-code" style="display:none;">
-                <div class="col span-1-of-3">
-                    <label asp-for="VerificationCode">Code:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Code...">
-                </div>
-            </div>
-            <div class="row location-tolerance" style="display:none;">
-                <div class="col span-1-of-3">
-                    <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
-                </div>
-            </div>
-
-
-
-            <div class="row">
-                <div class="col span-1-of-4">
-                    <label>Location Search Method:</label>
-                </div>
-                <div class="switch-container map-select col span-3-of-4">
-                    <span data-map-select="address" class="switch-selected col span-1-of-4">Address</span>
-                    <span data-map-select="business" class="col span-1-of-4">Business</span>
-                    <span data-map-select="draw" class="col span-1-of-4">Draw</span>
-                    <span data-map-select="manual" class="col span-1-of-4">Manual</span>
-                </div>
-            </div>
-            <div class="row location-search">
-                <div class="col span-1-of-4">
-                    <label>Search Location:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <input style="width:100%;" id="txtAutocompleteSearch" type="text" />
-                </div>
-            </div>
-            <div class="row map-search">
-                <div class="col span-7-of-7">
-                    <div id="divMap" style="width:100%;height:300px"></div>
-                    <div id="infowindow-content">
-                        <img src="" width="16" height="16" id="place-icon">
-                        <span id="place-name" class="title"></span><br>
-                        <span id="place-address"></span>
-                        <a style="float:left;" class="btn btn-primary select-link">Select Location!</a>
+                    <div data-replace-element="IsRecurring" class="switch-container row is-recurring">
+                        <input type="hidden" asp-for="IsRecurring" />
+                        <span data-replace-val="True" class="col span-1-of-2">Yes</span>
+                        <span data-replace-val="False" class="switch-selected col span-1-of-2">No</span>
                     </div>
                 </div>
+                <div class="row">
+                    <label id="lblEventDate" asp-for="EventDate">Date:</label>
+                    <input type="text" asp-for="EventDate" class="width-100" placeholder="Enter Event Date...">
+                    @*<div class="col span-1-of-3">
+                        <label id="lblEventDate" asp-for="EventDate">Date:</label>
+                    </div>
+                    <div class="col span-2-of-3">
+                        <input type="text" asp-for="EventDate" class="width-100" placeholder="Enter Event Date...">
+                    </div>*@
+                </div>
+                <div id="divRecurrence" style="display:none">
+                    @Html.Partial("_EditEventRecurrence", Model)
+                </div>
 
-            </div>
-            <div class="row">
-                <div class="col span-1-of-4">
-                    <label asp-for="LocationName">Location Name:</label>
+                <div class="row">
+                    <label>Event Time</label>
                 </div>
-                <div class="col span-3-of-4">
-                    <input class="width-100" asp-for="LocationName">
-                </div>
-            </div>
-            <div class="row manual-search">
-                <div class="col span-1-of-4">
-                    <label asp-for="Address1">Address 1:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <input class="width-100" asp-for="Address1">
-                </div>
-            </div>
-            <div class="row manual-search">
-                <div class="col span-1-of-4">
-                    <label asp-for="Address2">Address 2:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <input class="width-100" asp-for="Address2">
-                </div>
-            </div>
-            <div class="row manual-search">
-                <div class="col span-1-of-4">
-                    <label asp-for="City">City:</label>
-                </div>
-                <div class="col span-3-of-4">
-                    <input class="width-100" asp-for="City">
-                </div>
-            </div>
-            <div class="row manual-search">
-                <div class="col span-1-of-8">
-                    <label asp-for="State">State:</label>
-                </div>
-                <div class="col span-3-of-8">
-                    <input asp-for="State">
-                </div>
-                <div class="col span-1-of-8">
-                    <label asp-for="ZipCode">Zip:</label>
-                </div>
-                <div class="col span-3-of-8">
-                    <input asp-for="ZipCode">
-                </div>
-            </div>
-            <div class="row manual-search-button centered" style="display:none;">
-                <input type="button" class="btn btn-primary" id="btnSearchAddress" value="Search Address" />
-            </div>
-            <input type="hidden" asp-for="XCoord" />
-            <input type="hidden" asp-for="YCoord" />
-            <input type="hidden" asp-for="GooglePlaceId" />
+                <div class="row">
+                    
+                    <div class="col span-1-of-6">
+                        <label asp-for="StartHour">Start:</label>
+                    </div>
+                    <div class="col span-2-of-6">
+                        <select asp-for="StartHour" style="float:right;">
+                            <option value="12" selected>12</option>
+                            @for (int hour = 1; hour <= 11; hour++)
+                            {
+                                <option value="@hour">@hour.ToString()</option>
+                            }
+                        </select>
+                    </div>
+                    <div data-replace-element="StartMinute" class="switch-container start-minute col span-2-of-6">
+                        <input type="hidden" asp-for="StartMinute" />
+                        <span data-replace-val="0" class="col span-1-of-4">00</span>
+                        <span data-replace-val="15" class="col span-1-of-4">15</span>
+                        <span data-replace-val="30" class="col span-1-of-4">30</span>
+                        <span data-replace-val="45" class="col span-1-of-4">45</span>
+                    </div>
+                    <div data-replace-element="StartAMPM" class="switch-container start-ampm col span-1-of-6">
+                        <input type="hidden" asp-for="StartAMPM" />
+                        <span data-replace-val="AM" class="col span-1-of-2">AM</span>
+                        <span data-replace-val="PM" class="col span-1-of-2">PM</span>
+                    </div>
 
-            <div class="row">
+                </div>
+                <div class="row">
+                    <div class="col span-1-of-6">
+                        <label asp-for="EndHour">End:</label>
+                    </div>
+                    <div class="col span-2-of-6">
+                        <select asp-for="EndHour" style="float:right;">
+                            <option value="12" selected>12</option>
+                            @for (int hour = 1; hour <= 11; hour++)
+                            {
+                                <option value="@hour">@hour.ToString()</option>
+                            }
+                        </select>
+                    </div>
+                    <div data-replace-element="EndMinute" class="switch-container end-minute col span-2-of-6">
+                        <input type="hidden" asp-for="EndMinute" />
+                        <span data-replace-val="0" class="col span-1-of-4">00</span>
+                        <span data-replace-val="15" class="col span-1-of-4">15</span>
+                        <span data-replace-val="30" class="col span-1-of-4">30</span>
+                        <span data-replace-val="45" class="col span-1-of-4">45</span>
+                    </div>
+                    <div data-replace-element="EndAMPM" class="switch-container end-ampm col span-1-of-6">
+                        <input type="hidden" asp-for="EndAMPM" />
+                        <span data-replace-val="AM" class="col span-1-of-2">AM</span>
+                        <span data-replace-val="PM" class="col span-1-of-2">PM</span>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <label>RSVP Required?</label>
+                    <div data-replace-element="RSVPRequired" class="switch-container row rsvp-required">
+                        @*if we use input=type hidden, data-replace-val must be True or False, not true or false*@
+                        <input type="hidden" asp-for="RSVPRequired" />
+                        <span data-replace-val="True" class="switch-selected col span-1-of-2">Yes</span>
+                        <span data-replace-val="False" class="col span-1-of-2">No</span>
+                    </div>
+                </div>
+            </div>
+            @*end 2
+                start 3*@
+            <div data-create-step="3" style="display:none;">
+
+                <div class="row">
+                    <label asp-for="LocationName">Location Description:</label>
+                    <div class="row">
+                        <input class="width-100" asp-for="LocationName">
+                    </div>
+                </div>
+                <div class="row">
+                    <label>Location Search Method:</label>
+                    <div class="switch-container map-select row">
+                        <span data-map-select="address" class="switch-selected col span-1-of-4">Address</span>
+                        <span data-map-select="business" class="col span-1-of-4">Business</span>
+                        <span data-map-select="draw" class="col span-1-of-4">Drop a Pin</span>
+                        <span data-map-select="manual" class="col span-1-of-4">Manual Entry</span>
+                    </div>
+                </div>
+                <div class="row location-search">
+                    <label id="lblSearchType">Search Address:</label>
+                    <div class="row">
+                        <input style="width:100%;" id="txtAutocompleteSearch" type="text" />
+                    </div>
+                </div>
+                <div class="row map-search">
+                    <div class="col span-7-of-7">
+                        <div id="divMap" style="width:100%;height:300px"></div>
+                        <div id="infowindow-content">
+                            <img src="" width="16" height="16" id="place-icon">
+                            <span id="place-name" class="title"></span><br>
+                            <span id="place-address"></span>
+                            <a style="float:left;" class="btn btn-primary select-link">Select Location!</a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row manual-search">
+                    <div class="col span-1-of-4">
+                        <label asp-for="Address1">Address 1:</label>
+                    </div>
+                    <div class="col span-3-of-4">
+                        <input class="width-100" asp-for="Address1">
+                    </div>
+                </div>
+                <div class="row manual-search">
+                    <div class="col span-1-of-4">
+                        <label asp-for="Address2">Address 2:</label>
+                    </div>
+                    <div class="col span-3-of-4">
+                        <input class="width-100" asp-for="Address2">
+                    </div>
+                </div>
+                <div class="row manual-search">
+                    <div class="col span-1-of-4">
+                        <label asp-for="City">City:</label>
+                    </div>
+                    <div class="col span-3-of-4">
+                        <input class="width-100" asp-for="City">
+                    </div>
+                </div>
+                <div class="row manual-search">
+                    <div class="col span-1-of-8">
+                        <label asp-for="State">State:</label>
+                    </div>
+                    <div class="col span-3-of-8">
+                        <input asp-for="State">
+                    </div>
+                    <div class="col span-1-of-8">
+                        <label asp-for="ZipCode">Zip:</label>
+                    </div>
+                    <div class="col span-3-of-8">
+                        <input asp-for="ZipCode">
+                    </div>
+                </div>
+                <div class="row manual-search-button centered" style="display:none;">
+                    <input type="button" class="btn btn-primary" id="btnSearchAddress" value="Search Address" />
+                </div>
+                <input type="hidden" asp-for="XCoord" />
+                <input type="hidden" asp-for="YCoord" />
+                <input type="hidden" asp-for="GooglePlaceId" />
+            </div>
+            @*end 3
+                start 4*@
+            <div data-create-step="4" style="display:none;">
+
+
+                <div class="row">
+                    <div class="col span-1-of-4">
+                        <label>Check-In Verification:</label>
+                    </div>
+                    <div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
+                        <input type="hidden" asp-for="AttendanceVerificationMethod" />
+                        <span data-replace-val="None" class="switch-selected col span-1-of-3">None</span>
+                        <span data-replace-val="PasswordAndLocation" class="col span-1-of-3">Password or Location</span>
+                        <span data-replace-val="PasswordOnly" class="col span-1-of-3">Password Only</span>
+                    </div>
+                </div>
+                <div class="row verification-code" style="display:none;">
+                    <div class="col span-1-of-3">
+                        <label asp-for="VerificationCode">Password:</label>
+                    </div>
+                    <div class="col span-2-of-3">
+                        <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Password...">
+                    </div>
+                </div>
+                <div class="row location-tolerance" style="display:none;">
+                    <div class="col span-1-of-3">
+                        <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
+                    </div>
+                    <div class="col span-2-of-3">
+                        <input asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
+                    </div>
+                </div>
+            </div>
+            @*end 4*@
+
+
+
+
+            <div class="row" id="divSubmit" style="display:none;">
                 <div class="col span-3-of-3 centered">
                     <a class="btn btn-primary width-100" id="btnSubmit">Save and Invite!</a>
+                </div>
+            </div>
+
+            <div class="row" id="divMoveSteps">
+                <div class="col span-3-of-3 centered">
+                    <a class="btn btn-primary" style="padding-left:15px; padding-right:15px; display:none;" id="btnPreviousStep"><< Back</a>
+                    <a class="btn btn-primary" style="padding-left:15px; padding-right:15px;" id="btnNextStep">Next >></a>
                 </div>
             </div>
         </form>
@@ -263,14 +285,25 @@
     <script type="text/javascript" src="~/content/scripts/events/create-event.js"></script>
     <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>
     <script type="text/javascript">
+        Maps.Init({
+            mapDiv: 'divMap',
+            initOnLoad: false,
+            txtAutocomplete: 'txtAutocompleteSearch',
+            placeChangeCallback: CreateEvent.PlaceChange,
+            createDrawTools: true,
+            showDrawTools: false
+        });
+    </script>
+    <script type="text/javascript">
         $(document).ready(function () {
-            Maps.Init({
-                mapDiv: 'divMap',
-                txtAutocomplete: 'txtAutocompleteSearch',
-                placeChangeCallback: CreateEvent.PlaceChange,
-                createDrawTools: true,
-                showDrawTools: false
-            });
+            //this now loads when they click to step 3 for the first time
+            //Maps.Init({
+            //    mapDiv: 'divMap',
+            //    txtAutocomplete: 'txtAutocompleteSearch',
+            //    placeChangeCallback: CreateEvent.PlaceChange,
+            //    createDrawTools: true,
+            //    showDrawTools: false
+            //});
 
         });
     </script>

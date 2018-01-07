@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using ElGroupo.Domain.Lookups;
 namespace ElGroupo.Domain
 {
@@ -40,5 +41,8 @@ namespace ElGroupo.Domain
         public long? PhotoId { get; set; }
         public string Name { get; set; }
         public string ZipCode { get; set; }
+        
+        [MaxLength(100)]
+        public string TimeZoneId { get; set; }
     }
 }

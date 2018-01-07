@@ -6,7 +6,7 @@ using ElGroupo.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 namespace ElGroupo.Web.Models.Events
 {
-    public class CreateEventModel
+    public class CreateEventModel: EventDateModel
     {
 
         public bool IsRecurring { get; set; } = false;
@@ -22,27 +22,7 @@ namespace ElGroupo.Web.Models.Events
 
         public string LocationName { get; set; }
 
-        [DataType(DataType.Date)]
-        [Required]
-        [Display(Description = "Event Date")]
-        public DateTime EventDate { get; set; } = DateTime.Now;
-        [Required]
-        [Display(Description = "Start Hour")]
-        public int StartHour { get; set; }
-        [Required]
 
-        [Display(Description = "Start Minute")]
-        public int StartMinute { get; set; } = 0;
-        [Required]
-        public Enums.AMPM StartAMPM { get; set; } = Enums.AMPM.AM;
-        [Required]
-        [Display(Description = "End Hour")]
-        public int EndHour { get; set; }
-        [Required]
-        [Display(Description = "End Minute")]
-        public int EndMinute { get; set; } = 0;
-        [Required]
-        public Enums.AMPM EndAMPM { get; set; } = Enums.AMPM.AM;
 
         [Required]
         [Display(Description = "Address 1")]

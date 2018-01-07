@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 namespace ElGroupo.Web.Models.Events
 {
-    public class EventEditModel
+    public class EventEditModel: EventDateModel
     {
         public long Id { get; set; }
 
@@ -20,27 +20,10 @@ namespace ElGroupo.Web.Models.Events
 
         public string LocationName { get; set; }
 
-        [Required]
-        [Display(Description = "Event Date")]
-        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
-        public DateTime EventDate { get; set; }
-        [Required]
-        [Display(Description = "Start Hour")]
-        public int StartHour { get; set; }
-        [Required]
 
-        [Display(Description = "Start Minute")]
-        public int StartMinute { get; set; }
-        [Required]
-        public Enums.AMPM StartAMPM { get; set; }
-        [Required]
-        [Display(Description = "End Hour")]
-        public int EndHour { get; set; }
-        [Required]
-        [Display(Description = "End Minute")]
-        public int EndMinute { get; set; }
-        [Required]
-        public Enums.AMPM EndAMPM { get; set; }
+
+
+
 
         [Required]
         [Display(Description = "Address 1")]

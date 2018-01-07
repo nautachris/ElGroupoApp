@@ -1,4 +1,13 @@
-﻿Loading = {
+﻿$(document).ajaxStart(function () {
+    Loading.Start();
+
+});
+$(document).ajaxComplete(function () {
+    Loading.Stop();
+});
+
+
+var Loading = {
     Start: function () {
         $("#divSpinner").show();
         $("#fountainG div").addClass('fountainG');

@@ -16,16 +16,33 @@ using ElGroupo.Web.Models.Shared;
 
 namespace ElGroupo.Web.Services
 {
-    public class EventService
+    public class EventService:BaseService
     {
-        private readonly ElGroupoDbContext dbContext;
+
         private readonly IEmailService mailService;
         private UserManager<User> userManager;
-        public EventService(ElGroupoDbContext ctx, IEmailService service, UserManager<User> manager)
+        public EventService(ElGroupoDbContext ctx, IEmailService service, UserManager<User> manager): base(ctx)
         {
-            this.dbContext = ctx;
+            this._dbContext = ctx;
             this.mailService = service;
             this.userManager = manager;
+        }
+
+        public async Task<EditAccessTypes> CheckEventAccess(ClaimsPrincipal principal, long eventId)
+        {
+            
+            if (principal.IsInRole("admin")) return EditAccessTypes.Edit;
+            var user = await this.userManager.GetUserAsync(principal);
+            if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
+            if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId)) return EditAccessTypes.View;
+            return EditAccessTypes.None;
+        }
+        public async Task<EditAccessTypes> CheckEventAccess(ClaimsPrincipal principal, long eventId, long userId)
+        {
+            if (principal.IsInRole("admin")) return EditAccessTypes.Edit;
+            if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == userId && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
+            if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == userId && x.EventId == eventId)) return EditAccessTypes.View;
+            return EditAccessTypes.None;
         }
 
         public async Task<SaveDataResponse> AddUnregisteredAttendee(User u, Event e, UnregisteredEventAttendeeModel model)
@@ -42,8 +59,8 @@ namespace ElGroupo.Web.Services
                     RegisterToken = Guid.NewGuid(),
 
                 };
-                dbContext.UnregisteredEventAttendees.Add(uea);
-                await dbContext.SaveChangesAsync();
+                _dbContext.UnregisteredEventAttendees.Add(uea);
+                await _dbContext.SaveChangesAsync();
 
                 return new SaveDataResponse { Success = true, ResponseData = uea.RegisterToken };
             }
@@ -69,7 +86,7 @@ namespace ElGroupo.Web.Services
         public async Task<EventContactsModel> GetEventContacts(long eventId, long userId)
         {
 
-            var e = await dbContext.Events.Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await _dbContext.Events.Include("Attendees.User").FirstOrDefaultAsync(x => x.Id == eventId);
             var model = new EventContactsModel();
             model.Event.Name = e.Name;
             model.Event.EndDate = e.EndTime;
@@ -106,28 +123,28 @@ namespace ElGroupo.Web.Services
         public async Task<SaveDataResponse> DeleteEvent(long eventId)
         {
 
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
+            var e = _dbContext.Events.FirstOrDefault(x => x.Id == eventId);
 
             if (e == null) return SaveDataResponse.FromErrorMessage("Event Id " + eventId + " not found");
 
             try
             {
-                var unregisteredEventAttendees = dbContext.UnregisteredEventAttendees.Where(x => x.EventId == eventId).ToList();
-                foreach (var u in unregisteredEventAttendees) dbContext.Remove(unregisteredEventAttendees);
+                var unregisteredEventAttendees = _dbContext.UnregisteredEventAttendees.Where(x => x.EventId == eventId).ToList();
+                foreach (var u in unregisteredEventAttendees) _dbContext.Remove(unregisteredEventAttendees);
 
-                var mbias = dbContext.MessageBoardItemAttendees.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
-                foreach (var mbia in mbias) dbContext.Remove(mbia);
+                var mbias = _dbContext.MessageBoardItemAttendees.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
+                foreach (var mbia in mbias) _dbContext.Remove(mbia);
 
-                var mbis = dbContext.MessageBoardItems.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
-                foreach (var mbi in mbis) dbContext.Remove(mbi);
+                var mbis = _dbContext.MessageBoardItems.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
+                foreach (var mbi in mbis) _dbContext.Remove(mbi);
 
-                var eatns = dbContext.EventAttendeeNotifications.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
-                foreach (var eatn in eatns) dbContext.Remove(eatn);
+                var eatns = _dbContext.EventAttendeeNotifications.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
+                foreach (var eatn in eatns) _dbContext.Remove(eatn);
 
-                var eans = dbContext.EventAttendees.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
-                foreach (var ean in eans) dbContext.Remove(ean);
+                var eans = _dbContext.EventAttendees.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
+                foreach (var ean in eans) _dbContext.Remove(ean);
 
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -142,7 +159,7 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var ev = await dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                var ev = await _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
                 if (ev == null) return new SaveDataResponse { Success = false, ErrorMessage = "Could not find event with id = " + model.EventId };
                 foreach (var recurringEvent in ev.Recurrence.Events)
                 {
@@ -155,7 +172,7 @@ namespace ElGroupo.Web.Services
                         //send emails
                     }
                 }
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return new SaveDataResponse { Success = true };
             }
             catch (Exception ex)
@@ -170,16 +187,16 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var e = await dbContext.Events.FirstAsync(x => x.Id == model.EventId);
-                var rec = dbContext.RecurringEvents.Include(x => x.Events).First(x => x.Id == e.RecurrenceId.Value).Events.Select(x => x.Id).ToList();
+                var e = await _dbContext.Events.FirstAsync(x => x.Id == model.EventId);
+                var rec = _dbContext.RecurringEvents.Include(x => x.Events).First(x => x.Id == e.RecurrenceId.Value).Events.Select(x => x.Id).ToList();
 
-                var eas = dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).Where(x => rec.Contains(x.Event.Id) && x.User.Id == model.UserId).ToList();
+                var eas = _dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).Where(x => rec.Contains(x.Event.Id) && x.User.Id == model.UserId).ToList();
 
                 foreach (var ea in eas)
                 {
-                    dbContext.Remove(ea);
+                    _dbContext.Remove(ea);
                 }
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return new SaveDataResponse { Success = true };
             }
             catch (Exception ex)
@@ -193,9 +210,9 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var ea = await dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == model.EventId && x.User.Id == model.UserId);
-                dbContext.Remove(ea);
-                await dbContext.SaveChangesAsync();
+                var ea = await _dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == model.EventId && x.User.Id == model.UserId);
+                _dbContext.Remove(ea);
+                await _dbContext.SaveChangesAsync();
                 return new SaveDataResponse { Success = true };
             }
             catch (Exception ex)
@@ -206,24 +223,29 @@ namespace ElGroupo.Web.Services
 
         }
 
+        public async Task<Event> GetEvent(long id)
+        {
+            return await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         private async Task AddEventAttendee(Event e, PendingEventAttendeeModel model)
         {
             if (model.Id == -1)
             {
                 //new user
                 //check for email
-                var emailCheck = await dbContext.Users.AnyAsync(x => x.Email == model.Email);
+                var emailCheck = await _dbContext.Users.AnyAsync(x => x.Email == model.Email);
                 if (emailCheck)
                 {
                     var newAttendee = new EventAttendee
                     {
-                        User = dbContext.Find<User>(model.Id),
+                        User = _dbContext.Find<User>(model.Id),
                         Event = e,
                         IsOrganizer = model.Owner,
                         ResponseStatus = Domain.Enums.RSVPTypes.None
 
                     };
-                    dbContext.Add(newAttendee);
+                    _dbContext.Add(newAttendee);
                 }
                 else
                 {
@@ -235,7 +257,7 @@ namespace ElGroupo.Web.Services
                         Event = e,
                         RegisterToken = Guid.NewGuid(),
                     };
-                    dbContext.Add(unregisteredAttendee);
+                    _dbContext.Add(unregisteredAttendee);
                     if (e.Status == Domain.Enums.EventStatus.Active)
                     {
                         //send email
@@ -250,7 +272,7 @@ namespace ElGroupo.Web.Services
                 //check to see if this attendee has already been added
                 if (model.Group)
                 {
-                    var attGroup = await dbContext.AttendeeGroups.Include(x => x.Attendees).ThenInclude(x => x.User).FirstAsync(x => x.Id == model.Id);
+                    var attGroup = await _dbContext.AttendeeGroups.Include(x => x.Attendees).ThenInclude(x => x.User).FirstAsync(x => x.Id == model.Id);
                     foreach (var user in attGroup.Attendees)
                     {
                         var newAttendee = new EventAttendee
@@ -260,7 +282,7 @@ namespace ElGroupo.Web.Services
                             IsOrganizer = false,
                             ResponseStatus = Domain.Enums.RSVPTypes.None
                         };
-                        dbContext.Add(newAttendee);
+                        _dbContext.Add(newAttendee);
                         if (e.Status == Domain.Enums.EventStatus.Active)
                         {
                             //send email
@@ -269,17 +291,17 @@ namespace ElGroupo.Web.Services
                 }
                 else
                 {
-                    var emailCheck = await dbContext.EventAttendees.AnyAsync(x => x.EventId == e.Id && x.User.Id == model.Id);
+                    var emailCheck = await _dbContext.EventAttendees.AnyAsync(x => x.EventId == e.Id && x.User.Id == model.Id);
                     if (!emailCheck)
                     {
                         var newAttendee = new EventAttendee
                         {
-                            User = dbContext.Find<User>(model.Id),
+                            User = _dbContext.Find<User>(model.Id),
                             Event = e,
                             IsOrganizer = model.Owner,
                             ResponseStatus = Domain.Enums.RSVPTypes.None
                         };
-                        dbContext.Add(newAttendee);
+                        _dbContext.Add(newAttendee);
                     }
                 }
 
@@ -289,7 +311,7 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var e = dbContext.Find<Event>(model.EventId);
+                var e = _dbContext.Find<Event>(model.EventId);
                 if (e == null)
                 {
                     return new SaveDataResponse
@@ -304,7 +326,7 @@ namespace ElGroupo.Web.Services
                     await AddEventAttendee(e, att);
                 }
 
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 if (e.Status == Domain.Enums.EventStatus.Active)
                 {
                     //send emails
@@ -322,19 +344,19 @@ namespace ElGroupo.Web.Services
             try
             {
                 //dbContext.RecurringEvents.First().
-                var eids = dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).First(x => x.Id == model.EventId).Recurrence.Events.Select(x => x.Id).ToList();
-                foreach (var ea in dbContext.EventAttendees.Where(x => eids.Contains(x.EventId) && x.User.Id == user.Id))
+                var eids =_dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).First(x => x.Id == model.EventId).Recurrence.Events.Select(x => x.Id).ToList();
+                foreach (var ea in _dbContext.EventAttendees.Where(x => eids.Contains(x.EventId) && x.User.Id == user.Id))
                 {
                     ea.ResponseStatus = model.Status;
                     ea.Viewed = true;
                     if (ea.ResponseStatus != RSVPTypes.None) ea.ShowRSVPReminder = false;
-                    dbContext.Update(ea);
+                   _dbContext.Update(ea);
                 }
 
-                //var ea = dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
+                //var ea =_dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
                 //if (ea == null) return SaveDataResponse.FromErrorMessage("User not found");
 
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -349,26 +371,26 @@ namespace ElGroupo.Web.Services
 
                 if (model.UpdateRecurring)
                 {
-                    var e = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Recurrence).ThenInclude(x => x.Events).ThenInclude(x => x.Attendees).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    var e = await _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Recurrence).ThenInclude(x => x.Events).ThenInclude(x => x.Attendees).FirstOrDefaultAsync(x => x.Id == model.EventId);
                     foreach (var rev in e.Recurrence.Events.SelectMany(x => x.Attendees).Where(x => x.ResponseStatus == RSVPTypes.None))
                     {
                         rev.ShowRSVPReminder = true;
                         //send email
-                        dbContext.Update(rev);
+                       _dbContext.Update(rev);
                     }
                 }
                 else
                 {
-                    var e = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    var e = await _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == model.EventId);
                     foreach (var ea in e.Attendees.Where(x => x.ResponseStatus == RSVPTypes.None))
                     {
                         ea.ShowRSVPReminder = true;
                         //send email
-                        dbContext.Update(ea);
+                       _dbContext.Update(ea);
                     }
                 }
 
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -380,12 +402,12 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var ea = dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
+                var ea =_dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
                 if (ea == null) return SaveDataResponse.FromErrorMessage("User not found");
                 ea.ResponseStatus = model.Status;
                 ea.Viewed = true;
                 if (model.Status != RSVPTypes.None) ea.ShowRSVPReminder = false;
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -393,10 +415,11 @@ namespace ElGroupo.Web.Services
                 return SaveDataResponse.FromException(ex);
             }
         }
-        public async Task<SaveDataResponse> CreateEvent(CreateEventModel model, User user)
+        public async Task<SaveDataResponse> CreateEvent(CreateEventModel model, long userId)
         {
             try
             {
+                var user = this.GetActiveUser(userId);
                 var e = new Event();
 
 
@@ -413,7 +436,7 @@ namespace ElGroupo.Web.Services
                 e.Address1 = model.Address1;
                 e.Address2 = model.Address2;
                 e.City = model.City;
-                e.Status = Domain.Enums.EventStatus.Draft;
+                e.Status = EventStatus.Draft;
                 e.State = model.State;
                 if (model.LocationTolerance.HasValue) e.CheckInLocationTolerance = model.LocationTolerance.Value;
                 e.VerificationCode = model.VerificationCode;
@@ -421,26 +444,10 @@ namespace ElGroupo.Web.Services
                 e.MustRSVP = model.RSVPRequired;
                 e.Zip = model.ZipCode;
 
-                int startHour = 0;
-                int endHour = 0;
 
-                if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-                else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
-
-                if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-                else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
-
-
-                if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
-                else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
-                else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
-                else startHour = model.StartHour + 12;
-
-
-                e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0).ToUniversalTime();
-                e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0).ToUniversalTime();
-
-                dbContext.Events.Add(e);
+                e.StartTime = model.GetFullStartDate(user.TimeZoneId);
+                e.EndTime = model.GetFullEndDate(user.TimeZoneId);
+               _dbContext.Events.Add(e);
 
                 var ea = new EventAttendee
                 {
@@ -449,9 +456,9 @@ namespace ElGroupo.Web.Services
                     IsOrganizer = true,
                     Viewed = true
                 };
-                dbContext.EventAttendees.Add(ea);
+               _dbContext.EventAttendees.Add(ea);
 
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
                 return SaveDataResponse.IncludeData(e.Id);
             }
@@ -769,10 +776,6 @@ namespace ElGroupo.Web.Services
                 var seedDates = new List<DateTime> { startDate };
                 switch (startDate.DayOfWeek)
                 {
-                    //what if the user choosed M, W, Th, starting on Wed. November 1st?
-                    //startDate is still 11/1, but startDay says Monday, but should be Wednesday
-                    //it's looking for the first instance of any of the selected days on or after the start date
-                    //while monday may be in the list of selected days, we dont necessarily want to adjust to it
                     case DayOfWeek.Monday:
                         if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(startDate.AddDays(1));
                         if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(startDate.AddDays(2));
@@ -895,6 +898,29 @@ namespace ElGroupo.Web.Services
             return patternDays;
         }
 
+        private DateTime GetUTCDateFromEventModel(CreateEventModel model)
+        {
+            //how do we adjust this for utc?
+            int startHour = 0;
+            int endHour = 0;
+
+            if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+            else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
+
+            if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
+            else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
+
+
+            if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
+            else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
+            else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
+            else startHour = model.StartHour + 12;
+
+
+            return new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0).ToUniversalTime();
+
+        }
+
         public async Task<SaveDataResponse> CreateRecurringEvent(CreateEventModel model, User user)
         {
             try
@@ -905,7 +931,9 @@ namespace ElGroupo.Web.Services
                     uniqueDays.ForEach(x => x = x.Trim());
                     model.Recurrence.DaysOfMonth = string.Join(",", uniqueDays);
                 }
-                var dates = GetRecurrenceDates(model.Recurrence, model.EventDate);
+
+
+                var dates = GetRecurrenceDates(model.Recurrence,GetUTCDateFromEventModel(model));
                 long firstEventId = 0;
 
                 var recur = new RecurringEvent
@@ -916,7 +944,7 @@ namespace ElGroupo.Web.Services
                     RecurrenceDays = model.Recurrence.Pattern == RecurrencePatterns.Weekly ? GetDaysOfWeek(model.Recurrence.Days) : DaysOfWeek.None,
                     DaysInMonth = model.Recurrence.DaysOfMonth
                 };
-                dbContext.RecurringEvents.Add(recur);
+               _dbContext.RecurringEvents.Add(recur);
                 foreach (var eventDate in dates)
                 {
                     var e = new Event();
@@ -961,7 +989,7 @@ namespace ElGroupo.Web.Services
                     e.StartTime = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, startHour, model.StartMinute, 0);
                     e.EndTime = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, endHour, model.EndMinute, 0);
                     e.Recurrence = recur;
-                    dbContext.Events.Add(e);
+                   _dbContext.Events.Add(e);
 
                     var ea = new EventAttendee
                     {
@@ -970,13 +998,13 @@ namespace ElGroupo.Web.Services
                         IsOrganizer = true,
                         Viewed = true
                     };
-                    dbContext.EventAttendees.Add(ea);
+                   _dbContext.EventAttendees.Add(ea);
 
                     if (firstEventId == 0) firstEventId = e.Id;
                 }
 
 
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
                 return SaveDataResponse.IncludeData(firstEventId);
             }
@@ -989,7 +1017,7 @@ namespace ElGroupo.Web.Services
         }
         public async Task<EventEditModel> GetEventEditModel(long eid)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eid);
+            var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eid);
             var model = new EventEditModel();
             model.Id = e.Id;
             model.Address1 = e.Address1;
@@ -1012,29 +1040,30 @@ namespace ElGroupo.Web.Services
             model.ZipCode = e.Zip;
             return model;
         }
-        public async Task<ViewEventDetailsModel> ViewEventDetails(long eventId)
+        public async Task<ViewEventDetailsModel> ViewEventDetails(long eventId, long userId)
         {
-            var e = await dbContext.Events.Include(x => x.Recurrence).FirstOrDefaultAsync(x => x.Id == eventId);
-            var model = new ViewEventDetailsModel(e);
+            var e = await _dbContext.Events.Include(x => x.Recurrence).FirstOrDefaultAsync(x => x.Id == eventId);
+            var user = this.GetActiveUser(userId);
+            var model = new ViewEventDetailsModel(e, user.TimeZoneId);
             return model;
         }
         public async Task<ViewEventLocationModel> ViewEventLocationDetails(long eventId)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
             var model = new ViewEventLocationModel(e);
             return model;
         }
 
         public async Task<EditEventDetailsModel> EditEventDetails(long eventId)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
             var model = new EditEventDetailsModel(e);
             return model;
         }
 
         public async Task<EditEventLocationModel> EditEventLocation(long eventId)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
             var model = new EditEventLocationModel(e);
             return model;
         }
@@ -1074,7 +1103,7 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var ev = await dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                var ev = await _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
 
                 foreach (var e in ev.Recurrence.Events)
                 {
@@ -1111,12 +1140,12 @@ namespace ElGroupo.Web.Services
                     }
 
                     e.Status = model.Status;
-                    dbContext.Update(e);
+                   _dbContext.Update(e);
 
                     if (draftChange)
                     {
                         //send out all emails
-                        foreach (var att in dbContext.EventAttendees.Where(x => x.EventId == e.Id))
+                        foreach (var att in _dbContext.EventAttendees.Where(x => x.EventId == e.Id))
                         {
 
                         }
@@ -1127,7 +1156,7 @@ namespace ElGroupo.Web.Services
                         //details have changed, must send out emails
                     }
                 }
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -1142,7 +1171,7 @@ namespace ElGroupo.Web.Services
             {
                 if (model.UpdateRecurring)
                 {
-                    var ev = await dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    var ev = await _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
                     foreach (var e in ev.Recurrence.Events)
                     {
                         e.Status = model.Status;
@@ -1150,21 +1179,21 @@ namespace ElGroupo.Web.Services
                         {
 
                         }
-                        dbContext.Update(e);
+                       _dbContext.Update(e);
                     }
                 }
                 else
                 {
-                    var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
+                    var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
                     e.Status = model.Status;
                     if (e.Status == EventStatus.Active)
                     {
                         //emails
                     }
-                    dbContext.Update(e);
+                   _dbContext.Update(e);
 
                 }
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -1172,43 +1201,29 @@ namespace ElGroupo.Web.Services
                 return SaveDataResponse.FromException(ex);
             }
         }
-        public async Task<SaveDataResponse> UpdateEventDetails(EditEventDetailsModel model)
+        public async Task<SaveDataResponse> UpdateEventDetails(EditEventDetailsModel model, long userId)
         {
             try
             {
-                var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
-
+                var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
+                var user = this.GetActiveUser(userId);
                 var changes = FindChangedEventDetails(model, e);
-                var draftChange = model.Status == Domain.Enums.EventStatus.Active && e.Status != Domain.Enums.EventStatus.Active;
+                var draftChange = model.Status == EventStatus.Active && e.Status != EventStatus.Active;
 
                 e.Name = model.Name;
                 e.Description = model.Description;
-                int startHour = 0;
-                int endHour = 0;
-                if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-                else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
-
-                if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-                else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
-
-
-                if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
-                else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
-                else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
-                else startHour = model.StartHour + 12;
-
-
-                e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
-                e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+                e.StartTime = model.GetFullStartDate(user.TimeZoneId);
+                e.EndTime = model.GetFullEndDate(user.TimeZoneId);
+             
                 e.Status = model.Status;
-                dbContext.Update(e);
-                await dbContext.SaveChangesAsync();
+               _dbContext.Update(e);
+                await _dbContext.SaveChangesAsync();
 
 
                 if (draftChange)
                 {
                     //send out all emails
-                    foreach (var att in dbContext.EventAttendees.Where(x => x.EventId == e.Id))
+                    foreach (var att in _dbContext.EventAttendees.Where(x => x.EventId == e.Id))
                     {
 
                     }
@@ -1232,7 +1247,7 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
+                var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == model.EventId);
                 e.Address1 = model.Address1;
                 e.Address2 = model.Address2;
                 e.City = model.City;
@@ -1241,8 +1256,8 @@ namespace ElGroupo.Web.Services
                 e.GooglePlaceId = model.GooglePlaceId;
                 e.CoordinateX = model.XCoord;
                 e.CoordinateY = model.YCoord;
-                dbContext.Update(e);
-                await dbContext.SaveChangesAsync();
+               _dbContext.Update(e);
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -1259,7 +1274,7 @@ namespace ElGroupo.Web.Services
         }
         public async Task<EventCheckInModel> GetEventCheckInModel(long eventId)
         {
-            var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
             if (e == null) return null;
             return new EventCheckInModel
             {
@@ -1275,24 +1290,24 @@ namespace ElGroupo.Web.Services
         public async Task<EventViewModel> GetEventViewModel(long eventId, long userId, EditAccessTypes accessLevel)
         {
             //var e = await dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).Include("Attendees.MessageBoardItems.MessageBoardItem.PostedBy").FirstOrDefaultAsync(x => x.Id == eventId);
-
-
-            var e = await dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).
+            var user = this.GetActiveUser(userId);
+            
+            var e = await _dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).
                 Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).ThenInclude(x => x.PostedBy).
                 FirstOrDefaultAsync(x => x.Id == eventId);
             var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == userId);
             if (thisAttendee.Viewed == false)
             {
                 thisAttendee.Viewed = true;
-                dbContext.Update(thisAttendee);
-                await dbContext.SaveChangesAsync();
+               _dbContext.Update(thisAttendee);
+                await _dbContext.SaveChangesAsync();
             }
             //var isOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
-            var model = new EventViewModel(e);
+            var model = new EventViewModel(e, user.TimeZoneId);
 
 
             if (thisAttendee.CheckedIn) model.CheckInStatus = CheckInStatuses.CheckInSuccessful;
-            else if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) model.CheckInStatus = CheckInStatuses.AvailableForCheckIn;
+            else if (e.MustRSVP && e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) model.CheckInStatus = CheckInStatuses.AvailableForCheckIn;
             else model.CheckInStatus = CheckInStatuses.NotAvailableForCheckIn;
 
             model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
@@ -1334,7 +1349,7 @@ namespace ElGroupo.Web.Services
 
 
             model.Notifications = new List<EventNotificationModel>();
-            foreach (var ean in this.dbContext.EventAttendeeNotifications.Include("Notification.PostedBy.User").Where(x => x.AttendeeId == thisAttendee.Id))
+            foreach (var ean in this._dbContext.EventAttendeeNotifications.Include("Notification.PostedBy.User").Where(x => x.AttendeeId == thisAttendee.Id))
             {
                 model.Notifications.Add(new EventNotificationModel
                 {
@@ -1351,13 +1366,14 @@ namespace ElGroupo.Web.Services
 
             if (e.RecurrenceId.HasValue)
             {
-                model.EventRecurrence = dbContext.RecurringEvents.Include(x => x.Events).FirstOrDefault(x => x.Id == e.RecurrenceId.Value).Events.Select(y =>
+                model.EventRecurrence =_dbContext.RecurringEvents.Include(x => x.Events).FirstOrDefault(x => x.Id == e.RecurrenceId.Value).Events.Select(y =>
                 new RecurrenceListModel
                 {
                     Name = y.Name,
-                    StartDate = y.StartTime,
-                    EndDate = y.EndTime,
-                    Id = y.Id
+                    StartDate = y.StartTime.ToLocalTime(),
+                    EndDate = y.EndTime.ToLocalTime(),
+                    Id = y.Id,
+                    DateText = y.GetDateText(user.TimeZoneId)
                 }).ToArray();
 
                 model.Details.RecurrenceText += " Until " + model.EventRecurrence.OrderBy(x => x.EndDate).Last().EndDate.ToShortDateString() + ".";
@@ -1368,10 +1384,10 @@ namespace ElGroupo.Web.Services
 
         //public async Task AddEventAttendee(long eventId, int userId, bool asOwner)
         //{
-        //    var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
-        //    var u = dbContext.Users.FirstOrDefault(x => x.Id == userId);
+        //    var e =_dbContext.Events.FirstOrDefault(x => x.Id == eventId);
+        //    var u =_dbContext.Users.FirstOrDefault(x => x.Id == userId);
         //    var eo = new EventOrganizer { User = u, Event = e, Owner = asOwner };
-        //    dbContext.EventOrganizers.Add(eo);
+        //   _dbContext.EventOrganizers.Add(eo);
         //    await dbContext.SaveChangesAsync();
         //}
 
@@ -1379,8 +1395,8 @@ namespace ElGroupo.Web.Services
         //{
         //    try
         //    {
-        //        var e = dbContext.Events.FirstOrDefault(x => x.Id == model.eventId);
-        //        var u = dbContext.Users.FirstOrDefault(x => x.Id == model.userId);
+        //        var e =_dbContext.Events.FirstOrDefault(x => x.Id == model.eventId);
+        //        var u =_dbContext.Users.FirstOrDefault(x => x.Id == model.userId);
         //        var ea = new EventAttendee
         //        {
         //            Event = e,
@@ -1391,7 +1407,7 @@ namespace ElGroupo.Web.Services
         //            Viewed = false,
         //            IsOrganizer = model.isOwner
         //        };
-        //        dbContext.EventAttendees.Add(ea);
+        //       _dbContext.EventAttendees.Add(ea);
         //        await dbContext.SaveChangesAsync();
         //        return SaveDataResponse.Ok();
         //    }
@@ -1404,7 +1420,7 @@ namespace ElGroupo.Web.Services
 
         public async Task<ViewEventAttendeesModel> GetEventAttendees(long eventId, long activeId)
         {
-            var atts = await dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.UnregisteredAttendees).FirstOrDefaultAsync(x => x.Id == eventId);
+            var atts = await _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.UnregisteredAttendees).FirstOrDefaultAsync(x => x.Id == eventId);
             if (atts == null) throw new Exception("Event Not Found");
             var model = new ViewEventAttendeesModel();
             atts.Attendees.ToList().Where(x => x.User.Id != activeId).ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { Id = x.Id, Name = x.User.Name, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id, RSVPStatus = x.ResponseStatus }));
@@ -1436,9 +1452,9 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+                var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
                 if (e == null) return SaveDataResponse.FromErrorMessage("Event Not Found");
-                var ea = await dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
+                var ea = await _dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
                 if (ea == null) return SaveDataResponse.FromErrorMessage("Event Attendee Not Found");
                 if (e.VerificationMethod != AttendanceVerificationMethods.PasswordAndLocation) return SaveDataResponse.FromErrorMessage("This event requires a password to check in");
                 if (GetDistance(lat, lon, e.CoordinateY, e.CoordinateX) > e.CheckInLocationTolerance) return SaveDataResponse.FromErrorMessage("Distance is outside the tolerace");
@@ -1448,8 +1464,8 @@ namespace ElGroupo.Web.Services
                 ea.CheckInCoordinateX = lon;
                 ea.CheckInCoordinateY = lat;
                 ea.CheckInTime = DateTime.Now.ToUniversalTime();
-                dbContext.Update(ea);
-                await dbContext.SaveChangesAsync();
+               _dbContext.Update(ea);
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -1477,18 +1493,18 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var e = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+                var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
                 if (e == null) return SaveDataResponse.FromErrorMessage("Event Not Found");
-                var ea = await dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
+                var ea = await _dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
                 if (ea == null) return SaveDataResponse.FromErrorMessage("Event Attendee Not Found");
 
                 if (password.ToUpper() != e.VerificationCode.ToUpper()) return SaveDataResponse.FromErrorMessage("Incorrect Password");
 
                 ea.CheckInTime = DateTime.Now.ToUniversalTime();
                 ea.CheckedIn = true;
-                dbContext.Update(ea);
+               _dbContext.Update(ea);
 
-                await dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -1502,11 +1518,11 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var eo = dbContext.EventAttendees.FirstOrDefault(x => x.Id == attendee);
+                var eo =_dbContext.EventAttendees.FirstOrDefault(x => x.Id == attendee);
                 if (eo == null) return SaveDataResponse.FromErrorMessage("event attendee id " + attendee + " not found");
                 if (eo.EventId != eventId) return SaveDataResponse.FromErrorMessage("attendee is not part of event");
-                dbContext.EventAttendees.Remove(eo);
-                await dbContext.SaveChangesAsync();
+               _dbContext.EventAttendees.Remove(eo);
+                await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
             catch (Exception ex)
@@ -1522,11 +1538,11 @@ namespace ElGroupo.Web.Services
             IQueryable<Event> events = null;
             if (search == "*")
             {
-                events = dbContext.Events.Include("Attendees.User");
+                events =_dbContext.Events.Include("Attendees.User");
             }
             else
             {
-                events = dbContext.Events.Include("Attendees.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
+                events =_dbContext.Events.Include("Attendees.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
             }
 
             var list = new List<EventInformationModel>();

@@ -399,17 +399,23 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<DateTime>("DateUpdated");
 
-                    b.Property<string>("Email");
+                    b.Property<string>("Email")
+                        .HasColumnName("Email");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasColumnName("Name");
 
-                    b.Property<string>("Phone1Type");
+                    b.Property<string>("Phone1Type")
+                        .HasColumnName("Phone1Type");
 
-                    b.Property<string>("Phone1Value");
+                    b.Property<string>("Phone1Value")
+                        .HasColumnName("Phone1Value");
 
-                    b.Property<string>("Phone2Type");
+                    b.Property<string>("Phone2Type")
+                        .HasColumnName("Phone2Type");
 
-                    b.Property<string>("Phone2Value");
+                    b.Property<string>("Phone2Value")
+                        .HasColumnName("Phone2Value");
 
                     b.Property<string>("UserCreated");
 
@@ -461,6 +467,9 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long?>("PhotoId");
 
                     b.Property<string>("SecurityStamp");
+
+                    b.Property<string>("TimeZoneId")
+                        .HasMaxLength(100);
 
                     b.Property<bool>("TwoFactorEnabled");
 

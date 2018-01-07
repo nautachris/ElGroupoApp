@@ -32,17 +32,19 @@ namespace ElGroupo.Web.Controllers
 
 
         private SignInManager<User> signInManager;
-        private ElGroupoDbContext dbContext;
+        //private ElGroupoDbContext dbContext;
         private IEmailService mailService;
         private EventService eventService;
+        private readonly UserService _userService = null;
         public EventsController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, ElGroupoDbContext ctx, IEmailService sndr, EventService service) : base(userMgr)
+                SignInManager<User> signinMgr, ElGroupoDbContext ctx, IEmailService sndr, EventService service, UserService usr) : base(userMgr)
         {
 
             signInManager = signinMgr;
-            dbContext = ctx;
+            //dbContext = ctx;
             mailService = sndr;
             eventService = service;
+            _userService = usr;
         }
         [Authorize]
         [HttpGet]
@@ -70,7 +72,7 @@ namespace ElGroupo.Web.Controllers
         {
             var user = await CurrentUser();
             var model = await eventService.GetEventAttendees(eventId, user.Id);
-            model.IsOrganizer = await CheckEventAccess(eventId) == EditAccessTypes.Edit;
+            model.IsOrganizer = await eventService.CheckEventAccess(HttpContext.User, eventId) == EditAccessTypes.Edit;
             return View("_ViewEventAttendees", model);
         }
 
@@ -83,7 +85,7 @@ namespace ElGroupo.Web.Controllers
             //var eid = Convert.ToInt64(model["eventId"]);
             //var status = (EventStatus)Enum.Parse(typeof(EventStatus), model["status"]);
             //var updateRecurring = bool.Parse(model["updateRecurring"]);
-            if (await CheckEventAccess(model.EventId) != EditAccessTypes.Edit) return BadRequest(new { message = "unauthorized" });
+            if (await eventService.CheckEventAccess(HttpContext.User, model.EventId) != EditAccessTypes.Edit) return BadRequest(new { message = "unauthorized" });
             var response = await eventService.UpdateEventStatus(model);
             if (response.Success)
             {
@@ -104,7 +106,7 @@ namespace ElGroupo.Web.Controllers
             //var eid = Convert.ToInt64(model["eventId"]);
             //var status = (EventStatus)Enum.Parse(typeof(EventStatus), model["status"]);
             //var updateRecurring = bool.Parse(model["updateRecurring"]);
-            if (await CheckEventAccess(model.EventId) != EditAccessTypes.Edit) return BadRequest(new { message = "unauthorized" });
+            if (await eventService.CheckEventAccess(HttpContext.User, model.EventId) != EditAccessTypes.Edit) return BadRequest(new { message = "unauthorized" });
             var response = await eventService.SendRSVPReminders(await CurrentUser(), model);
             if (response.Success)
             {
@@ -194,7 +196,7 @@ namespace ElGroupo.Web.Controllers
             {
                 var user = await CurrentUser();
                 SaveDataResponse response = null;
-                if (!model.IsRecurring) response = await this.eventService.CreateEvent(model, user);
+                if (!model.IsRecurring) response = await this.eventService.CreateEvent(model, user.Id);
                 else response = await this.eventService.CreateRecurringEvent(model, user);
                 if (response.Success)
                 {
@@ -230,66 +232,9 @@ namespace ElGroupo.Web.Controllers
             var list = await eventService.SearchEvents(search, user.Id);
             return PartialView("_EventList", list.OrderBy(x => x.Name));
         }
-        private async Task SendEventOrganizerEmail(int userId, long eventId)
-        {
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
-            var u = dbContext.Users.FirstOrDefault(x => x.Id == userId);
-            var url = Url.Action("Edit", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
-
-            var model = new EventOrganizerMailModel
-            {
-                Recipient = u.Name,
-                EventName = e.Name,
-                Location = e.LocationName,
-                StartTime = e.StartTime,
-                EndTime = e.EndTime,
-                CallbackUrl = url
-            };
-            var metadata = new MailMetadata
-            {
-                To = new List<string> { u.Email },
-                Subject = "You'be been added as an event organizer!"
-            };
-
-            await this.mailService.SendEmail(metadata, model);
 
 
-            //var msg = "Hi " + u.Name + ",";
-            //msg += "<br/>";
-            //msg += "You've been added as an event organizer to " + e.Name + ", which is taking place on " + e.StartTime.Date.ToString("d") + " from " + e.StartTime.TimeOfDay.ToString() + " to " + e.EndTime.TimeOfDay.ToString() + ".";
-            //msg += "Click on this <a href='" + url + "'>link</a> to access the event details";
-            ////<a href='{callbackUrl}'>link</a>
-            //msg += "<br/>";
-            //msg += "Thanks,";
-            //msg += "<br/>";
-            //msg += "The ElGroupo Team";
 
-            //await emailSender.SendEmailAsync(u.Email, "You've been added as an event organizer!", msg);
-        }
-
-        private async Task SendEventAttendeeEmail(long userId, long eventId)
-        {
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == eventId);
-            var u = dbContext.Users.FirstOrDefault(x => x.Id == userId);
-            var url = Url.Action("View", "Events", new { eid = e.Id }, HttpContext.Request.Scheme);
-
-            var model = new EventCreatedMailModel
-            {
-                Recipient = u.Name,
-                EventName = e.Name,
-                Location = e.LocationName,
-                StartTime = e.StartTime,
-                EndTime = e.EndTime,
-                CallbackUrl = url
-            };
-            var metadata = new MailMetadata
-            {
-                To = new List<string> { u.Email },
-                Subject = "You'be been invited to a new event!"
-            };
-
-            await this.mailService.SendEmail(metadata, model);
-        }
 
         private async Task SendUnregisteredEventAttendeeEmail(string name, string email, string fromName, Guid token, Event e)
         {
@@ -322,10 +267,7 @@ namespace ElGroupo.Web.Controllers
             return RedirectToAction("Contacts", new { id = model.Id });
         }
 
-        private Task<bool> CheckEventExists(long eid)
-        {
-            return this.dbContext.Events.AnyAsync(x => x.Id == eid);
-        }
+
 
 
 
@@ -349,7 +291,7 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/View", Name = "ViewEvent")]
         public async Task<IActionResult> View([FromRoute]long eid)
         {
-            var accessLevel = await CheckEventAccess(eid);
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
             var user = await CurrentUser();
             var model = await this.eventService.GetEventViewModel(eid, user.Id, accessLevel);
             return View(model);
@@ -360,7 +302,7 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/CheckIn", Name = "CheckIn")]
         public async Task<IActionResult> CheckIn([FromRoute]long eid)
         {
-            var accessLevel = await CheckEventAccess(eid);
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
             if (accessLevel == EditAccessTypes.None) return BadRequest();
             var model = await this.eventService.GetEventCheckInModel(eid);
             return View(model);
@@ -374,7 +316,7 @@ namespace ElGroupo.Web.Controllers
         {
             var user = await CurrentUser();
 
-            if (await CheckEventAccess(model.EventId, user.Id) == EditAccessTypes.None) return BadRequest(new { message = "unauthorized event" });
+            if (await eventService.CheckEventAccess(HttpContext.User, model.EventId, user.Id) == EditAccessTypes.None) return BadRequest(new { message = "unauthorized event" });
             var response = await eventService.CheckInLocation(user.Id, model.EventId, model.CoordinateX, model.CoordinateY);
             if (response.Success)
             {
@@ -398,7 +340,7 @@ namespace ElGroupo.Web.Controllers
             var user = await CurrentUser();
 
 
-            if (await CheckEventAccess(model.EventId, user.Id) == EditAccessTypes.None) return BadRequest(new { message = "unauthorized event" });
+            if (await eventService.CheckEventAccess(HttpContext.User, model.EventId, user.Id) == EditAccessTypes.None) return BadRequest(new { message = "unauthorized event" });
             var response = await eventService.CheckInPassword(user.Id, model.EventId, model.Password);
             if (response.Success)
             {
@@ -424,7 +366,7 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/ViewLocation")]
         public async Task<IActionResult> ViewLocationDetails([FromRoute]long eid)
         {
-            var accessLevel = await CheckEventAccess(eid);
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
             var model = await this.eventService.ViewEventLocationDetails(eid);
             return View("_ViewLocationDetails", model);
         }
@@ -439,7 +381,7 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/EditLocation")]
         public async Task<IActionResult> EditLocationDetails([FromRoute]long eid)
         {
-            var accessLevel = await CheckEventAccess(eid);
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
             if (accessLevel != EditAccessTypes.Edit) return BadRequest();
             var model = await this.eventService.EditEventLocation(eid);
             return View("_EditEventLocation", model);
@@ -455,7 +397,7 @@ namespace ElGroupo.Web.Controllers
         [Route("EditLocation")]
         public async Task<IActionResult> EditLocationDetails([FromBody]EditEventLocationModel model)
         {
-            var accessLevel = await CheckEventAccess(model.EventId);
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, model.EventId);
             if (accessLevel != EditAccessTypes.Edit) return BadRequest();
             await this.eventService.UpdateEventLocation(model);
             return RedirectToAction("ViewLocationDetails", new { eid = model.EventId });
@@ -486,8 +428,9 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/ViewDetails")]
         public async Task<IActionResult> ViewDetails([FromRoute]long eid)
         {
-            var accessLevel = await CheckEventAccess(eid);
-            var model = await this.eventService.ViewEventDetails(eid);
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
+            var user = await CurrentUser();
+            var model = await this.eventService.ViewEventDetails(eid, user.Id);
             return View("_ViewEventDetails", model);
         }
 
@@ -501,9 +444,10 @@ namespace ElGroupo.Web.Controllers
         [Route("{eid}/EditDetails")]
         public async Task<IActionResult> EditDetails([FromRoute]long eid)
         {
-            var accessLevel = await CheckEventAccess(eid);
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
             if (accessLevel != EditAccessTypes.Edit) return BadRequest();
             var model = await this.eventService.EditEventDetails(eid);
+
             return View("_EditEventDetails", model);
         }
 
@@ -517,10 +461,12 @@ namespace ElGroupo.Web.Controllers
         [Route("EditDetails")]
         public async Task<IActionResult> EditDetails([FromBody]EditEventDetailsModel model)
         {
-            var accessLevel = await CheckEventAccess(model.EventId);
+            //return BadRequest(new { message = "test" });
+            var user = await CurrentUser();
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, model.EventId);
             if (accessLevel != EditAccessTypes.Edit) return BadRequest();
             if (model.UpdateRecurring) await this.eventService.UpdateRecurringEventDetails(model);
-            else await this.eventService.UpdateEventDetails(model);
+            else await this.eventService.UpdateEventDetails(model, user.Id);
             return RedirectToAction("ViewDetails", new { eid = model.EventId });
         }
 
@@ -565,11 +511,11 @@ namespace ElGroupo.Web.Controllers
         [Route("AddUnregisteredAttendee")]
         public async Task<IActionResult> AddUnregisteredEventAttendee([FromBody]UnregisteredEventAttendeeModel model)
         {
-            var e = dbContext.Events.FirstOrDefault(x => x.Id == model.EventId);
-            var u = await userManager.GetUserAsync(HttpContext.User);
+            var e = await eventService.GetEvent(model.EventId);
+            var u = await CurrentUser();
 
             //make sure this user doesn't exist in the system
-            var userCheck = await userManager.FindByEmailAsync(model.Email);
+            var userCheck = await _userService.GetUserByEmail(model.Email);
             if (userCheck != null)
             {
                 return RedirectToAction("AddRegisteredAttendee", new { eid = e.Id, uid = userCheck.Id });
@@ -583,7 +529,7 @@ namespace ElGroupo.Web.Controllers
                 Location = e.LocationName,
                 StartTime = e.StartTime,
                 EndTime = e.EndTime,
-                CallbackUrl = Url.Action("Create", "Account", new { id = token }, HttpContext.Request.Scheme)
+                CallbackUrl = Url.Action("Create", "Account", new { id = (Guid)token.ResponseData }, HttpContext.Request.Scheme)
             });
 
             return RedirectToAction("AttendeesList", new { id = model.EventId });
@@ -636,7 +582,7 @@ namespace ElGroupo.Web.Controllers
         [Route("Organizers/{eid}/Delete/{oid}")]
         public async Task<IActionResult> DeleteEventAttendee([FromRoute]long eid, [FromRoute]long oid)
         {
-            if (await CheckEventAccess(eid) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
+            if (await eventService.CheckEventAccess(HttpContext.User, eid) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
             var response = await this.eventService.DeleteEventAttendee(oid, eid);
             if (response.Success)
             {
@@ -650,39 +596,9 @@ namespace ElGroupo.Web.Controllers
 
         }
 
-        //[Authorize]
-        //[HttpGet, HttpPost]
-        //[Route("Contacts/{id}/Organizers")]
-        //public async Task<IActionResult> OrganizersList([FromRoute]long id)
-        //{
-        //    var model = this.eventService.GetEventOrganizers(id);
-        //    return View("_Organizers", model);
-        //}
 
-        //[Authorize]
-        //[HttpGet, HttpPost]
-        //[Route("Contacts/{id}/Attendees")]
-        //public async Task<IActionResult> AttendeesList([FromRoute]long id)
-        //{
-        //    var model = await this.eventService.GetEventAttendees(id);
-        //    return View("_Attendees", model.OrderBy(x => x.Name));
-        //}
 
-        private async Task<EditAccessTypes> CheckEventAccess(long eventId)
-        {
-            if (HttpContext.User.IsInRole("admin")) return EditAccessTypes.Edit;
-            var user = await this.userManager.GetUserAsync(HttpContext.User);
-            if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
-            if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId)) return EditAccessTypes.View;
-            return EditAccessTypes.None;
-        }
-        private async Task<EditAccessTypes> CheckEventAccess(long eventId, long userId)
-        {
-            if (HttpContext.User.IsInRole("admin")) return EditAccessTypes.Edit;
-            if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == userId && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
-            if (await this.dbContext.EventAttendees.AnyAsync(x => x.User.Id == userId && x.EventId == eventId)) return EditAccessTypes.View;
-            return EditAccessTypes.None;
-        }
+
 
 
 
@@ -691,7 +607,7 @@ namespace ElGroupo.Web.Controllers
         [Route("Contacts/{id}")]
         public async Task<IActionResult> Contacts([FromRoute]long id)
         {
-            if (await CheckEventAccess(id) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
+            if (await eventService.CheckEventAccess(HttpContext.User, id) != EditAccessTypes.Edit) return View("../Shared/AccessDenied");
             var user = await CurrentUser();
             return View(await this.eventService.GetEventContacts(id, user.Id));
 

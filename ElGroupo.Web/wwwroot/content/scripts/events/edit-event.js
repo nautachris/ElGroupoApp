@@ -13,6 +13,7 @@ EditEvent = {
         $("#btnEditLocation").on("click", EditEvent.EventHandlers.HandleEditLocationClick);
         $("#btnCancelEditLocation").on("click", EditEvent.EventHandlers.HandleCancelLocationEditClick);
         $("#btnSaveEditLocation").on("click", EditEvent.EventHandlers.HandleSaveLocationEditClick);
+        $("#btnSaveEditDetails").on("click", EditEvent.EventHandlers.HandleSaveDetailsClick);
         $("#btnSubmit").on("click", EditEvent.EventHandlers.HandleSubmitClick);
         $("html").on("click", "#btnDeleteEvent", EditEvent.EventHandlers.HandleDeleteEventClick);
         $("html").on("click", ".switch-container.event-status > span", EditEvent.EventHandlers.HandleEventStatusChanged);
@@ -218,74 +219,29 @@ EditEvent = {
             });
         },
     },
-   
+    SaveDetailsComplete: function (results) {
+        
+        console.log('in EditEvent.SaveDetailsComplete');
+        console.log(results);
+        $("#divEditDetails").empty().hide();
+        $("#divViewDetails").html(results).show();
+        $("#btnCancelEditDetails").hide();
+        $("#btnSaveEditDetails").hide();
+        $("#btnEditDetails").show();
+        MessageDialog("Your event has been updated!");
+    },
     SaveDetails: function (obj) {
         if (EditEvent.IsRecurring === true) {
             var saveObj = obj;
-
             Confirm('Do you want to update all recurring events?', function () {
                 saveObj.updateRecurring = true;
-                $.ajax({
-                    url: "/Events/EditDetails",
-                    type: 'POST',
-                    contentType: "application/json",
-                    data: JSON.stringify(obj),
-                    async: true,
-                    cache: false,
-                    dataType: 'html',
-                    success: function success(results) {
-                        $("#divEditDetails").empty().hide();
-                        $("#divViewDetails").html(results).show();
-                        $("#btnCancelEditDetails").hide();
-                        $("#btnSaveEditDetails").hide();
-                        $("#btnEditDetails").show();
-                    },
-                    error: function error(err) {
-                        alert('error');
-                    }
-                });
+                Ajax.Post("/Events/EditDetails", saveObj).done(EditEvent.SaveDetailsComplete);
             }, function () {
-                $.ajax({
-                    url: "/Events/EditDetails",
-                    type: 'POST',
-                    contentType: "application/json",
-                    data: JSON.stringify(obj),
-                    async: true,
-                    cache: false,
-                    dataType: 'html',
-                    success: function success(results) {
-                        $("#divEditDetails").empty().hide();
-                        $("#divViewDetails").html(results).show();
-                        $("#btnCancelEditDetails").hide();
-                        $("#btnSaveEditDetails").hide();
-                        $("#btnEditDetails").show();
-                    },
-                    error: function error(err) {
-                        alert('error');
-                    }
-                });
+                Ajax.Post({ url: "/Events/EditDetails", data: saveObj }).done(EditEvent.SaveDetailsComplete);
             });
         }
         else {
-            $.ajax({
-                url: "/Events/EditDetails",
-                type: 'POST',
-                contentType: "application/json",
-                data: JSON.stringify(obj),
-                async: true,
-                cache: false,
-                dataType: 'html',
-                success: function success(results) {
-                    $("#divEditDetails").empty().hide();
-                    $("#divViewDetails").html(results).show();
-                    $("#btnCancelEditDetails").hide();
-                    $("#btnSaveEditDetails").hide();
-                    $("#btnEditDetails").show();
-                },
-                error: function error(err) {
-                    alert('error');
-                }
-            });
+            Ajax.Post({ url: "/Events/EditDetails", data: obj }).done(EditEvent.SaveDetailsComplete);
         }
     },
     EventId: -1,

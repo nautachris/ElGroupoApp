@@ -17,30 +17,33 @@ using Microsoft.AspNetCore.Http.Authentication;
 using System.Security.Claims;
 using ElGroupo.Web.Models.Configuration;
 using Microsoft.Extensions.Options;
-
+using ElGroupo.Web.Mail.Models;
+using ElGroupo.Web.Mail;
 
 namespace ElGroupo.Web.Controllers
 {
     [Authorize]
     [Route("Account")]
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
-        private UserManager<User> userManager;
-        private SignInManager<User> signInManager;
+        //private UserManager<User> userManager;
         private IPasswordHasher<User> passwordHasher;
-        private ElGroupoDbContext dbContext;
+        //private ElGroupoDbContext dbContext;
         private IEmailService emailService;
         private GoogleConfigOptions googleOptions;
-
-        public AccountController(UserManager<User> userMgr,
-                SignInManager<User> signinMgr, IPasswordHasher<User> hasher, ElGroupoDbContext ctx, IEmailService sender, IOptions<GoogleConfigOptions> googConfig)
+        private readonly UserManager<User> _userManager = null;
+        private readonly UserService _userService;
+        private readonly AccountService _accountService;
+        public AccountController(UserManager<User> userMgr, IPasswordHasher<User> hasher, ElGroupoDbContext ctx, IEmailService sender, IOptions<GoogleConfigOptions> googConfig, UserService usr, AccountService acct) : base(userMgr)
         {
-            userManager = userMgr;
-            signInManager = signinMgr;
+            //userManager = userMgr;
             passwordHasher = hasher;
-            dbContext = ctx;
+
             emailService = sender;
             googleOptions = googConfig.Value;
+            _userService = usr;
+            _accountService = acct;
+            _userManager = userMgr;
         }
 
         [AllowAnonymous]
@@ -55,16 +58,10 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> AddConnection([FromRoute]long uid)
         {
 
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var uc = new UserConnection
-            {
-                User = user,
-                ConnectedUser = dbContext.Users.First(x => x.Id == uid)
-            };
-            dbContext.Add(uc);
-            await dbContext.SaveChangesAsync();
-
-            return RedirectToAction("GetConnectionList", new { uid = user.Id });
+            var user = await CurrentUser();
+            var response = await _accountService.AddUserConnection(user, uid);
+            if (response.Success) return RedirectToAction("GetConnectionList", new { uid = user.Id });
+            return BadRequest(new { message = response.ErrorMessage });
         }
 
 
@@ -72,13 +69,10 @@ namespace ElGroupo.Web.Controllers
         [HttpPost("RemoveRegisteredConnection/{uid}")]
         public async Task<IActionResult> RemoveRegisteredConnection([FromRoute]long uid)
         {
-
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var toRemove = await dbContext.UserConnections.FirstOrDefaultAsync(x => x.User.Id == user.Id && x.ConnectedUser.Id == uid);
-            dbContext.Remove(toRemove);
-            await dbContext.SaveChangesAsync();
-
-            return RedirectToAction("GetConnectionList", new { uid = user.Id });
+            var user = await CurrentUser();
+            var response = await _accountService.RemoveRegisteredConnection(user, uid);
+            if (response.Success) return RedirectToAction("GetConnectionList", new { uid = user.Id });
+            return BadRequest(new { message = response.ErrorMessage });
         }
 
 
@@ -88,42 +82,10 @@ namespace ElGroupo.Web.Controllers
         [HttpPost("ImportSelectedContacts")]
         public async Task<IActionResult> ImportContacts([FromBody]ImportSelectContactModel[] contacts)
         {
-            var fd = 4;
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var registeredUsers = dbContext.Users.Where(x => contacts.Select(y => y.Email).Contains(x.Email)).ToDictionary(z => z.Id, z => z.Email);
-            var connectedEmails = dbContext.UserConnections.Include("ConnectedUser").Include("User").Where(x => x.User.Id == user.Id).Select(x => x.ConnectedUser.Email).ToList();
-            foreach (var c in contacts.Where(x => registeredUsers.Values.Contains(x.Email) && !connectedEmails.Contains(x.Email)))
-            {
-                //these are already in system
-                var uc = new UserConnection
-                {
-                    User = user,
-                    ConnectedUser = dbContext.Users.First(x => x.Email == c.Email)
-                };
-                dbContext.Add(uc);
-            }
-
-            foreach (var c in contacts.Where(x => !registeredUsers.Values.Contains(x.Email)))
-            {
-                //these are not in system
-                var urc = new UnregisteredUserConnection
-                {
-                    User = user,
-                    Email = c.Email,
-                    Name = c.FirstName + " " + c.LastName,
-                    Phone1Type = "",
-                    Phone1Value = c.Phone1,
-                    Phone2Type = "",
-                    Phone2Value = c.Phone2
-                };
-
-                dbContext.Add(urc);
-            }
-
-            await dbContext.SaveChangesAsync();
-            //if email exists in system, add to userconnection
-            //if not, add to userunregisteredcontacts
-            return RedirectToAction("GetConnectionList", new { uid = user.Id });
+            var user = await CurrentUser();
+            var response = await _accountService.ImportContacts(user, contacts);
+            if (response.Success) return RedirectToAction("GetConnectionList", new { uid = user.Id });
+            return BadRequest(new { message = response.ErrorMessage });
         }
 
         [Authorize]
@@ -175,7 +137,7 @@ namespace ElGroupo.Web.Controllers
                     Email = lineAry[idxEmail],
                     Phone1 = lineAry[idxPhone1],
                     Phone2 = lineAry[idxPhone2],
-                    Registered = !string.IsNullOrEmpty(lineAry[idxEmail]) && dbContext.Users.Any(x => x.Email == lineAry[idxEmail])
+                    Registered = _userService.UserEmailExists(lineAry[idxEmail])
                 });
                 line = reader.ReadLine();
             }
@@ -184,28 +146,7 @@ namespace ElGroupo.Web.Controllers
             //return View("_ImportContactList", outList);
         }
 
-        //[Route("ImportGoogleContacts")]
-        //public async Task<IActionResult> ImportGoogleContacts()
-        //{
 
-        //    UserCredential cred = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-        //        new ClientSecrets
-        //    {
-        //        ClientId = googleOptions.GoogleClientId,
-        //        ClientSecret = googleOptions.GoogleClientSecret
-        //    }, 
-        //    new string[1] { "https://www.googleapis.com/auth/contacts.readonly" },
-        //    "user",
-        //    System.Threading.CancellationToken.None);
-
-
-        //    var oAuthParams = new OAuth2Parameters { AccessToken = cred.Token.AccessToken, RefreshToken = cred.Token.RefreshToken };
-        //    var reqSettings = new RequestSettings("Tribez", oAuthParams);
-        //    ContactsRequest cc = new ContactsRequest(reqSettings);
-        //    cc.Get<>
-
-        //    return BadRequest();
-        //}
 
         [HttpGet("ImportGoogleContacts")]
         public IActionResult ImportGoogleContacts()
@@ -219,7 +160,7 @@ namespace ElGroupo.Web.Controllers
         public IActionResult GoogleLogin(string returnUrl)
         {
             string redirectUrl = Url.Action("GoogleResponse", "Account", new { ReturnUrl = returnUrl });
-            AuthenticationProperties props = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            AuthenticationProperties props = _userService.GoogleAuthenticationProps(redirectUrl);
             return new ChallengeResult("Google", props);
 
 
@@ -241,40 +182,22 @@ namespace ElGroupo.Web.Controllers
         {
             try
             {
-                ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
+                ExternalLoginInfo info = await _userService.GetExternalLoginInfo();
                 if (info == null)
                 {
                     return RedirectToAction(nameof(Login));
                 }
 
-                var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
-                if (result.Succeeded)
+                var loginSuccess = await _userService.ExternalLogin(info);
+                if (loginSuccess)
                 {
                     return Redirect(returnUrl == "/" ? "/Home/Dashboard" : returnUrl);
                 }
                 else
                 {
-                    User user = new User
-                    {
-                        Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
-                        UserName = info.Principal.FindFirst(ClaimTypes.Email).Value
-                    };
-                    if (info.Principal.HasClaim(x => x.Type == ClaimTypes.GivenName) && info.Principal.HasClaim(x => x.Type == ClaimTypes.Surname))
-                    {
-                        user.Name = info.Principal.FindFirst(ClaimTypes.GivenName).Value + " " + info.Principal.FindFirst(ClaimTypes.Surname).Value;
-                    }
-
-                    IdentityResult idResult = await userManager.CreateAsync(user);
-                    if (idResult.Succeeded)
-                    {
-                        idResult = await userManager.AddLoginAsync(user, info);
-                        if (idResult.Succeeded)
-                        {
-                            await signInManager.SignInAsync(user, false);
-                            return Redirect("/Account/Edit");
-                        }
-                    }
-                    return AccessDenied();
+                    var createExternalUserResponse = await _userService.CreateExternalLoginUser(info);
+                    if (createExternalUserResponse.Success) return Redirect("/Account/Edit");
+                    return BadRequest(new { message = createExternalUserResponse.ErrorMessage });
                 }
             }
             catch (Exception ex)
@@ -306,14 +229,9 @@ namespace ElGroupo.Web.Controllers
         [Route("/")]
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Login(string returnUrl)
+        public IActionResult Login(string returnUrl)
         {
-            var signedIn = signInManager.IsSignedIn(HttpContext.User);
-            if (signedIn)
-            {
-                return Redirect("/Home/Dashboard");
-            }
-
+            if (_userService.IsSignedIn(HttpContext.User)) return Redirect("/Home/Dashboard");
             ViewBag.returnUrl = returnUrl;
             return View();
         }
@@ -337,7 +255,7 @@ namespace ElGroupo.Web.Controllers
         [Route("Create/{id}")]
         public async Task<IActionResult> CreateFromInvite(Guid id)
         {
-            var invite = dbContext.UnregisteredEventAttendees.Include("Event").FirstOrDefault(x => x.RegisterToken == id);
+            var invite = await _accountService.GetUnregisteredAttendee(id);
             if (invite == null) return BadRequest();
             return View("Create", new CreateAccountModel { InvitedFromEvent = true, InviteName = invite.Name, EventName = invite.Event.Name, InvitedEmail = invite.Email, InviteId = invite.RegisterToken });
         }
@@ -348,16 +266,8 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> VerifyEmail([FromRoute]string code)
         {
             var codeGuid = new Guid(code);
-            var token = await dbContext.Set<UserValidationToken>().Include(x => x.User).FirstOrDefaultAsync(x => x.TokenType == Domain.Enums.TokenTypes.EmailVerification && x.Token == codeGuid);
-            if (token == null) return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
-
-
-
-            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == token.User.Id);
-            user.EmailConfirmed = true;
-            dbContext.Update(user);
-            dbContext.Remove(token);
-            await dbContext.SaveChangesAsync();
+            var verifyResponse = await _accountService.VerifyEmail(code);
+            if (!verifyResponse.Success) return BadRequest(new { message = verifyResponse.ErrorMessage });
             ViewBag.Message = "Thanks for confirming your email!  Please login below!";
             return RedirectToAction("Login");
 
@@ -413,7 +323,12 @@ namespace ElGroupo.Web.Controllers
         [Route("Create")]
         public async Task<IActionResult> Create([FromForm]CreateAccountModel model)
         {
-            if (model.InviteId.HasValue) model.EmailAddress = model.InvitedEmail;
+            if (model.InviteId.HasValue)
+            {
+                if (!await _accountService.VerifyInviteToken(model.InviteId.Value)) return AccessDenied();
+                model.EmailAddress = model.InvitedEmail;
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -430,21 +345,21 @@ namespace ElGroupo.Web.Controllers
                     };
 
                     //need to attempt to add first in case we get any password validation errors or something -
-                    var res = await userManager.CreateAsync(newUser, model.Password);
 
-                    if (!res.Succeeded)
+                    var createResponse = await _userService.CreateUser(newUser, model.Password);
+                    //var res = await userManager.CreateAsync(newUser, model.Password);
+
+                    if (!createResponse.Success)
                     {
-                        foreach (var err in res.Errors)
-                        {
-                            ModelState.AddModelError("", err.Description);
-                        }
+                        ModelState.AddModelError("", createResponse.ErrorMessage);
                         return View(model);
                     }
 
                     if (model.Photo != null)
                     {
-                        newUser = await userManager.FindByIdAsync(newUser.Id.ToString());
-                        UserPhoto photo = new UserPhoto();
+                        var newUserId = Convert.ToInt64(createResponse.ResponseData);
+                        newUser = await _userService.GetUserById(newUserId);
+
                         byte[] fileBytes = null;
                         using (var imageStream = model.Photo.OpenReadStream())
                         {
@@ -454,64 +369,39 @@ namespace ElGroupo.Web.Controllers
                                 fileBytes = ms.ToArray();
                             }
                         }
-                        photo.ContentType = model.Photo.ContentType;
-                        photo.ImageData = fileBytes;
-                        dbContext.UserPhotos.Add(photo);
-                        await dbContext.SaveChangesAsync();
+                        var photoResult = await _accountService.CreateUserPhoto(model.Photo.ContentType, fileBytes);
+                        if (photoResult.Success)
+                        {
+                            newUser.Photo = (UserPhoto)photoResult.ResponseData;
+                            var updateResponse = await _userService.UpdateUser(newUser);
+                            if (!updateResponse.Success) return BadRequest(new { message = updateResponse.ErrorMessage });
+                        }
 
-                        newUser.Photo = photo;
-                        await userManager.UpdateAsync(newUser);
                     }
 
                     //what about converting unregistereduserconnection to userconnection??
-                    foreach (var conn in dbContext.Set<UnregisteredUserConnection>().Include("User").Where(x => x.Email == model.EmailAddress))
-                    {
-                        var uc = new UserConnection { User = conn.User, ConnectedUser = newUser };
-                        dbContext.Add(uc);
-                        dbContext.UnregisteredUserConnections.Remove(conn);
-                    }
-                    await dbContext.SaveChangesAsync();
-
+                    await _accountService.UpdateConnectionRecordsForNewUser(newUser);
+                    await _accountService.UpdateAttendeeRecordsForNewUser(newUser);
                     if (model.InviteId.HasValue)
                     {
-                        //add new user to this eevent
-                        //remove EventUregisteredAttendee record
-                        var uea = dbContext.UnregisteredEventAttendees.Include("Event").FirstOrDefault(x => x.RegisterToken == model.InviteId);
-                        var ea = new EventAttendee
-                        {
-                            Event = uea.Event,
-                            User = newUser,
-                            Viewed = false,
-                            ResponseStatus = Domain.Enums.RSVPTypes.None
-                        };
+                        //no need to verify email
 
-                        dbContext.UnregisteredEventAttendees.Remove(uea);
-                        dbContext.EventAttendees.Add(ea);
-                        await dbContext.SaveChangesAsync();
 
                         return Redirect("/Account/Edit");
                     }
                     else
                     {
-                        var token = new UserValidationToken
-                        {
-                            User = newUser,
-                            TokenType = Domain.Enums.TokenTypes.EmailVerification,
-                            Token = Guid.NewGuid()
-                        };
-
-                        dbContext.Add(token);
-                        await dbContext.SaveChangesAsync();
-
-                        var mailModel = new ElGroupo.Web.Mail.Models.VerifyEmailModel
+                        var tokenResponse = await _accountService.CreateVerifyEmailToken(newUser);
+                        if (!tokenResponse.Success) return BadRequest(new { message = tokenResponse.ErrorMessage });
+                        var mailModel = new VerifyEmailModel
                         {
                             Recipient = newUser.Name,
-                            CallbackUrl = Url.Action("VerifyEmail", "Account", new { code = token.Token.ToString() }, HttpContext.Request.Scheme)
+                            CallbackUrl = Url.Action("VerifyEmail", "Account", new { code = tokenResponse.ResponseData.ToString() }, HttpContext.Request.Scheme)
                         };
-                        var mailMetadata = new ElGroupo.Web.Mail.MailMetadata
+                        var mailMetadata = new MailMetadata
                         {
                             To = new List<string> { newUser.Email },
-                            Subject = "Welcome To Tribes!"
+                            Subject = "Welcome To Footprint!"
                         };
                         await this.emailService.SendEmail(mailMetadata, mailModel);
                         return Redirect("/Account/PendingEmailConfirmation");
@@ -540,20 +430,7 @@ namespace ElGroupo.Web.Controllers
         [HttpGet("ViewAttendeeGroup/{id}")]
         public async Task<IActionResult> ViewAttendeeGroup([FromRoute]long id)
         {
-            var model = new AttendeeGroupModel();
-            if (id != 0)
-            {
-                var ag = await dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
-                model.Name = ag.Name;
-                model.Id = ag.Id;
-                model.UserId = ag.User.Id;
-                foreach (var u in ag.Attendees)
-                {
-                    model.Users.Add(new AttendeeGroupUserModel { Name = u.User.Name, Email = u.User.Email, Id = u.User.Id });
-                }
-            }
-
-
+            var model = await _accountService.GetAttendeeGroup(id);
             return View("_ViewAttendeeGroup", model);
         }
 
@@ -561,11 +438,10 @@ namespace ElGroupo.Web.Controllers
         [HttpDelete("DeleteAttendeeGroup/{id}")]
         public async Task<IActionResult> DeleteAttendeeGroup([FromRoute] long id)
         {
-            var activeUser = await userManager.GetUserAsync(HttpContext.User);
-            var attendeeGroup = await dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
-            dbContext.Remove(attendeeGroup);
-            await dbContext.SaveChangesAsync();
-            return RedirectToAction("ViewAttendeeGroups", new { uid = activeUser.Id });
+            var activeUser = await CurrentUser();
+            var deleteResponse = await _accountService.DeleteAttendeeGroup(activeUser, id);
+            if (deleteResponse.Success) return RedirectToAction("ViewAttendeeGroups", new { uid = activeUser.Id });
+            return BadRequest(new { message = deleteResponse.ErrorMessage });
         }
 
         [HttpPost]
@@ -573,179 +449,46 @@ namespace ElGroupo.Web.Controllers
         [Route("EditAttendeeGroup")]
         public async Task<IActionResult> EditAttendeeGroup([FromBody]AttendeeGroupModel model)
         {
-            var user = dbContext.Users.FirstOrDefault(x => x.Id == model.UserId);
-
-            //security check
-            var activeUser = await userManager.GetUserAsync(HttpContext.User);
-            AttendeeGroup attendeeGroup = null;
-            if (model.Id == 0)
-            {
-                attendeeGroup = new AttendeeGroup { Name = model.Name, User = user };
-                dbContext.Add(attendeeGroup);
-                foreach (var groupUser in model.Users)
-                {
-                    var agu = new AttendeeGroupUser
-                    {
-                        AttendeeGroup = attendeeGroup,
-                        User = dbContext.Users.First(x => x.Id == groupUser.Id)
-                    };
-                    dbContext.Add(agu);
-                }
-                await dbContext.SaveChangesAsync();
-            }
-            else
-            {
-                attendeeGroup = await dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == model.Id);
-                if (attendeeGroup.User.Id != user.Id) return BadRequest();
-                var existingUsers = attendeeGroup.Attendees.Select(x => x.User.Id).ToList();
-                var updatedUsers = model.Users.Select(x => x.Id).ToList();
-
-                var newUserIds = updatedUsers.Where(x => !existingUsers.Contains(x)).ToList();
-                var deletedUserIds = existingUsers.Where(x => !updatedUsers.Contains(x)).ToList();
-
-                if (model.Name != attendeeGroup.Name || newUserIds.Count > 0 || deletedUserIds.Count > 0)
-                {
-                    if (model.Name != attendeeGroup.Name)
-                    {
-                        attendeeGroup.Name = model.Name;
-                        dbContext.Update(attendeeGroup);
-                    }
-
-                    foreach (var newUserId in newUserIds)
-                    {
-                        var agu = new AttendeeGroupUser
-                        {
-                            AttendeeGroup = attendeeGroup,
-                            User = dbContext.Users.First(x => x.Id == newUserId)
-                        };
-                        dbContext.Add(agu);
-                    }
-                    var toDelete = attendeeGroup.Attendees.Where(x => deletedUserIds.Contains(x.User.Id)).ToList();
-                    dbContext.RemoveRange(toDelete);
-                    await dbContext.SaveChangesAsync();
-
-                }
-            }
-
-            //the list of users in the group will be current in the browser before they click save so we dont need to render a new view
-            //this will update the list of all attendee groups instead b/c the user may navigate away
-
-
-            return RedirectToAction("ViewAttendeeGroups", new { uid = model.UserId });
-
-
+            var user = await CurrentUser();
+            var updateResponse = await _accountService.UpdateAttendeeGroup(user, model);
+            if (updateResponse.Success) return RedirectToAction("ViewAttendeeGroups", new { uid = model.UserId });
+            return BadRequest(new { message = updateResponse.ErrorMessage });
         }
 
 
         [HttpGet("ViewAttendeeGroups/{uid}"), HttpPost("ViewAttendeeGroups/{uid}")]
         public async Task<IActionResult> ViewAttendeeGroups([FromRoute] int uid)
         {
-            var ags = await dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).Where(x => x.User.Id == uid).ToListAsync();
-            var model = new List<AttendeeGroupListModel>();
-            foreach (var ag in ags) model.Add(new AttendeeGroupListModel { Name = ag.Name, Id = ag.Id, UserCount = ag.Attendees.Count });
-            return View("_AttendeeGroupList", model);
+            var user = await CurrentUser();
+            return View("_AttendeeGroupList", _accountService.GetUserAttendeeGroupList(user.Id));
         }
 
 
-        private List<AttendeeGroupListModel> GetAttendeeGroups(User user)
-        {
-            var model = new List<AttendeeGroupListModel>();
-            foreach (var a in user.AttendeeGroups) model.Add(new AttendeeGroupListModel { Name = a.Name, Id = a.Id, UserCount = a.Attendees.Count });
-            return model.OrderBy(x => x.Name).ToList();
-        }
-
-        private List<UserConnectionModel> GetConnections(User user)
-        {
-            var model = new List<UserConnectionModel>();
-            foreach (var c in user.ConnectedUsers)
-            {
-                model.Add(new UserConnectionModel
-                {
-                    Name = c.ConnectedUser.Name,
-                    Email = c.ConnectedUser.Email,
-                    Phone = c.ConnectedUser.ContactMethods.Any(x => x.ContactMethod.Value == "Phone") ? c.ConnectedUser.ContactMethods.First(x => x.ContactMethod.Value == "Phone").Value : "",
-                    Registered = true,
-                    UserId = c.ConnectedUser.Id
-                });
-            }
-            foreach (var uc in user.UnregisteredConnections)
-            {
-                model.Add(new UserConnectionModel
-                {
-                    Name = uc.Name,
-                    Email = uc.Email,
-                    Phone = "",
-                    Registered = false
-                });
-            }
-
-            return model;
-        }
 
 
-        private List<EditContactModel> GetContacts(User user)
-        {
-            var model = new List<EditContactModel>();
-            foreach (var c in user.ContactMethods)
-            {
-                model.Add(new EditContactModel
-                {
-                    Id = c.Id,
-                    Value = c.Value,
-                    ContactTypeId = c.ContactMethod.Id,
-                    ContactTypeDescription = c.ContactMethod.Value
-                });
-            }
-            return model;
-        }
-        private Dictionary<long, string> GetContactTypes()
-        {
-            var dict = new Dictionary<long, string>();
-            foreach (var c in dbContext.ContactTypes)
-            {
-                dict.Add(c.Id, c.Value);
-            }
-            return dict;
-        }
+
+
+
+
 
         [HttpGet]
         [Route("ConnectionList/{uid}")]
         public async Task<IActionResult> GetConnectionList([FromRoute] int uid)
         {
-            var user = await dbContext.Set<User>().Include(x => x.ConnectedUsers).ThenInclude(x => x.ConnectedUser).Include(x => x.UnregisteredConnections).FirstOrDefaultAsync(x => x.Id == uid);
-            if (user == null) return BadRequest();
-            return View("_ConnectionList", GetConnections(user));
+            var user = await CurrentUser();
+            return View("_ConnectionList", await _accountService.GetUserConnections(user.Id));
         }
 
 
         [HttpGet]
         [Route("Edit")]
-        public async Task<IActionResult> Edit()
+        public async Task<IActionResult> Edit(bool showConfirm = false)
         {
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().
-                Include(x => x.Photo).
-                Include(x => x.AttendeeGroups).ThenInclude(x => x.Attendees).
-                Include(x => x.ContactMethods).ThenInclude(x => x.ContactMethod).
-                Include(x => x.ConnectedUsers).ThenInclude(x => x.ConnectedUser).
-                Include(x => x.UnregisteredConnections).
-                First(x => x.Id == user.Id);
-
-            var model = new EditAccountModel
-            {
-                Contacts = GetContacts(userRecord),
-                ContactTypes = GetContactTypes(),
-                Connections = GetConnections(userRecord),
-                AttendeeGroups = GetAttendeeGroups(userRecord),
-                EmailAddress = userRecord.Email,
-                HasPhoto = userRecord.Photo != null,
-                Id = userRecord.Id,
-                Name = userRecord.Name,
-                PhoneNumber = userRecord.PhoneNumber,
-                ZipCode = userRecord.ZipCode,
-                clientId = this.googleOptions.GoogleClientId,
-                apiKey = this.googleOptions.GoogleApiKey
-            };
+            var user = await CurrentUser();
+            var model = await _accountService.GetAccountEditModel(user.Id);
+            model.clientId = this.googleOptions.GoogleClientId;
+            model.apiKey = this.googleOptions.GoogleApiKey;
+            model.ShowSaveConfirmation = showConfirm;
             return View(model);
         }
 
@@ -753,20 +496,8 @@ namespace ElGroupo.Web.Controllers
         [Route("View/{userId}")]
         public async Task<IActionResult> View(int userId)
         {
-
-            var userRecord = await dbContext.Set<User>().Include("Photo").Include("ContactMethods.ContactMethod").FirstOrDefaultAsync(x => x.Id == userId);
-
-            var model = new ViewAccountModel
-            {
-                Contacts = GetContacts(userRecord),
-                ContactTypes = GetContactTypes(),
-                EmailAddress = userRecord.Email,
-                Id = userRecord.Id,
-                Name = userRecord.Name,
-                PhoneNumber = userRecord.PhoneNumber,
-                ZipCode = userRecord.ZipCode
-            };
-            return View(model);
+            var user = await CurrentUser();
+            return View(await _accountService.GetAccountViewModel(userId));
         }
 
         public bool ThumbnailCallback()
@@ -806,23 +537,10 @@ namespace ElGroupo.Web.Controllers
         [HttpGet]
         [Authorize(Roles = "admin")]
         [Route("Edit/{id}", Name = "editadmin")]
-        public async Task<IActionResult> EditAdmin([FromRoute]int id)
+        public async Task<IActionResult> EditAdmin([FromRoute]long id)
         {
-
-            var userRecord = dbContext.Set<User>().Include("Photo").Include("Contacts.ContactType").First(x => x.Id == id);
-
-            var model = new EditAccountModel
-            {
-                Contacts = GetContacts(userRecord),
-                ContactTypes = GetContactTypes(),
-                EmailAddress = userRecord.Email,
-                HasPhoto = userRecord.Photo != null,
-                Id = userRecord.Id,
-                Name = userRecord.Name,
-                PhoneNumber = userRecord.PhoneNumber,
-                ZipCode = userRecord.ZipCode,
-                IsAdminEditing = true
-            };
+            var model = await _accountService.GetAccountEditModel(id);
+            model.IsAdminEditing = true;
             return View("Edit", model);
         }
 
@@ -830,75 +548,29 @@ namespace ElGroupo.Web.Controllers
         [HttpPost]
         [Route("Delete/{id}")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Delete([FromRoute]int id)
+        public async Task<IActionResult> Delete([FromRoute]long id)
         {
-            var user = await userManager.FindByIdAsync(id.ToString());
-            await userManager.DeleteAsync(user);
-            return View("Admin", null);
+            var response = await _userService.Delete(id);
+            if (response.Success) return View("Admin", null);
+            return BadRequest(new { message = response.ErrorMessage });
+
         }
 
         [HttpPost]
         [Route("Edit")]
         public async Task<IActionResult> Edit(EditAccountModel model)
         {
-            User user = await userManager.GetUserAsync(HttpContext.User);
-            var isAdmin = await userManager.IsInRoleAsync(user, "admin");
+            User user = await CurrentUser();
+            var isAdmin = await _userService.IsAdmin(user);
             var editingOwnAccount = true;
             if (isAdmin && user.Id != model.Id)
             {
-                user = await userManager.FindByIdAsync(model.Id.ToString());
+                user = await _userService.GetUserById(model.Id);
                 editingOwnAccount = false;
             }
 
-            var userRecord = dbContext.Set<User>().Include(x => x.Photo).Include(x => x.ContactMethods).ThenInclude(x => x.ContactMethod).First(x => x.Id == user.Id);
-            userRecord.ZipCode = model.ZipCode;
-            userRecord.Email = model.EmailAddress;
-            userRecord.PhoneNumber = model.PhoneNumber;
-            if (model.UpdatedPhoto != null)
-            {
-                byte[] fileBytes = CreateThumbnail(model.UpdatedPhoto.OpenReadStream(), model.UpdatedPhoto.ContentType);
-                //byte[] fileBytes = null;
-                //using (var imageStream = model.UpdatedPhoto.OpenReadStream())
-                //{
-                //    using (var ms = new MemoryStream())
-                //    {
-                //        await imageStream.CopyToAsync(ms);
-                //        fileBytes = ms.ToArray();
-                //    }
-                //}
-                if (userRecord.Photo == null)
-                {
-                    var newPhoto = new UserPhoto
-                    {
-                        ContentType = model.UpdatedPhoto.ContentType,
-                        ImageData = fileBytes
-                    };
-                    dbContext.UserPhotos.Add(newPhoto);
-                    userRecord.Photo = newPhoto;
-
-                }
-                else
-                {
-                    userRecord.Photo.ContentType = model.UpdatedPhoto.ContentType;
-                    userRecord.Photo.ImageData = fileBytes;
-                }
-
-
-            }
-
-            dbContext.Users.Update(userRecord);
-            await dbContext.SaveChangesAsync();
-            //var model = new EditAccountModel
-            //{
-            //    Contacts = GetContacts(userRecord),
-            //    ContactTypes = GetContactTypes(),
-            //    EmailAddress = userRecord.Email,
-            //    HasPhoto = userRecord.Photo != null,
-            //    Id = userRecord.Id,
-            //    Name = userRecord.Name,
-            //    PhoneNumber = userRecord.PhoneNumber,
-            //    ZipCode = userRecord.ZipCode
-            //};
+            var updateResponse = await _accountService.UpdateUser(model);
+            if (!updateResponse.Success) return BadRequest(new { message = updateResponse.ErrorMessage });
 
             if (isAdmin && !editingOwnAccount)
             {
@@ -906,7 +578,7 @@ namespace ElGroupo.Web.Controllers
             }
             else
             {
-                return RedirectToAction("Edit");
+                return RedirectToAction("Edit", new { showConfirm = true });
             }
 
         }
@@ -916,23 +588,17 @@ namespace ElGroupo.Web.Controllers
         [Route("Contacts")]
         public async Task<IActionResult> Contacts()
         {
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include(x=>x.ContactMethods).ThenInclude(x=>x.ContactMethod).First(x => x.Id == user.Id);
-
-
-            return View("_ContactMethods", GetContacts(userRecord));
+            var user = await CurrentUser();
+            return View("_ContactMethods", await _accountService.GetUserContactMethods(user.Id));
         }
 
         [HttpPost]
         [Route("Contacts/Create")]
         public async Task<IActionResult> CreateContact([FromBody]EditContactModel model)
         {
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var userRecord = dbContext.Set<User>().Include(x=>x.ContactMethods).First(x => x.Id == user.Id);
-            var ct = dbContext.ContactTypes.First(x => x.Id == model.ContactTypeId);
-            userRecord.AddContact(ct, model.Value);
-            dbContext.Update(userRecord);
-            await dbContext.SaveChangesAsync();
+            var user = await CurrentUser();
+            var createResponse = await _accountService.CreateContactMethod(model, user.Id);
+            if (!createResponse.Success) return BadRequest(new { message = createResponse.ErrorMessage });
             return RedirectToAction("Contacts");
         }
 
@@ -940,14 +606,8 @@ namespace ElGroupo.Web.Controllers
         [Route("Contacts/Update")]
         public async Task<IActionResult> UpdateContact([FromBody]EditContactModel model)
         {
-            var c = dbContext.UserContacts.Include("User").First(x => x.Id == model.Id);
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            if (user.Id != c.User.Id)
-            {
-                return View("../Shared/AccessDenied");
-            }
-            c.Value = model.Value;
-            await dbContext.SaveChangesAsync();
+            var updateResponse = await _accountService.UpdateUserContactMethod(model.Id, model.Value);
+            if (!updateResponse.Success) return BadRequest(new { message = updateResponse.ErrorMessage });
             return RedirectToAction("Contact");
         }
 
@@ -955,14 +615,8 @@ namespace ElGroupo.Web.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteContact([FromRoute]long id)
         {
-            var c = dbContext.UserContacts.Include("User").First(x => x.Id == id);
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            if (user.Id != c.User.Id)
-            {
-                return View("../Shared/AccessDenied");
-            }
-            dbContext.UserContacts.Remove(c);
-            await dbContext.SaveChangesAsync();
+            var deleteResponse = await _accountService.DeleteUserContactMethod(id);
+            if (!deleteResponse.Success) return BadRequest(new { message = deleteResponse.ErrorMessage });
             return RedirectToAction("Contacts");
         }
 
@@ -1017,69 +671,28 @@ namespace ElGroupo.Web.Controllers
         [Route("ResetPassword"), HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-            var user = await userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-                return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
-            try
-            {
-                var token = await dbContext.Set<UserValidationToken>().FirstOrDefaultAsync(x => x.User.Id == user.Id && x.TokenType == Domain.Enums.TokenTypes.ForgotPassword && x.Token == new Guid(model.Code));
-                if (token == null) return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
-
-                var code = await userManager.GeneratePasswordResetTokenAsync(user);
-                var result = await userManager.ResetPasswordAsync(user, code, model.Password);
-
-                if (result.Succeeded)
-                {
-                    dbContext.Remove(token);
-                    await dbContext.SaveChangesAsync();
-                    return RedirectToAction("Login");
-                }
-                AddErrors(result);
-                return View();
-            }
-            catch (Exception ex)
-            {
-
-            }
-            return View();
-
-
+            var result = await _userService.ResetPassword(model.Email, model.Code, model.Password);
+            if (result.Success) return RedirectToAction("Login");
+            return BadRequest(new { message = result.ErrorMessage });
         }
 
         [Route("ForgotPassword"), HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
         {
-            if (ModelState.IsValid)
-            {
+            var tokenResponse = await _userService.CreateForgotPasswordToken(model.Email);
+            if (!tokenResponse.Success) return BadRequest(new { message = tokenResponse.ErrorMessage });
 
-                var user = await this.userManager.FindByEmailAsync(model.Email);
-                if (user == null)
-                    return View("ForgotPasswordConfirmation");
-
-                // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                // Send an email with this link
-                var resetCode = new UserValidationToken
-                {
-                    User = user,
-                    Token = Guid.NewGuid(),
-                    TokenType = Domain.Enums.TokenTypes.ForgotPassword
-                };
-                dbContext.Add(resetCode);
-                await dbContext.SaveChangesAsync();
-                var callbackUrl = Url.Action("ResetPassword", "Account", new { code = resetCode.Token.ToString() },
-                    HttpContext.Request.Scheme);
-
-                var mailModel = new ElGroupo.Web.Mail.Models.ForgotPasswordMailModel { CallbackUrl = callbackUrl, Recipient = user.Name };
-                var metadata = new Mail.MailMetadata { To = new List<string> { user.Email }, Subject = "ElGroupo Password Reset" };
-                await emailService.SendEmail(metadata, mailModel);
-                return View("ForgotPasswordConfirmation");
-            }
-
-            // If we got this far, something failed, redisplay form
-            return View(model);
+            var callbackUrl = Url.Action("ResetPassword", "Account", new { code = tokenResponse.ResponseData.ToString() }, HttpContext.Request.Scheme);
+            var user = await _userService.GetUserByEmail(model.Email);
+            var mailModel = new ElGroupo.Web.Mail.Models.ForgotPasswordMailModel { CallbackUrl = callbackUrl, Recipient = user.Name };
+            var metadata = new Mail.MailMetadata { To = new List<string> { user.Email }, Subject = "ElGroupo Password Reset" };
+            await emailService.SendEmail(metadata, mailModel);
+            return View("ForgotPasswordConfirmation");
         }
+
+
+
+
 
         [HttpGet("ForgotUsername")]
         [AllowAnonymous]
@@ -1094,37 +707,41 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> Login(LoginModel details,
                 string returnUrl)
         {
-            if (ModelState.IsValid)
-            {
-                User user = await userManager.FindByEmailAsync(details.Email);
-                if (user != null)
-                {
-                    await signInManager.SignOutAsync();
-                    Microsoft.AspNetCore.Identity.SignInResult result =
-                            await signInManager.PasswordSignInAsync(
-                                user, details.Password, details.RememberMe, false);
+            var loginResponse = await _userService.Login(details.Email, details.Password, details.RememberMe);
+            if (!loginResponse.Success) return BadRequest(new { message = loginResponse.ErrorMessage });
+            //deal with time zone shit
+            var tzChanged = await TimeZoneChanged(details.UtcOffset, Convert.ToInt64(loginResponse.ResponseData));
+            if (returnUrl != null) return Redirect(returnUrl);
+            return RedirectToAction("Dashboard", "Home", new { confirmTimeZone = tzChanged });
+            //return Redirect(returnUrl ?? "/Home/Dashboard");
 
-                    //to permanently add claims to a user (via database)
-                    //await userManager.AddClaimsAsync(user, new Claim[] { new Claim(ClaimTypes.PostalCode, "DC 20050", ClaimValueTypes.String, "RemoteClaims"), new Claim(ClaimTypes.StateOrProvince, "DC", ClaimValueTypes.String, "RemoteClaims") });
-
-
-
-
-                    if (result.Succeeded)
-                    {
-                        return Redirect(returnUrl ?? "/Home/Dashboard");
-                    }
-                }
-                ModelState.AddModelError(nameof(LoginModel.Email),
-                    "Invalid user or password");
-            }
-            return View(details);
         }
+
+        private async Task<bool> TimeZoneChanged(int offset, long userid)
+        {
+            //HttpContext.User is null here...
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user == null || user.TimeZoneId == null)
+            {
+                var realUser = _accountService.GetUser(userid);
+                var tz = TimeZoneInfo.FindSystemTimeZoneById(realUser.TimeZoneId);
+                var currentOffset = tz.GetUtcOffset(DateTime.Now);
+                return Math.Abs(Convert.ToDouble(offset)) != Math.Abs(currentOffset.TotalMinutes);
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+
         [Route("Logout")]
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            await signInManager.SignOutAsync();
+            await _userService.Logout();
             return RedirectToAction("Index", "Home");
         }
 

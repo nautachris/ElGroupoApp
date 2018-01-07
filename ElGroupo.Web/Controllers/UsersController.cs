@@ -12,6 +12,7 @@ using ElGroupo.Domain.Data;
 using System.IO;
 using ElGroupo.Web.Models.Users;
 using Microsoft.AspNetCore.Hosting;
+using ElGroupo.Web.Services;
 
 namespace ElGroupo.Web.Controllers
 {
@@ -19,16 +20,16 @@ namespace ElGroupo.Web.Controllers
 
 
     [Route("Users")]
-    public class UsersController : Controller
+    public class UsersController : ControllerBase
     {
-        private ElGroupoDbContext dbContext;
+
         private IHostingEnvironment hostEnv;
-        private UserManager<User> userManager = null;
-        public UsersController(ElGroupoDbContext ctx, IHostingEnvironment env, UserManager<User> userMgr)
+        private readonly UserService _userService = null;
+        public UsersController(UserService userService, IHostingEnvironment env, UserManager<User> userMgr):base(userMgr)
         {
-            this.dbContext = ctx;
+            _userService = userService;
             this.hostEnv = env;
-            this.userManager = userMgr;
+            
         }
 
         [Authorize]
@@ -36,9 +37,7 @@ namespace ElGroupo.Web.Controllers
         [Route("SearchAllUsers/{search}")]
         public async Task<IActionResult> SearchAllUsers([FromRoute]string search)
         {
-            var users = dbContext.Users.Where(x => x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
-            var list = new List<AutoCompleteModel>();
-            await users.ForEachAsync(x => list.Add(new AutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name }));
+            var list = await _userService.SearchAllUsers(search);
             return Json(list);
         }
 
@@ -48,28 +47,21 @@ namespace ElGroupo.Web.Controllers
         [Route("SearchUserConnections/{search}")]
         public async Task<IActionResult> SearchUserConnections([FromRoute]string search)
         {
-            var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var users = dbContext.UserConnections.Include(x=>x.ConnectedUser).Where(x => x.User.Id == user.Id && x.ConnectedUser.Name.ToUpper().Contains(search.ToUpper()) || x.ConnectedUser.Email.ToUpper().Contains(search.ToUpper())).Select(x => x.ConnectedUser);
-            var list = new List<ConnectionAutoCompleteModel>();
-            await users.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name, Registered = true }));
-            var unregisteredUsers = dbContext.UnregisteredUserConnections.Where(x => x.User.Id == user.Id && x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
-            await unregisteredUsers.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Email = x.Email, Name = x.Name, Id = x.Id, Registered = false }));
-
-            var groups = dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).Where(x => x.User.Id == user.Id && x.Name.ToUpper().Contains(search.ToUpper()));
-            await groups.ForEachAsync(x => list.Add(new ConnectionAutoCompleteModel { Group = true, GroupUserCount = x.Attendees.Count, Name = x.Name, Id = x.Id }));
+            var user = await CurrentUser();
+            var list = await _userService.SearchUserConnections(user.Id, search);
             return Json(list.OrderBy(x => x.Name).ToList());
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("Search/{search}")]
-        public async Task<IActionResult> Search([FromRoute]string search)
-        {
-            var users = dbContext.Users.Where(x => x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
-            var list = new List<UserInformationModel>();
-            await users.ForEachAsync(x => list.Add(new UserInformationModel { Email = x.Email, Id = x.Id, Name = x.Name, UserName = x.UserName }));
-            return PartialView("../Account/_UserList", list.OrderBy(x => x.UserName));
-        }
+        //[Authorize]
+        //[HttpGet]
+        //[Route("Search/{search}")]
+        //public async Task<IActionResult> Search([FromRoute]string search)
+        //{
+        //    var users = dbContext.Users.Where(x => x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
+        //    var list = new List<UserInformationModel>();
+        //    await users.ForEachAsync(x => list.Add(new UserInformationModel { Email = x.Email, Id = x.Id, Name = x.Name, UserName = x.UserName }));
+        //    return PartialView("../Account/_UserList", list.OrderBy(x => x.UserName));
+        //}
 
         private byte[] MissingUserPhoto()
         {
@@ -95,8 +87,8 @@ namespace ElGroupo.Web.Controllers
         {
             if (id != -1)
             {
-                var user = dbContext.Users.Include("Photo").FirstOrDefault(x => x.Id == id);
-                if (user == null || user.Photo == null)
+                var photo = await _userService.GetUserPhotoById(id);
+                if (photo == null)
                 {
                     var missing = MissingUserPhoto();
                     if (missing != null) return File(missing, "image/jpg");
@@ -104,7 +96,7 @@ namespace ElGroupo.Web.Controllers
                 }
                 else
                 {
-                    return File(user.Photo.ImageData, user.Photo.ContentType);
+                    return File(photo.ImageData, photo.ContentType);
                 }
             }
             else

@@ -9,6 +9,7 @@ namespace ElGroupo.Web.Models.Account
 {
     public class EditAccountModel
     {
+        public bool ShowSaveConfirmation { get; set; }
         public string clientId { get; set; }
         public string clientSecret { get; set; }
         public string apiKey { get; set; }
@@ -41,6 +42,9 @@ namespace ElGroupo.Web.Models.Account
         public bool HasPhoto { get; set; }
 
         public Dictionary<long, string> ContactTypes { get; set; }
+
+        public string TimeZoneId { get; set; }
+        public Dictionary<string, string> TimeZones { get; set; }
 
     }
 

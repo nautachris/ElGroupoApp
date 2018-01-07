@@ -15,6 +15,8 @@ namespace ElGroupo.Web.Models.Account
         [UIHint("password")]
         public string Password { get; set; }
 
+        public int UtcOffset { get; set; }
+
         [Display(Description = "Remember Me?")]
         public bool RememberMe { get; set; }
     }

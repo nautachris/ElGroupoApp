@@ -24,7 +24,7 @@
     </div>
     <div class="row tab details">
         <div asp-validation-summary="All" class="text-danger"></div>
-        <form asp-controller="Account" asp-action="Edit" enctype="multipart/form-data" method="post" class="contact-form">
+        <form asp-controller="Account" asp-action="Edit" enctype="multipart/form-data" method="post" id="frmEditAccount" class="contact-form">
             <input asp-for="Id" type="hidden" />
             <div class="row line-after">
                 <div id="divImg" class="image-circle-250" style="background-image: url('/Users/UserPhoto/@Model.Id')">
@@ -62,6 +62,16 @@
                 <div class="col span-2-of-3">
                     <input class="input-transparent" type="text" asp-for="ZipCode" placeholder="Enter Zip Code...">
                 </div>
+            </div>
+            <div class="row">
+                <label asp-for="TimeZoneId">Time Zone:</label>
+                <select asp-for="TimeZoneId">
+                    @foreach(var tz in Model.TimeZones)
+                    {
+                        <option value="@tz.Key">@tz.Value</option>
+
+                    }
+                </select>
             </div>
 
             <div class="row">
@@ -120,7 +130,7 @@
 
     </div>
 </section>
-<section></section>
+
 
 @section Scripts{
 
@@ -131,4 +141,16 @@
 <script type="text/javascript" src="~/content/scripts/account/google-contacts.js"></script>
     <script type="text/javascript" src="~/content/scripts/account/attendee-groups.js"></script>
 <script async defer src="https://apis.google.com/js/api.js" onload="GoogleContacts.HandleClientLoad('@Model.apiKey','@Model.clientId');" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
+@if (Model.ShowSaveConfirmation)
+{
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            Loading.Stop();
+            MessageDialog("Your account has been updated!");
+
+        });
+    </script>
+
+}
 }

@@ -32,18 +32,18 @@ namespace ElGroupo.Web.Controllers
         private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
         {
             if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessful;
-            if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) return CheckInStatuses.AvailableForCheckIn;
+            if (e.StartTime.AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now.ToUniversalTime()) return CheckInStatuses.AvailableForCheckIn;
             return CheckInStatuses.NotAvailableForCheckIn;
         }
 
         [HttpGet, HttpPost]
         [Route("Dashboard")]
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard([FromQuery]bool confirmTimeZone = false)
         {
             var model = new DashboardModel();
             var allEvents = new List<EventInformationModel>();
             //do we want a third "tab" for events I'm organizing?
-            var user = await this.CurrentUser;
+            var user = await this.CurrentUser();
             var organizedEvents = dbContext.EventAttendees.Include(x => x.User).Where(x => x.User.Id == user.Id && x.IsOrganizer).Select(x =>
             new
             {
@@ -51,14 +51,15 @@ namespace ElGroupo.Web.Controllers
                 ev = x.Event,
                 rec = x.Event.Recurrence
             }).ToList();
-
+            //e.StartTime.ToLocalTime().DayOfWeek.ToString() + " " + e.StartTime.ToLocalTime().ToString("d") + " " + e.StartTime.ToLocalTime().ToString("t")
             var invitedEvents = dbContext.EventAttendees.Include(x => x.User).Include(x => x.Event).ThenInclude(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Event).ThenInclude(x => x.Recurrence).Where(x => x.User.Id == user.Id && !x.IsOrganizer).ToList();
             foreach (var ev in organizedEvents)
             {
                 allEvents.Add(new EventInformationModel
                 {
-                    EndDate = ev.ev.EndTime.ToLocalTime(),
-                    StartDate = ev.ev.StartTime.ToLocalTime(),
+                    EndDate = ev.ev.EndTime,
+                    StartDate = ev.ev.StartTime,
+                    DateText = ev.ev.GetDateText(user.TimeZoneId),
                     Id = ev.ev.Id,
                     CheckInStatus = GetCheckInStatus(ev.ev, ev.ea),
                     OrganizedByUser = true,
@@ -73,8 +74,9 @@ namespace ElGroupo.Web.Controllers
             {
                 allEvents.Add(new EventInformationModel
                 {
-                    EndDate = ev.Event.EndTime.ToLocalTime(),
-                    StartDate = ev.Event.StartTime.ToLocalTime(),
+                    EndDate = ev.Event.EndTime,
+                    StartDate = ev.Event.StartTime,
+                    DateText = ev.Event.GetDateText(user.TimeZoneId),
                     Id = ev.Event.Id,
                     OrganizedByUser = false,
                     CheckInStatus = GetCheckInStatus(ev.Event, ev),
@@ -88,10 +90,13 @@ namespace ElGroupo.Web.Controllers
                 });
             }
 
-            model.Drafts = allEvents.Where(x => x.OrganizedByUser && x.Status == Domain.Enums.EventStatus.Draft).OrderBy(x => x.StartDate).ToList();
-            model.PastEvents = allEvents.Where(x => x.Status != Domain.Enums.EventStatus.Draft && x.StartDate < DateTime.Now).OrderBy(x => x.StartDate).ToList();
-            model.FutureEvents = allEvents.Where(x => x.Status != Domain.Enums.EventStatus.Draft && x.StartDate >= DateTime.Now).OrderBy(x => x.StartDate).ToList();
+            model.Drafts = allEvents.Where(x => x.OrganizedByUser && x.Status == EventStatus.Draft).OrderBy(x => x.StartDate).ToList();
+            model.PastEvents = allEvents.Where(x => x.Status != EventStatus.Draft && x.EndDate < DateTime.Now.ToUniversalTime()).OrderBy(x => x.StartDate).ToList();
+            model.FutureEvents = allEvents.Where(x => x.Status != EventStatus.Draft && x.EndDate >= DateTime.Now.ToUniversalTime()).OrderBy(x => x.StartDate).ToList();
+            model.MyEvents = allEvents.Where(x => x.OrganizedByUser).ToList();
             model.RSVPRequestedEvents = allEvents.Where(x => x.RSVPRequested).ToList();
+            model.RSVPRequestCount = allEvents.Count(x => x.RSVPRequested);
+            model.TimeZoneChanged = confirmTimeZone;
             return View(model);
         }
 
@@ -124,7 +129,7 @@ namespace ElGroupo.Web.Controllers
         [Authorize]
         public async Task<IActionResult> UserProps()
         {
-            return View(await this.CurrentUser);
+            return View(await this.CurrentUser());
         }
 
         //[Authorize]
@@ -142,7 +147,11 @@ namespace ElGroupo.Web.Controllers
         //    return View(await this.CurrentUser);
         //}
 
-        private Task<User> CurrentUser => _userManager.GetUserAsync(HttpContext.User);
+        private async Task<User> CurrentUser()
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            return await dbContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
+        }
 
     }
 }

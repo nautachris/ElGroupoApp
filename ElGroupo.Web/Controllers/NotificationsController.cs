@@ -43,7 +43,7 @@ namespace ElGroupo.Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = await this.userManager.GetUserAsync(HttpContext.User);
-                var e = await this.dbContext.Events.Include("Attendees.User").Include("Organizers.User").FirstAsync(x => x.Id == model.EventId);
+                var e = await this.dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).FirstAsync(x => x.Id == model.EventId);
                 var org = e.Attendees.FirstOrDefault(x => x.User.Id == user.Id && x.IsOrganizer);
                 if (!HttpContext.User.IsInRole("admin") && org == null)
                 {

@@ -6,8 +6,45 @@ using System.Text;
 
 namespace ElGroupo.Domain
 {
-    public class Event:ClassBase
+    public class Event : ClassBase
     {
+
+        public string GetDateText(string timeZoneId)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+            var localStartTime = TimeZoneInfo.ConvertTimeFromUtc(this.StartTime, tz);
+            var startTimezoneName = tz.IsDaylightSavingTime(localStartTime) ? tz.DaylightName : tz.StandardName;
+            var localEndTime = TimeZoneInfo.ConvertTimeFromUtc(this.EndTime, tz);
+            var endTimezoneName = tz.IsDaylightSavingTime(localEndTime) ? tz.DaylightName : tz.StandardName;
+            if (localStartTime.Date == localEndTime.Date)
+            {
+                //ev.ev.StartTime.ToLocalTime().DayOfWeek.ToString() + " " + ev.ev.StartTime.ToLocalTime().ToString("d") + " " + ev.ev.StartTime.ToLocalTime().ToString("t")
+                return localStartTime.DayOfWeek.ToString() + " " + localStartTime.ToString("d") + " " + localStartTime.ToString("t") + " - " + localEndTime.ToString("t") + " " + startTimezoneName;
+            }
+            else
+            {
+                if (startTimezoneName == endTimezoneName) return localStartTime.DayOfWeek.ToString() + " " + localStartTime.ToString("d") + " " + localStartTime.ToString("t") + " - " + localEndTime.DayOfWeek.ToString() + localEndTime.ToString("d") + " " + localEndTime.ToString("t") + " " + endTimezoneName;
+                else return localStartTime.DayOfWeek.ToString() + " " + localStartTime.ToString("d") + " " + localStartTime.ToString("t") + " " + startTimezoneName + " - " + localEndTime.DayOfWeek.ToString() + localEndTime.ToString("d") + " " + localEndTime.ToString("t") + " " + endTimezoneName;
+
+            }
+
+        }
+
+        public string GetStartTimeText(string timeZoneId)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var localStartTime = TimeZoneInfo.ConvertTimeFromUtc(this.StartTime, tz);
+            var tzName = tz.IsDaylightSavingTime(localStartTime) ? tz.DaylightName : tz.StandardName;
+            return localStartTime.DayOfWeek.ToString() + " " + localStartTime.ToString("d") + " " + localStartTime.ToString("t") + " - " + tzName;
+        }
+        public string GetEndTimeText(string timeZoneId)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var localEndTime = TimeZoneInfo.ConvertTimeFromUtc(this.EndTime, tz);
+            var tzName = tz.IsDaylightSavingTime(localEndTime) ? tz.DaylightName : tz.StandardName;
+            return localEndTime.DayOfWeek.ToString() + " " + localEndTime.ToString("d") + " " + localEndTime.ToString("t") + " - " + tzName;
+        }
         public Event()
         {
             this.Attendees = new HashSet<EventAttendee>();
@@ -39,7 +76,7 @@ namespace ElGroupo.Domain
 
         [MaxLength(10)]
         public string Zip { get; set; }
-        
+
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public double CoordinateX { get; set; }

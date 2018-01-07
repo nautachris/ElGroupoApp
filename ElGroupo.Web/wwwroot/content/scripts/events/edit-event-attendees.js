@@ -109,6 +109,7 @@ EditEventAttendees = {
                 Confirm("Do you want to remove " + name + " from this event?", function () {
                     if ($("#IsRecurring").val() == "True") {
                         Confirm('Do you want to remove ' + name + ' from all recurring events?', function () {
+                            Loading.Start();
                             $.ajax({
                                 url: "/Events/RemoveEventAttendee",
                                 type: 'POST',
@@ -131,6 +132,7 @@ EditEventAttendees = {
 
 
                         }, function () {
+                            Loading.Start();
                             $.ajax({
                                 url: "/Events/RemoveEventAttendee",
                                 type: 'POST',
@@ -144,9 +146,11 @@ EditEventAttendees = {
                                 cache: false,
                                 dataType: 'html',
                                 success: function success(results) {
+                                    Loading.Stop();
                                     $("#divViewAttendees").html(results);
                                 },
                                 error: function error(err) {
+                                    Loading.Stop();
                                     alert('error');
                                 }
                             });
@@ -154,6 +158,7 @@ EditEventAttendees = {
                         });
                     }
                     else {
+                        Loading.Start();
                         $.ajax({
                             url: "/Events/RemoveEventAttendee",
                             type: 'POST',
@@ -167,9 +172,11 @@ EditEventAttendees = {
                             cache: false,
                             dataType: 'html',
                             success: function success(results) {
+                                Loading.Stop();
                                 $("#divViewAttendees").html(results);
                             },
                             error: function error(err) {
+                                Loading.Stop();
                                 alert('error');
                             }
                         });
@@ -363,6 +370,7 @@ EditEventAttendees = {
             Attendees: list,
             UpdateRecurring: updateRecurring
         };
+        Loading.Start();
         $.ajax({
             url: "/Events/SavePendingAttendees",
             type: 'POST',
@@ -372,10 +380,12 @@ EditEventAttendees = {
             contentType: 'application/json',
             dataType: "html",
             success: function success(results) {
+                Loading.Stop();
                 $("#divViewAttendees").html(results);
                 $("#divAddedAttendeeList").empty();
 
                 $(".links[data-link-type=attendees]").click();
+                MessageDialog("Attendee Changes Saved");
             },
             error: function error(err) {
                 console.log(err);

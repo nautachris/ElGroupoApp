@@ -1,0 +1,128 @@
+﻿<div>
+    <div class="list-header" data-dojo-attach-point="headerNode">SHA Bridge Photos</div>
+    <div data-dojo-attach-point="ListNode"></div>
+</div>
+
+<span id="ui-id-1" class="ui-dialog-title">
+    <span class="PhotoViewerHeader"> MD 231 (Hallowing Point Road) over Patuxent River (Patuxent River Bridge, Benedict Bridge)</span>
+</span>
+
+<div id="photoViewerModal" style="z-index: 1003; width: auto; min-height: 0px; height: 604px;" class="ui-dialog-content ui-widget-content" scrolltop="0" scrollleft="0">
+    <div id="HistoricBridgePhotoViewDiv">
+        <div id="mod-archbridgephotoviewer_tpm">
+
+            <div class="ember-view">
+
+                <ul style="display: none;">
+                    <!--<button id="prev_button" class="toolsStyledEmberButton">&lt;</button>
+                    <button id="next_button" class="toolsStyledEmberButton">&gt;</button>
+                    <button id="zoomin_button" class="toolsStyledEmberButton">+</button>
+                    <button id="zoomout_button" class="toolsStyledEmberButton">-</button>-->
+                </ul>
+
+                <div class="main-photo">
+                    <img id="image" width="600" height="500" class="ui-draggable" src="" style="position: relative; left: 0px; top: 0px; transform: scale(1);">
+                    <button id="prev_button" class="sprite prev"></button>
+                    <button id="next_button" class="sprite next"></button>
+                    <div class="zoomControls">
+                        <button id="zoomin_button" class="sprite zoomin"></button>
+                        <button id="zoomout_button" class="sprite zoomout"></button>
+                    </div>
+                </div>
+                <div class="thumbnails">
+
+                    <div class="thumbHolder">
+                        <div class="ember-view number">
+                            <img src="" width="85" height="60" class="active">
+                        </div>
+                        <div class="ember-view number">
+                            <div class="photoNumber">1 of 5</div>
+                        </div>
+                    </div>
+
+                    <div class="thumbHolder">
+                        <div class="ember-view number">
+                            <img src="" width="85" height="60">
+                        </div>
+                        <div class="ember-view number">
+                            <div class="photoNumber">2 of 5</div>
+                        </div>
+                    </div>
+
+                    <div class="thumbHolder">
+                        <div class="ember-view number">
+                            <img src="" data-bindattr-207="207" width="85" height="60">
+                        </div>
+                        <div class="ember-view number">
+                            <div class="photoNumber">3 of 5</div>
+                        </div>
+                    </div>
+
+                    <div class="thumbHolder">
+                        <div>
+                            <img src="" alt="not found" width="85" height="60">
+                        </div>
+                        <div class="ember-view number">
+                            <div class="photoNumber">4 of 5</div>
+                        </div>
+                    </div>
+                    <div class="thumbHolder">
+                        <div class="ember-view number">
+                            <img src="" alt="not found" width="85" height="60">
+                        </div>
+                        <div class="ember-view number">
+                            <div class="photoNumber">5 of 5</div>
+                        </div>
+                    </div>
+
+                </div>
+                <div syle="clear:both;"></div>
+                <div class="info">
+                    <h4 class="infoHeader">
+                        <span class="sprite photoInfo"></span>Info
+                    </h4>
+                    <div class="location">
+                        <span id="photo-location"><b>Location:</b> MD 231 over Patuxent River</span> <span class="mobile-hide">|</span>
+                        <span id="photo-date"><b>Photo Date:</b> 1951</span>
+                    </div>
+                    <div class="description"><b>Description: </b>Perched atop a crane on the west shore, this view overlooking the Patuxent River gives a sense of the bridge's 3300-foot length. Reinforced concrete beams supported on steel piles march across the river. The beams will carry the bridge's 56 spans. What will become the bridge's central movable swing span is barely visible as a darker grid that appears near the far end of the pile bents. In the foreground, barges provide platforms for construction.</div>
+                    <button class="mobile-photo-cancel" id="info-cancel">Cancel</button>
+                </div>
+                <div class="download">
+                    <div class="downloadHeader">
+                        <div class="sprite downloadIcon"></div>
+                        <span class="sprite photoDownload"></span>
+                        <div class="downloadLink">Download Photo: </div>
+                    </div>
+                    <div class="spacer"></div>
+                    <div id="sizeLinkContainer">
+                        <div>
+                            <div class="sizeLink"><div class="ember-view"><a class="sizeLink1">Small | .JPG</a></div></div>
+                            <div class="sizeLink"><div class="ember-view"><a class="sizeLink1">Large | .JPG</a></div></div>
+                        </div>
+                        <div>
+                            <div class="sizeLink"><div class="ember-view"><a class="sizeLink1">Medium | .JPG</a></div></div>
+                            <div class="sizeLink"><div class="ember-view"><a class="sizeLink1">Hi-Resolution | .TIF</a></div></div>
+                        </div>
+                    </div>
+                    <button class="mobile-photo-cancel" id="download-cancel">Cancel</button>
+                </div>
+                <div id="mobile-photo">
+                    <div id="photo-counter">
+                        <span><span id="current-count">1</span> of</span>
+                        <div class="ember-view number">
+
+                        </div>
+                        <span>Photos</span>
+                    </div>
+                    <div id="options">
+                        <span class="mobile-option" title="download"><span class="sprite photoDownload"></span>Download Photo</span>
+                        <span class="mobile-option" title="info"><span class="sprite photoInfo"></span>Info</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+

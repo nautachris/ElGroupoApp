@@ -3,7 +3,15 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <UserSecretsId>66b48c5a-f028-4f21-bdce-2ab2df7a1ea4</UserSecretsId>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\content\fonts\BebasNeue\TTF%2527s\**" />
+    <Content Remove="wwwroot\content\fonts\BebasNeue\TTF%2527s\**" />
+    <EmbeddedResource Remove="wwwroot\content\fonts\BebasNeue\TTF%2527s\**" />
+    <None Remove="wwwroot\content\fonts\BebasNeue\TTF%2527s\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Mail\Templates\EventCreated.cshtml" />
@@ -11,6 +19,8 @@
     <Content Remove="Mail\Templates\EventUnregisteredAttendee.cshtml" />
     <Content Remove="Mail\Templates\ForgotPassword.cshtml" />
     <Content Remove="Mail\Templates\VerifyEmail.cshtml" />
+    <Content Remove="wwwroot\content\scripts\tstest\file.ts" />
+    <Content Remove="wwwroot\content\scripts\tstest\file1.ts" />
   </ItemGroup>
 
   <!--<ItemGroup>
@@ -68,6 +78,8 @@
     <Folder Include="NewFolder\" />
     <Folder Include="wwwroot\content\lib\css\images\" />
     <Folder Include="wwwroot\content\resources\data\" />
+    <Folder Include="wwwroot\content\scripts\tstest2\" />
+    <Folder Include="wwwroot\content\tstest2\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleEmail" Version="3.3.5" />
@@ -100,6 +112,10 @@
       <EmbeddedResource Include="Mail\Templates\EventUnregisteredAttendee.cshtml" />
       <EmbeddedResource Include="Mail\Templates\ForgotPassword.cshtml" />
       <EmbeddedResource Include="Mail\Templates\VerifyEmail.cshtml" />
+    </ItemGroup>
+    <ItemGroup>
+      <TypeScriptCompile Include="wwwroot\content\scripts\tstest\file.ts" />
+      <TypeScriptCompile Include="wwwroot\content\scripts\tstest\file1.ts" />
     </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿@using ElGroupo.Web.Models.Account
 @model LoginModel
 
-<section class="section-features" style="text-align:center;">
+<section style="text-align:center; margin-top:80px;">
     @if (ViewBag.Message != null)
     {
         <h2 class="centered">@ViewBag.Message</h2>
@@ -11,9 +11,9 @@
         <div class="width-100 larger-text sign-up pointer">SIGN UP</div>
     </div>
     <div class="row top-margin-1">
-        <div class="col span-5-of-12" style="height:5px; background-color:red; vertical-align:middle;"></div>
+        <div class="col span-5-of-12" style="height:5px; background-color:black; vertical-align:middle;"></div>
         <div class="col span-2-of-12 no-margin" style="vertical-align:middle; text-align:center;">or</div>
-        <div class="col span-5-of-12" style="height:5px; background-color:red; vertical-align:middle;"></div>
+        <div class="col span-5-of-12" style="height:5px; background-color:black; vertical-align:middle;"></div>
     </div>
     <div class="row">
         <div class="width-100 larger-text bold log-in pointer">LOG IN</div>
@@ -24,26 +24,31 @@
         <a asp-route="GoogleLogin">Google</a>
         <form asp-action="Login" method="post" class="contact-form">
             <div class="text-danger" asp-validation-summary="All"></div>
+            <input type="hidden" asp-for="UtcOffset" id="UtcOffset" />
             <input type="hidden" name="returnUrl" value="@ViewBag.returnUrl" />
-            <div class="row">
+            <div class="row sans-pro uppercase left">
                 <div class="col span-1-of-3">
-                    <label asp-for="Email">Email:</label>
+                    @*<label style="font-family:'Source Sans Pro'; text-transform:uppercase;" asp-for="Email">Email:</label>*@
+                    Email:
                 </div>
                 <div class="col span-2-of-3">
-                    <input asp-for="Email">
+                    
+                    <input style="border:none transparent;" class="no-border" placeholder="Enter Email Address..." asp-for="Email">
+                </div>
+            </div>
+            <div class="row" style="height:1px; margin-left:10%; margin-right:10%; margin-top:5px; margin-bottom: 5px; background-color:lightgray;"></div>
+            <div class="row sans-pro uppercase left">
+                <div class="col span-1-of-3">
+                    @*<label style="font-family:'Source Sans Pro';text-transform:uppercase;" asp-for="Password">Password:</label>*@
+                    Password:
+                </div>
+                <div class="col span-2-of-3">
+                    <input style="border: none transparent;" class="no-border" placeholder="Enter Password..." asp-for="Password">
                 </div>
             </div>
             <div class="row">
                 <div class="col span-1-of-3">
-                    <label asp-for="Password">Password:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="Password">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col span-1-of-3">
-                    <label asp-for="RememberMe">Remember Me?</label>
+                    <label style="font-family:'Source Sans Pro';" asp-for="RememberMe">Remember Me?</label>
                 </div>
                 <div class="col span-2-of-3">
                     <input asp-for="RememberMe">
@@ -72,6 +77,11 @@
 
 @Html.Partial("../Shared/_Footer")
 @section Scripts{
+
+    <script type="text/javascript">
+        var offset = new Date().getTimezoneOffset();
+        document.getElementById('UtcOffset').value = offset.toString();
+    </script>
     <script type="text/javascript" src="~/content/scripts/account/login.js"></script>
     <script type="text/javascript" src="~/content/scripts/account/create-account.js"></script>
 }

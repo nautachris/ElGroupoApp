@@ -9,7 +9,7 @@ namespace ElGroupo.Web.Controllers
 {
     public class ControllerBase:Controller
     {
-        protected readonly UserManager<User> userManager = null;
+        private readonly UserManager<User> userManager = null;
         public ControllerBase(UserManager<User> manager)
         {
             this.userManager = manager;

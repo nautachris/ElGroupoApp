@@ -26,7 +26,7 @@
                 @if (notification.IsNew)
                 {
                     <div class="unread-notification-subject" data-notification-id="@notification.Id">
-                        <span class="width-100 inline-block">@notification.PostedDate.ToString("d") &nbsp; @notification.PostedDate.ToString("t")</span>
+                        <span class="width-100 inline-block">@notification.PostedDate.ToLocalTime().ToString("d") &nbsp; @notification.PostedDate.ToLocalTime().ToString("t")</span>
                         <span class="width-100 inline-block">@notification.Subject</span>
                     </div>
                     <span class="message-container" data-notification-id="@notification.Id">@notification.NotificationText</span>
@@ -34,17 +34,18 @@
                 }
                 else
                 {
-                    <span class="width-100 inline-block">@notification.PostedDate.ToString("d") &nbsp; @notification.PostedDate.ToString("t")</span>
+                    <span class="width-100 inline-block">@notification.PostedDate.ToLocalTime().ToString("d") &nbsp; @notification.PostedDate.ToLocalTime().ToString("t")</span>
                     <span class="width-100 inline-block">@notification.Subject</span>
                     <span>@notification.NotificationText</span>
                 }
                 @if (notification.CanEdit)
                 {
-                    <div class="row">
+                    <a style="float:right;" class="btn btn-primary delete-message" data-notification-id="@notification.Id">Delete</a>
+                    @*<div class="row">
                         <div class="col span-3-of-3">
                             <a class="btn btn-primary delete-message" data-notification-id="@notification.Id">Delete Message!</a>
                         </div>
-                    </div>
+                    </div>*@
 
                 }
             </div>

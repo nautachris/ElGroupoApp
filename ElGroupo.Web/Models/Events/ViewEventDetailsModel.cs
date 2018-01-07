@@ -9,13 +9,13 @@ namespace ElGroupo.Web.Models.Events
 {
     public class ViewEventDetailsModel
     {
-        public ViewEventDetailsModel(Event e)
+        public ViewEventDetailsModel(Event e, string tzId)
         {
             this.Name = e.Name;
             this.Description = e.Description;
             this.Location = e.LocationName;
-            this.StartTime = e.StartTime.ToLocalTime().DayOfWeek.ToString() + " " + e.StartTime.ToLocalTime().ToString("d") + " " + e.StartTime.ToLocalTime().ToString("t");
-            this.EndTime = e.EndTime.ToLocalTime().DayOfWeek.ToString() + " "  +e.EndTime.ToLocalTime().ToString("d") + " " + e.EndTime.ToLocalTime().ToString("t");
+            this.StartTime = e.GetStartTimeText(tzId);
+            this.EndTime = e.GetEndTimeText(tzId);
             this.Status = e.Status;
             this.IsRecurring = e.Recurrence != null;
             if (this.IsRecurring) this.RecurrenceText = GetRecurrenceText(e.Recurrence);

@@ -1,5 +1,6 @@
 ﻿//gmapi key AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk
 Maps = {
+    initOnLoad: true,
     placesService: null,
     map: null,
     autocomplete: null,
@@ -102,6 +103,29 @@ Maps = {
         });
     },
     InitMap: function () {
+        if (this.initOnLoad) {
+            this.map = new google.maps.Map(this.$mapDiv[0], {
+                zoom: 10,
+                center: { lat: 35.11, lng: -106.62 }
+            });
+            if (this.createDrawTools) {
+                this.InitDrawingManager();
+            }
+
+
+            this.marker = new google.maps.Marker({
+                map: this.map,
+                anchorPoint: new google.maps.Point(0, -29)
+            });
+            this.infoWindow = new google.maps.InfoWindow;
+            this.infoWindowContent = document.getElementById('infowindow-content');
+            this.infoWindow.setContent(this.infoWindowContent);
+            if (this.$txtAutocomplete) Maps.InitAutocomplete(this.$txtAutocomplete);
+            if (this.mapLoadedCallback) this.mapLoadedCallback();
+        }
+
+    },
+    InitMapManual: function () {
         this.map = new google.maps.Map(this.$mapDiv[0], {
             zoom: 10,
             center: { lat: 35.11, lng: -106.62 }
@@ -118,27 +142,6 @@ Maps = {
         this.infoWindow = new google.maps.InfoWindow;
         this.infoWindowContent = document.getElementById('infowindow-content');
         this.infoWindow.setContent(this.infoWindowContent);
-        //if (navigator.geolocation) {
-        //    navigator.geolocation.getCurrentPosition(function (position) {
-        //        var pos = {
-        //            lat: position.coords.latitude,
-        //            lng: position.coords.longitude
-        //        };
-
-
-        //        Maps.infoWindow.setPosition(pos);
-        //        Maps.infoWindow.setContent('Taz Lives Here');
-        //        Maps.infoWindow.open(Maps.map);
-        //        Maps.map.setCenter(pos);
-        //    });
-
-
-
-        //}
-        //else {
-        //    alert('your browser sucks balls');
-        //}
-
         if (this.$txtAutocomplete) Maps.InitAutocomplete(this.$txtAutocomplete);
         if (this.mapLoadedCallback) this.mapLoadedCallback();
     },

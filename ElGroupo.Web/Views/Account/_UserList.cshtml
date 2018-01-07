@@ -5,7 +5,7 @@
     Layout = null;
 }
 @functions{
-    public string GetImageUrl(int id)
+    public string GetImageUrl(long id)
     {
         var url = Url.Action("UserPhoto", "Users", new { id = id });
         return url;

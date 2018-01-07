@@ -41,11 +41,12 @@
                 }
                 @if (message.CanEdit)
                 {
-                    <div class="row">
+                    <a style="float:right;" class="btn btn-primary delete-message" data-message-id="@message.Id">Delete</a>
+                    @*<div class="row">
                         <div class="col span-3-of-3">
-                            <a class="btn btn-primary delete-message" data-message-id="@message.Id">Delete Message!</a>
+                            
                         </div>
-                    </div>
+                    </div>*@
 
                 }
             </div>

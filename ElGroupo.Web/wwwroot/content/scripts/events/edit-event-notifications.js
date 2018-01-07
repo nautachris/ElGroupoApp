@@ -7,10 +7,11 @@ EditEventNotifications = {
         $("#divNotifications").on("click", ".delete-notification", EditEventNotifications.EventHandlers.DeleteNotificationClicked);
         $("#btnPostNotifcation").on("click", EditEventNotifications.EventHandlers.PostNotificationClicked);
         $("#btnCancelNotifcation").on("click", EditEventNotifications.EventHandlers.CancelNotificationClicked);
-        $("#btnShowNotificationDiv").on("click", EditEventNotifications.ShowNotifications);
+        $("#btnShowNotificationDiv").on("click", EditEventNotifications.EventHandlers.ShowNotifications);
     },
     EventHandlers: {
         ShowNotifications: function () {
+            console.log('showing notifications');
             $("#divCreateNotification").show();
             $("#txtNotificationSubject").val('');
             $("#txtNotificationText").val('');
@@ -29,6 +30,7 @@ EditEventNotifications = {
                 Subject: subject,
                 Text: text
             };
+            Loading.Start();
             $.ajax({
                 url: "/Notifications/Create",
                 type: 'POST',
@@ -38,12 +40,14 @@ EditEventNotifications = {
                 dataType: "html",
                 data: JSON.stringify(obj),
                 success: function success(results) {
+                    Loading.Stop();
                     $("#divNotifications").html(results);
                     $("#divCreateNotification").hide();
                     $("#btnShowNotificationDiv").show();
                 },
                 error: function error(err) {
                     alert('error');
+                    Loading.Stop();
                 }
             });
         },

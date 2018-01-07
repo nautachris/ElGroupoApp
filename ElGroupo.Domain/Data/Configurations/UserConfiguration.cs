@@ -13,7 +13,9 @@ namespace ElGroupo.Domain.Data.Configurations
             HasKey(x => x.Id);
             Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             Property(x => x.Email).HasColumnName("EmailAddress");
+            Property(x => x.TimeZoneId).HasColumnName("TimeZoneId");
             HasMany(x => x.ConnectedUsers).WithOne(x => x.User);
+            HasMany(x => x.UnregisteredConnections).WithOne(x => x.User);
            
         }
     }

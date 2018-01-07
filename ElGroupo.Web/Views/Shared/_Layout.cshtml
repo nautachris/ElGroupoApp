@@ -10,6 +10,13 @@
     <link href="~/content/resources/css/queries.css" rel="stylesheet" />
     <link href="~/content/lib/css/jquery-ui.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,300i,400" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+    @*font-family: 'Raleway', sans-serif;*@
+    @*font-family: 'Source Sans Pro', sans-serif;*@
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/content/fonts/BebasNeue/font.css" />
+
     <link href="~/content/resources/css/style.css" rel="stylesheet" />
 </head>
 <body class="panel-body">
@@ -54,6 +61,19 @@
         </div>
 
     </div>
+    <div id="divMessageDialog" style="display:none; z-index:999; height:100%;width:100%;position:absolute;top:0px;left:0px;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);padding:30px; border:3px solid gray; border-radius:25px; background-color:white;">
+            <div class="row">
+                <div class="col span-2-of-2 centered">
+                    <span id="spanMessageDialog"></span>
+                </div>
+                <div class="col span-1-of-3"></div>
+                <div class="col span-1-of-3"><button id="btnMessageDialogOK" class="btn-primary width-100">OK</button></div>
+                <div class="col span-1-of-3"></div>
+            </div>
+        </div>
+
+    </div>
     <div id="divConfirmRecurrence" style="display:none;">
         <div class="row">
             <div class="col span-2-of-2 centered">
@@ -94,6 +114,6 @@
     <script type="text/javascript" src="~/content/scripts/shared/tab-links.js"></script>
     <script type="text/javascript" src="~/content/scripts/shared/confirm-dialog.js"></script>
     <script type="text/javascript" src="~/content/scripts/shared/loading.js"></script>
-
+    <script type="text/javascript" src="~/content/scripts/shared/ajax.js"></script>
 </body>
 </html>

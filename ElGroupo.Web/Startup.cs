@@ -76,6 +76,8 @@ namespace ElGroupo.Web
 
             //services.AddTransient<IEmailSender, MailgunEmailSender>();
             services.AddTransient<EventService, EventService>();
+            services.AddTransient<AccountService, AccountService>();
+            services.AddTransient<UserService, UserService>();
 
             services.AddSingleton(EngineFactory.CreateEmbedded(typeof(Mail.Templates.TemplatePointer)));
             services.AddSingleton<IEmailService, MailService>();
@@ -126,12 +128,15 @@ namespace ElGroupo.Web
 
 
             //Models.Configuration.EmailConfigOptions.SendTestEmail().Wait();
+            //ElGroupoDbContext.CreateAdminAccount(app.ApplicationServices, Configuration).Wait();
             //ElGroupoDbContext.CreateUsers(app.ApplicationServices).Wait();
+            //ElGroupoDbContext.CreateContactTypes(app.ApplicationServices).Wait();
+            //ElGroupoDbContext.PopulateUserContacts(app.ApplicationServices).Wait();
             //ElGroupoDbContext.AddUserPhotos(app.ApplicationServices).Wait();
             //
-            //ElGroupoDbContext.PopulateUserContacts(app.ApplicationServices).Wait();
-            //ElGroupoDbContext.CreateAdminAccount(app.ApplicationServices, Configuration).Wait();
-            //ElGroupoDbContext.CreateContactTypes(app.ApplicationServices).Wait();
+
+
+
             //app.UseMvc(routes =>
             //{
             //    routes.MapRoute(

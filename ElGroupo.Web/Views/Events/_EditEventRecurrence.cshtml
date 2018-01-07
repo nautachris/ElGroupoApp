@@ -23,10 +23,9 @@
 
 
 <div class="row">
-    <div class="col span-1-of-4">
-        <label asp-for="Recurrence.Pattern">Pattern:</label>
-    </div>
-    <div data-replace-element="Recurrence_Pattern" class="col span-3-of-4 switch-container">
+
+    <label asp-for="Recurrence.Pattern">Pattern:</label>
+    <div data-replace-element="Recurrence_Pattern" class="row switch-container">
         <input type="hidden" asp-for="Recurrence.Pattern" />
         <span data-replace-val="Daily" class="col span-1-of-3">Daily</span>
         <span data-replace-val="Weekly" class="col span-1-of-3">Weekly</span>
@@ -36,10 +35,9 @@
 
 @*only show this when weekly is selected*@
 <div class="row days-of-week" style="display:none;">
-    <div class="col span-1-of-4">
-        <label>On:</label>
-    </div>
-    <div class="col span-3-of-4 switch-container-multi">
+
+    <label>On:</label>
+    <div class="row switch-container-multi" style="text-align:center;">
         @for (var x = 0; x < Model.Recurrence.Days.Length; x++)
         {
             <input class="invisible" data-day-index="@x" type="checkbox" asp-for="Recurrence.Days[x]" />
@@ -51,6 +49,14 @@
         <span data-day-index="4" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Friday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Friday)</span>
         <span data-day-index="5" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Saturday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Saturday)</span>
         <span data-day-index="6" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Sunday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Sunday)</span>
+
+        @*<div data-day-index="0" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Monday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Monday)</div>
+        <div data-day-index="1" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Tuesday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Tuesday)</div>
+        <div data-day-index="2" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Wednesday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Wednesday)</div>
+        <div data-day-index="3" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Thursday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Thursday)</div>
+        <div data-day-index="4" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Friday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Friday)</div>
+        <div data-day-index="5" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Saturday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Saturday)</div>
+        <div data-day-index="6" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Sunday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Sunday)</div>*@
 
 
     </div>

@@ -1,91 +1,103 @@
 ﻿@using ElGroupo.Web.Models.Events
 @model IEnumerable<EventInformationModel>
 
-    @functions{
-        private string GetCheckInUrl(long eid)
-        {
+@functions{
+    private string GetCheckInUrl(long eid)
+    {
 
-            var url = Url.Action("CheckIn", "Events", new { eid = eid });
-            return url;
+        var url = Url.Action("CheckIn", "Events", new { eid = eid });
+        return url;
 
-        }
-            }
-<ul>
-        @foreach (var e in Model)
+    }
+    private string GetEventViewUrl(long eid)
+    {
+
+        var url = Url.Action("View", "Events", new { eid = eid });
+        return url;
+
+    }
+}
+<ul style="list-style:none;">
+    @foreach (var e in Model)
             {
 
-            <li data-event-id="@e.Id">
-                <div class="row">
-
-
-                    @if (e.IsNew && !e.OrganizedByUser)
-            {
-                        //if it's new, there's obviously no response status
-                        <div class="col span-1-of-8" style="background-color:orange; color:black; border: 1px solid black; padding:4px;">NEW!</div>
-
-                    }
-                    else if (e.OrganizedByUser)
-                    {
-                        <div class="col span-1-of-8" style="background-color:green; color:white; border: 1px solid black; padding:4px;">This is my event</div>
-
-                    }
-                    else
-                    {
-                        if (e.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.AvailableForCheckIn && e.RSVPStatus != ElGroupo.Domain.Enums.RSVPTypes.None)
+        <li data-event-id="@e.Id">
+            <div class="row" style="border:1px solid gray; border-radius:5px; margin:5px;">
+                <div class="col span-7-of-8">
+                    <div>
+                        <span id="spanEventName" style="font-weight:bold; ">
+                            <a href="@GetEventViewUrl(e.Id)">@e.Name</a>
+                        </span>
+                        @if (!e.OrganizedByUser)
                         {
-                            <a class="col span-1-of-8 checkin-link" href="@GetCheckInUrl(e.Id)" style="background-color:red; color:white; border: 1px solid black; padding:4px;">Check In Now!</a>
+                            <span>Organized by: @e.OrganizerName</span>
+                        }
+                        @if (e.IsRecurring)
+                        {
+                            <span>
+                                @e.DateText | recurring
+                            </span>
+
+                        }
+                        else
+                        {
+                            <span>
+                                @e.DateText
+                            </span>
+
+                        }
+
+                        @if (e.RSVPRequested)
+                        {
+                            <span>* RSVP Requested</span>
+
+                        }
+                        @*if the event does not require a rsvp, say "rsvp not required"*@
+                        else if (e.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.AvailableForCheckIn && e.RSVPStatus != ElGroupo.Domain.Enums.RSVPTypes.None)
+                        {
+                            <a class="checkin-link" href="@GetCheckInUrl(e.Id)" style="background-color:red; color:white;">Check In Now!</a>
 
                         }
                         else if (e.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.CheckInSuccessful)
                         {
-                            <div class="col span-1-of-8" style="background-color:green; color:white; border: 1px solid black; padding:4px;">You are checked in!</div>
+                            <div style="background-color:green; color:white;">You are checked in!</div>
 
                         }
-                        if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
+                        else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
                         {
-                            <div class="col span-1-of-8" style="background-color:gray; color:white; border: 1px solid black; padding:4px;">Response Pending</div>
+                            <div style="background-color:gray; color:white;">Response Pending</div>
 
                         }
                         else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
                         {
-                            <div class="col span-1-of-8" style="background-color:yellow; color:black; border: 1px solid black; padding:4px;">I might go</div>
+                            <div style="background-color:yellow; color:black;">I might go</div>
 
                         }
                         else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
                         {
-                            <div class="col span-1-of-8" style="background-color:red; color:white; border: 1px solid black; padding:4px;">Sorry, can't make it!</div>
+                            <div style="background-color:red; color:white;">Sorry, can't make it!</div>
 
                         }
                         else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
                         {
-                            <div class="col span-1-of-8" style="background-color:green; color:white; border: 1px solid black; padding:4px;">Hell yeah I'm in!</div>
+                            <div style="background-color:green; color:white;">Hell yeah I'm in!</div>
 
                         }
-
-                    }
-                    <div class="col span-1-of-8">
-                        @if (e.IsRecurring)
-        {
-                            <div style="background-color:purple; color:white; border: 1px solid black; padding:4px;"><span class="width-100">Recurring</span></div>
-
-                        }
-
-                    </div>
-                    <div class="col span-6-of-8">
-                        <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="no-decoration">
-                            <span id="spanEventName" style="font-weight:bold; ">
-                                @e.Name
-                            </span>
-                            @if (!e.OrganizedByUser)
-        {
-                                <span>Organized by: @e.OrganizerName</span>
-
-                            }
-
-                            <span>@e.StartDate.DayOfWeek.ToString() @e.StartDate.ToString("d") @@ @e.StartDate.TimeOfDay.ToString() - @e.EndDate.TimeOfDay.ToString()</span>
-                        </a>
+                        <div><span>Quick Response:</span><a style="padding-right:10px; cursor:pointer;">Yes</a><a style="padding-right:10px; cursor:pointer;">No</a></div>
                     </div>
                 </div>
-            </li>
+                <div class="col span-1-of-8">
+                    @if (e.IsNew && !e.OrganizedByUser)
+                    {
+                        @: New
+                    }
+                    else if (e.OrganizedByUser)
+                    {
+                        @: My Event
+
+                    }
+                </div>
+            </div>
+        </li>
     }
 </ul>

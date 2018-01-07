@@ -3,6 +3,64 @@
 });
 
 CreateEvent = {
+    MapLoaded: false,
+    ActiveStep : 1,
+    LoadStep: function () {
+        $("div[data-create-step]").hide();
+        $("div[data-create-step=" + CreateEvent.ActiveStep + "]").show();
+
+        switch (CreateEvent.ActiveStep) {
+            case 1:
+                $('#create-step').text('Step 1 of 4');
+                $('#create-step-title').text('Name & Description');
+                $('#create-step-description').text("Give your event a name and a brief description about what it's about.");
+                $("#btnPreviousStep").hide();
+                $("#btnNextStep").show();
+                $("#divSubmit").hide();
+                break;
+            case 2:
+                $('#create-step').text('Step 2 of 4');
+                $('#create-step-title').text('Date & Time');
+                $('#create-step-description').text('Let your invitees when to attend and whether a RSVP is required.');
+                $("#btnPreviousStep").show();
+                $("#btnNextStep").show();
+                $("#divSubmit").hide();
+                break;
+            case 3:
+                $('#create-step').text('Step 3 of 4');
+                $('#create-step-title').text('Location');
+                $('#create-step-description').text('Tell your invitees where they need to be.');
+                $("#btnPreviousStep").show();
+                $("#btnNextStep").show();
+                $("#divSubmit").hide();
+                if (!CreateEvent.MapLoaded) {
+                    Maps.InitMapManual();
+                    CreateEvent.MapLoaded = true;
+                    //setTimeout(function () {
+                    //    Maps.Init({
+                    //        mapDiv: 'divMap',
+                    //        txtAutocomplete: 'txtAutocompleteSearch',
+                    //        placeChangeCallback: CreateEvent.PlaceChange,
+                    //        createDrawTools: true,
+                    //        showDrawTools: false
+                    //    });
+                    //}, 400);
+
+                    //CreateEvent.MapLoaded = true;
+                }
+
+                
+                break;
+            case 4:
+                $('#create-step').text('Step 4 of 4');
+                $('#create-step-title').text('Check-In');
+                $('#create-step-description').text('Tell your invitees how they can check in.');
+                $("#btnPreviousStep").show();
+                $("#btnNextStep").hide();
+                $("#divSubmit").show();
+                break;
+        }
+    },
     Init: function () {
 
         $("#EventDate").datepicker({
@@ -16,6 +74,18 @@ CreateEvent = {
         $("div.switch-container.is-recurring span").on("click", CreateEvent.EventHandlers.RecurrenceChanged);
         $("#btnSubmit").on("click", CreateEvent.EventHandlers.SubmitClicked);
         $("#btnSearchAddress").on("click", CreateEvent.EventHandlers.AddressSearchClicked);
+
+        $("#btnNextStep").on("click", function () {
+            if (CreateEvent.ActiveStep === 4) return;
+            CreateEvent.ActiveStep++;
+            CreateEvent.LoadStep();
+
+        });
+        $("#btnPreviousStep").on("click", function () {
+            if (CreateEvent.ActiveStep === 1) return;
+            CreateEvent.ActiveStep--;
+            CreateEvent.LoadStep();
+        });
     },
     EventHandlers: {
         AddressSearchClicked: function () {
@@ -100,9 +170,11 @@ CreateEvent = {
             $("#txtAutocompleteSearch").val('');
             $(".row.manual-search input[type=text]").val('');
             Maps.RemoveMarker();
+            console.log($(this).attr('data-map-select'));
             switch ($(this).attr('data-map-select')) {
                 case 'address':
                     Maps.UpdateDrawingVisibility(false);
+                    $("#lblSearchType").text('Search by Street Address');
                     //$(".row.map-search").show();
                     $(".row.location-search").show();
                     $(".row.manual-search-button").hide();
@@ -119,6 +191,7 @@ CreateEvent = {
                     break;
                 case 'business':
                     Maps.UpdateDrawingVisibility(false);
+                    $("#lblSearchType").text('Search by Business Name');
                     //$(".row.map-search").show();
                     $(".row.location-search").show();
                     //$(".row.manual-search").hide();

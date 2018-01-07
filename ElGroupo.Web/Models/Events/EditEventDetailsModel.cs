@@ -7,7 +7,7 @@ using ElGroupo.Domain.Enums;
 
 namespace ElGroupo.Web.Models.Events
 {
-    public class EditEventDetailsModel
+    public class EditEventDetailsModel: EventDateModel
     {
         public EditEventDetailsModel() { }
         public EditEventDetailsModel(ElGroupo.Domain.Event e)
@@ -38,13 +38,6 @@ namespace ElGroupo.Web.Models.Events
         public long EventId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public DateTime EventDate { get; set; }
-        public int StartHour { get; set; }
-        public int StartMinute { get; set; }
-        public AMPM StartAMPM { get; set; }
-        public int EndHour { get; set; }
-        public int EndMinute { get; set; }
-        public AMPM EndAMPM { get; set; }
         public bool RSVPRequired { get; set; }
         public AttendanceVerificationMethods AttendanceVerificationMethod { get; set; }
         public string VerificationCode { get; set; }

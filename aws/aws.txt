@@ -40,10 +40,13 @@ footprintapp
 password
 505Albuquerque
 
+db
+aal7m7n920130o.chazths3rr6k.us-east-2.rds.amazonaws.com,1433
+
 
 
 db instance identifier
-aa1ewoc6epra7at
+aal7m7n920130o
 
 
 ec2 footprint instance

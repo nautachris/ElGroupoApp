@@ -15,6 +15,8 @@ namespace ElGroupo.Web.Models.Events
         public string Name { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public string DateText { get; set; }
+
         public long Id { get; set; }
 
 

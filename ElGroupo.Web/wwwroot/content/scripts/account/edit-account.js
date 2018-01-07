@@ -22,6 +22,7 @@ EditAccount = {
         $("#inputNewPhoto").on("change", EditAccount.EventHandlers.PhotoInputChanged);
         $("#divChangePhoto").on("click", EditAccount.EventHandlers.ChangePhotoClicked);
         $("#divContactList").on("click", " #tblContacts a", EditAccount.EventHandlers.ContactLinkClicked);
+        $("#frmEditAccount").on("submit", function () { Loading.Start(); });
     },
     EventHandlers: {
         SearchModeChanged: function () {
