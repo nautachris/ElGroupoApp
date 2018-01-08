@@ -7,7 +7,8 @@ EditAccount = {
         GoogleContacts.UpdateTableCallback = EditAccount.UpdateImportTable;
         EditAccount.OriginalImageUrl = $("#divImg").css('background-image');
         EditAccount.InitConnectionAutocomplete();
-        $("#divAddConnections div").on("click", ".switch-container > div", EditAccount.EventHandlers.SearchModeChanged);
+        //$("#divAddConnections div").on("click", ".switch-container > div", EditAccount.EventHandlers.SearchModeChanged);
+        $("#divAddConnections").on("change", ".add-connections input[type=radio]", EditAccount.EventHandlers.SearchModeChanged);
         $("#btnAddNewContact").on("click", EditAccount.AddNewContactClicked);
         $("html").on("click", ".connection-links a", EditAccount.EventHandlers.ConnectionLinkClicked);
         $("html").on("click", "div.connection-info", EditAccount.EventHandlers.ConnectionDivClicked);
@@ -26,7 +27,7 @@ EditAccount = {
     },
     EventHandlers: {
         SearchModeChanged: function () {
-            if ($(this).attr('data-action') === 'manual') {
+            if ($(this).val() === 'connection-add-new') {
                 console.log('hiding autocomplete');
                 $(".row.select-existing-contacts").hide();
                 $(".row.manual-search").show();
@@ -36,6 +37,17 @@ EditAccount = {
                 $(".row.select-existing-contacts").show();
                 $(".row.manual-search").hide();
             }
+
+            //if ($(this).attr('data-action') === 'manual') {
+            //    console.log('hiding autocomplete');
+            //    $(".row.select-existing-contacts").hide();
+            //    $(".row.manual-search").show();
+            //}
+            //else {
+            //    console.log('showing autocomplete');
+            //    $(".row.select-existing-contacts").show();
+            //    $(".row.manual-search").hide();
+            //}
         },
         AddNewContactClicked: function () {
             if ($("#selContactType").val() === '') return false;

@@ -44,44 +44,6 @@
 
     }
 
-    public string GetBackgroundFromRSVPStatus(RSVPTypes status)
-    {
-        switch (status)
-        {
-            case RSVPTypes.Maybe:
-                return "yellow";
-            case RSVPTypes.No:
-                return "red";
-            case RSVPTypes.Yes:
-                return "green";
-            case RSVPTypes.None:
-                return "gray";
-            default:
-                return "transparent";
-
-        }
-
-    }
-    public string GetForegroundFromRSVPStatus(RSVPTypes status)
-    {
-        switch (status)
-        {
-            case RSVPTypes.Maybe:
-                return "black";
-            case RSVPTypes.No:
-                return "white";
-            case RSVPTypes.Yes:
-                return "white";
-            case RSVPTypes.None:
-                return "white";
-            default:
-                return "transparent";
-
-        }
-
-    }
-    //TinaDWallis@fleckens.hu
-
 
 
 }
@@ -96,30 +58,27 @@
                 <div data-user-id="@att.UserId" class="col span-1-of-4 centered rounded-border attendee-container" style="text-align:center; position:relative; cursor:pointer">
                     <div class="attendee-info" style="z-index:2;">
                         <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
-                        <span class="attendee-name" style="color: white; font-weight:bold; padding:5px; text-transform:uppercase; border-radius:5px; background-color:@GetBackgroundFromRSVPStatus(att.RSVPStatus); color:@GetForegroundFromRSVPStatus(att.RSVPStatus)">@att.Name</span>
+                        @*style="background-color:@GetBackgroundFromRSVPStatus(att.RSVPStatus); color:@GetForegroundFromRSVPStatus(att.RSVPStatus)"*@
+
                         @if (att.IsOrganizer)
                         {
-                            <span>*</span>
+                            <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.Name*</span>
+
+                        }
+                        else
+                        {
+                            <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.Name</span>
 
                         }
                     </div>
-                    <div class="attendee-links centered" style="z-index:3; display:none; position:absolute; top: 40%; left:5%; width:90%;">
-                        <a class="no-decoration" data-action="profile" data-profile-link="@GetUserViewLink(att.UserId)">View Profile</a>
+                    @*<div class="attendee-links centered" style="z-index:3; display:none; position:absolute; top: 40%; left:5%; width:90%; opacity:0.5;"></div>*@
+                    <div class="attendee-links centered" style="z-index:4; display:none; position:absolute; top: 40%; left:5%; ">
+                        <a data-action="profile" data-profile-link="@GetUserViewLink(att.UserId)">View Profile</a>
                         @if (Model.IsOrganizer)
                         {
-                            <a class="no-decoration" data-action="remove" style="display:inline-block; width:100%;">Remove Attendee</a>
+                            <a data-action="remove" style="display:inline-block;">Remove Attendee</a>
                         }
-
                     </div>
-
-
-
-
-
-
-
-
-
                 </div>
             }
         </div>

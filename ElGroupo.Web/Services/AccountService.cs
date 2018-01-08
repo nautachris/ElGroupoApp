@@ -199,7 +199,10 @@ namespace ElGroupo.Web.Services
         public async Task<AttendeeGroupModel> GetAttendeeGroup(long id)
         {
             var ag = await _dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
-            if (ag == null) return null;
+            if (ag == null) return new AttendeeGroupModel {
+                Name = "",
+                Id = 0
+            };
             return new AttendeeGroupModel
             {
                 Name = ag.Name,
@@ -403,12 +406,13 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                return await _dbContext.AttendeeGroups.Include(x => x.Attendees).Where(x => x.User.Id == userId).Select(x => new AttendeeGroupListModel
+                var list = await _dbContext.AttendeeGroups.Include(x => x.Attendees).Where(x => x.User.Id == userId).Select(x => new AttendeeGroupListModel
                 {
                     Name = x.Name,
                     Id = x.Id,
                     UserCount = x.Attendees.Count
                 }).ToListAsync();
+                return list;
             }
             catch (Exception ex)
             {

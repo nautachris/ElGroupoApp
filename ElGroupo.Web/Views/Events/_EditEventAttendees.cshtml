@@ -6,48 +6,95 @@
 }
 
 <div id="divEditEventAttendees" class="row">
-    <div class="row">
-        @*<div class="col span-1-of-4">
-                <label>Select People to Invite:</label>
-            </div>*@
+    @*<div class="row">
 
         <div class="col width-100 switch-container search-method">
             <div data-action="connections" class="switch-selected span-1-of-3">Search My Connections/Groups</div>
             <div data-action="all" class="span-1-of-3">Search All ElGroupo Members</div>
             <div data-action="manual" class="span-1-of-3">Enter New Name and Email</div>
         </div>
+       
+    </div>*@
+    <div class="row attendee-search-method centered">
+        <div class="col span-1-of-3">
+            <input id="my-connections" name="attendee-search-method" type="radio" value="my-connections" checked />
+            <label for="my-connections">My Connections/Groups</label>
+        </div>
+        <div class="col span-1-of-3">
+            <input id="all-users"  name="attendee-search-method" type="radio" value="all" />
+            <label for="all-users">Search All Users</label>
+        </div>
+        <div class="col span-1-of-3">
+            <input id="add-new" name="attendee-search-method" type="radio" value="new" />
+            <label for="add-new">Invite New User</label>
+        </div>
     </div>
-
     <div class="row select-existing-contacts centered">
-
-        <div class="col span-2-of-2 centered">
+        <div class="row">
+            <label>Enter Name or Email</label>
+        </div>
+        <div class="row">
+            <input type="text" id="txtAttendees" class="width-100"/>
+        </div>
+        <div class="row">
+            <label>Event Organizer?</label>
+        </div>
+        <div class="row">
+            <div class="col span-1-of-2">
+                <input type="radio" value="yes" id="registered-organizer-yes" name="registered-organizer" />
+                <label for="registered-organizer-yes">Yes</label>
+            </div>
+            <div class="col span-1-of-2">
+                <input type="radio" checked value="no" id="registered-organizer-no" name="registered-organizer" />
+                <label for="registered-organizer-no">No</label>
+            </div>
+        </div>
+        @*<div class="col span-2-of-2 centered">
             <label>Enter Name or Email</label>
             <input type="text" id="txtAttendees" class="span-7-of-8" />
-        </div>
-        <div class="col span-2-of-2 centered switch-container registered-owner">
+        </div>*@
+        @*<div class="col span-2-of-2 centered switch-container registered-owner">
             <label class="span-2-of-2">Event Owner?</label>
             <span data-action="yes" class="span-1-of-5">Yes</span>
             <span data-action="no" class="span-1-of-5 switch-selected">No</span>
-        </div>
+        </div>*@
         <div class="col span-2-of-2 centered">
             <a class="btn btn-primary" disabled id="btnAddAttendee">Add Attendee</a>
         </div>
     </div>
     <div class="row manual-search centered" style="display:none;">
-        <div class="col span-2-of-2">
-            <label style="display:inline-block; width:100%;">Name</label>
-            <input type="text" id="txtNewUserName" class="span-7-of-8" />
+        <div class="row">
+            <label>Name</label>
+        </div>
+        <div class="row">
+            <input type="text" id="txtNewUserName" class="width-100" />
+        </div>
+        <div class="row">
+            <label>Email</label>
+        </div>
+        <div class="row">
+            <input class="width-100" name="new-user-email" id="txtNewUserEmail" type="email">
         </div>
 
-        <div class="col span-2-of-2">
-            <label style="display:inline-block; width:100%;">Email</label>
-            <input class="span-7-of-8" name="new-user-email" id="txtNewUserEmail" type="email">
+        <div class="row">
+            <label>Event Organizer?</label>
         </div>
-        <div class="col span-2-of-2 centered switch-container unregistered-owner">
+        <div class="row">
+            <div class="col span-1-of-2">
+                <input type="radio" value="yes" id="unregistered-organizer-yes" name="unregistered-organizer" />
+                <label for="registered-organizer-yes">Yes</label>
+            </div>
+            <div class="col span-1-of-2">
+                <input type="radio" checked value="no" id="unregistered-organizer-no" name="unregistered-organizer" />
+                <label for="unregistered-organizer-no">No</label>
+            </div>
+        </div>
+
+        @*<div class="col span-2-of-2 centered switch-container unregistered-owner">
             <label class="span-2-of-2">Event Owner?</label>
             <span data-action="yes" class="span-1-of-5">Yes</span>
             <span data-action="no" class="span-1-of-5 switch-selected">No</span>
-        </div>
+        </div>*@
         <div class="col span-2-of-2">
             <a class="btn btn-primary" id="btnAddNewUser">Add New User</a>
         </div>

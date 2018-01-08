@@ -15,6 +15,12 @@ EditEvent = {
         $("#btnSaveEditLocation").on("click", EditEvent.EventHandlers.HandleSaveLocationEditClick);
         $("#btnSaveEditDetails").on("click", EditEvent.EventHandlers.HandleSaveDetailsClick);
         $("#btnSubmit").on("click", EditEvent.EventHandlers.HandleSubmitClick);
+
+        //change to delegates
+        //$("#frmEditEventDetails div.verification-method input[type=radio]").on("change", EditEvent.EventHandlers.VerificationMethodChanged);
+        $("html").on("change", "#frmEditEventDetails div.verification-method input[type=radio]", EditEvent.EventHandlers.VerificationMethodChanged);
+        $("html").on("change", "#frmEditEventDetails div.location-tolerance input[type=radio]", EditEvent.EventHandlers.LocationToleranceChanged);
+
         $("html").on("click", "#btnDeleteEvent", EditEvent.EventHandlers.HandleDeleteEventClick);
         $("html").on("click", ".switch-container.event-status > span", EditEvent.EventHandlers.HandleEventStatusChanged);
         $("html").on("click", ".switch-container.checkin-type > span", EditEvent.EventHandlers.HandleCheckinTypeChanged);
@@ -24,6 +30,45 @@ EditEvent = {
 
     },
     EventHandlers: {
+        VerificationMethodChanged: function () {
+            console.log('verification method changed');
+            switch ($(this).val()) {
+                case "None":
+                    $(".verification-code").hide();
+                    $(".location-tolerance").hide();
+                    break;
+                case "PasswordOrLocation":
+                    $(".verification-code").show();
+                    $(".location-tolerance").show();
+                    break;
+                case "PasswordOnly":
+                    $(".verification-code").show();
+                    $(".location-tolerance").hide();
+                    break;
+            }
+        },
+        LocationToleranceChanged: function () {
+            console.log('location tolerance changed');
+            console.log($(this).val());
+            console.log($("div.location-tolerance-custom input").length);
+            switch ($(this).val()) {
+                case 'high':
+                    $("div.location-tolerance-custom").hide();
+                    $("div.location-tolerance-custom input").val('500');
+                    break;
+                case 'medium':
+                    $("div.location-tolerance-custom").hide();
+                    $("div.location-tolerance-custom input").val('3000');
+                    break;
+                case 'low':
+                    $("div.location-tolerance-custom").hide();
+                    $("div.location-tolerance-custom input").val('10000');
+                    break;
+                default:
+                    $("div.location-tolerance-custom").show();
+                    break;
+            }
+        },
         HandleSaveLocationEditClick: function () { },
         HandleCancelLocationEditClick: function () { },
         HandleEditLocationClick: function () {
@@ -41,6 +86,11 @@ EditEvent = {
                     $("#btnSaveEditLocation").show();
                     $("#btnCancelEditLocation").show();
                     $("#divEditLocation").empty().html(results).show();
+
+
+
+                    //$("html").on("change", "#frmEditEventDetails div.verification-method input[type=radio]", EditEvent.EventHandlers.VerificationMethodChanged);
+                    //$("html").on("change", "#frmEditEventDetails div.location-tolerance input[type=radio]", EditEvent.EventHandlers.LocationToleranceChanged);
 
                 },
                 error: function error(err) {
@@ -71,6 +121,29 @@ EditEvent = {
                     $("#divEditDetails").empty().html(results).show();
                     $("#EventDate").datepicker();
                     SwitchContainer.init("#divEditDetails");
+
+                    //trigger the verification mode change event
+                    $("#frmEditEventDetails div.verification-method :checked").change();
+
+                    //500, 3000, 10000
+                    console.log($("#LocationTolerance").val());
+                    switch ($("#LocationTolerance").val()) {
+                        case '500':
+                            $("#loc-tolerance-high").prop('checked', true);
+                            break;
+                        case '3000':
+                            $("#loc-tolerance-medium").prop('checked', true);
+                            break;
+                        case '10000':
+                            $("#loc-tolerance-low").prop('checked', true);
+                            break;
+                        default:
+                            $("#loc-tolerance-custom").prop('checked', true);
+                            break;
+
+                    }
+                    console.log($("#frmEditEventDetails div.location-tolerance :checked").length);
+                    $("#frmEditEventDetails div.location-tolerance input[type=radio] :checked").change();
                 },
                 error: function error(err) {
                     alert('error');

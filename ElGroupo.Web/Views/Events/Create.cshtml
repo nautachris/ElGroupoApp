@@ -48,23 +48,32 @@
             <div data-create-step="2" style="display:none;">
 
 
+                @*<div class="row">
+                        <label>Event Is Recurring?</label>
+                        <div data-replace-element="IsRecurring" class="switch-container row is-recurring">
+                                <input type="hidden" asp-for="IsRecurring" />
+                                <span data-replace-val="True" class="col span-1-of-2">Yes</span>
+                                <span data-replace-val="False" class="switch-selected col span-1-of-2">No</span>
+                            </div>
+
+                    </div>*@
                 <div class="row">
-                    <label>Event Is Recurring?</label>
-                    <div data-replace-element="IsRecurring" class="switch-container row is-recurring">
-                        <input type="hidden" asp-for="IsRecurring" />
-                        <span data-replace-val="True" class="col span-1-of-2">Yes</span>
-                        <span data-replace-val="False" class="switch-selected col span-1-of-2">No</span>
+                    <label>Event is Recurring?</label>
+                </div>
+                <div data-replace-element="IsRecurring" class="radio-list row is-recurring">
+
+                    <div class="col span-1-of-2">
+                        <input id="idRecurringYes" type="radio" asp-for="IsRecurring" value="True" />
+                        <label for="idRecurringYes">Yes</label>
+                    </div>
+                    <div class="col span-1-of-2">
+                        <input id="idRecurringNo" type="radio" asp-for="IsRecurring" value="False" checked />
+                        <label for="idRecurringNo">No</label>
                     </div>
                 </div>
                 <div class="row">
                     <label id="lblEventDate" asp-for="EventDate">Date:</label>
                     <input type="text" asp-for="EventDate" class="width-100" placeholder="Enter Event Date...">
-                    @*<div class="col span-1-of-3">
-                        <label id="lblEventDate" asp-for="EventDate">Date:</label>
-                    </div>
-                    <div class="col span-2-of-3">
-                        <input type="text" asp-for="EventDate" class="width-100" placeholder="Enter Event Date...">
-                    </div>*@
                 </div>
                 <div id="divRecurrence" style="display:none">
                     @Html.Partial("_EditEventRecurrence", Model)
@@ -74,7 +83,7 @@
                     <label>Event Time</label>
                 </div>
                 <div class="row">
-                    
+
                     <div class="col span-1-of-6">
                         <label asp-for="StartHour">Start:</label>
                     </div>
@@ -128,17 +137,21 @@
                     </div>
 
                 </div>
-
+                <div class="row">
+                    <label>RSVP Required?</label>
+                </div>
                 <div class="row">
 
-                    <label>RSVP Required?</label>
-                    <div data-replace-element="RSVPRequired" class="switch-container row rsvp-required">
-                        @*if we use input=type hidden, data-replace-val must be True or False, not true or false*@
-                        <input type="hidden" asp-for="RSVPRequired" />
-                        <span data-replace-val="True" class="switch-selected col span-1-of-2">Yes</span>
-                        <span data-replace-val="False" class="col span-1-of-2">No</span>
+                    <div class="col span-1-of-2">
+                        <input id="idRSVPYes" type="radio" asp-for="RSVPRequired" value="true" />
+                        <label for="idRSVPYes">Yes</label>
+                    </div>
+                    <div class="col span-1-of-2">
+                        <input id="idRSVPNo" type="radio" asp-for="RSVPRequired" value="false" checked />
+                        <label for="idRSVPNo">No</label>
                     </div>
                 </div>
+
             </div>
             @*end 2
                 start 3*@
@@ -150,15 +163,39 @@
                         <input class="width-100" asp-for="LocationName">
                     </div>
                 </div>
+
                 <div class="row">
                     <label>Location Search Method:</label>
-                    <div class="switch-container map-select row">
-                        <span data-map-select="address" class="switch-selected col span-1-of-4">Address</span>
-                        <span data-map-select="business" class="col span-1-of-4">Business</span>
-                        <span data-map-select="draw" class="col span-1-of-4">Drop a Pin</span>
-                        <span data-map-select="manual" class="col span-1-of-4">Manual Entry</span>
+                </div>
+                <div class="row location-search-method">
+                    <div class="col span-1-of-4">
+                        <input id="rbSearchAddress" type="radio" name="location-search-method" value="address" checked />
+                        <label for="rbSearchAddress">Address</label>
+                    </div>
+                    <div class="col span-1-of-4">
+                        <input id="rbSearchBusiness" type="radio" name="location-search-method" value="business" />
+                        <label for="rbSearchBusiness">Business</label>
+                    </div>
+                    <div class="col span-1-of-4">
+                        <input id="rbSearchPin" type="radio" name="location-search-method" value="draw" />
+                        <label for="rbSearchPin">Drop a Pin</label>
+                    </div>
+                    <div class="col span-1-of-4">
+                        <input id="rbSearchManual" type="radio" name="location-search-method" value="manual" />
+                        <label for="rbSearchManual">Manual Entry</label>
                     </div>
                 </div>
+
+
+                @*<div class="row">
+                        <label>Location Search Method:</label>
+                        <div class="switch-container map-select row">
+                            <span data-map-select="address" class="switch-selected col span-1-of-4">Address</span>
+                            <span data-map-select="business" class="col span-1-of-4">Business</span>
+                            <span data-map-select="draw" class="col span-1-of-4">Drop a Pin</span>
+                            <span data-map-select="manual" class="col span-1-of-4">Manual Entry</span>
+                        </div>
+                    </div>*@
                 <div class="row location-search">
                     <label id="lblSearchType">Search Address:</label>
                     <div class="row">
@@ -228,31 +265,85 @@
             <div data-create-step="4" style="display:none;">
 
 
+                @*<div class="row">
+                        <div class="col span-1-of-4">
+                            <label>Check-In Verification:</label>
+                        </div>
+                        <div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
+                            <input type="hidden" asp-for="AttendanceVerificationMethod" />
+                            <span data-replace-val="None" class="switch-selected col span-1-of-3">None</span>
+                            <span data-replace-val="PasswordAndLocation" class="col span-1-of-3">Password or Location</span>
+                            <span data-replace-val="PasswordOnly" class="col span-1-of-3">Password Only</span>
+                        </div>
+                    </div>*@
+
                 <div class="row">
-                    <div class="col span-1-of-4">
-                        <label>Check-In Verification:</label>
-                    </div>
-                    <div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
-                        <input type="hidden" asp-for="AttendanceVerificationMethod" />
-                        <span data-replace-val="None" class="switch-selected col span-1-of-3">None</span>
-                        <span data-replace-val="PasswordAndLocation" class="col span-1-of-3">Password or Location</span>
-                        <span data-replace-val="PasswordOnly" class="col span-1-of-3">Password Only</span>
-                    </div>
+                    <label>Check-In Verification</label>
                 </div>
-                <div class="row verification-code" style="display:none;">
+                <div class="row checkin-type">
                     <div class="col span-1-of-3">
+                        <input id="rbVerifyNone" type="radio" asp-for="AttendanceVerificationMethod" value="None" checked />
+                        <label for="rbVerifyNone">None</label>
+                    </div>
+                    <div class="col span-1-of-3">
+                        <input id="rbVerifyPasswordOrLocation" type="radio" asp-for="AttendanceVerificationMethod" value="PasswordOrLocation" />
+                        <label for="rbVerifyPasswordOrLocation">Password or Location</label>
+                    </div>
+                    <div class="col span-1-of-3">
+                        <input id="rbVerifyPassword" type="radio" asp-for="AttendanceVerificationMethod" value="PasswordOnly" />
+                        <label for="rbVerifyPassword">Password Only</label>
+                    </div>
+
+                </div>
+                @*<div class="row verification-code" style="display:none;">
+                        <div class="col span-1-of-3">
+                            <label asp-for="VerificationCode">Password:</label>
+                        </div>
+                        <div class="col span-2-of-3">
+                            <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Password...">
+                        </div>
+                    </div>*@
+                <div class="row verification-code" style="display:none;">
+                    <div class="row">
                         <label asp-for="VerificationCode">Password:</label>
                     </div>
-                    <div class="col span-2-of-3">
+                    <div class="row">
                         <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Password...">
                     </div>
                 </div>
                 <div class="row location-tolerance" style="display:none;">
-                    <div class="col span-1-of-3">
+                    <div class="row">
+                        <label>Required Location Accuracy</label>
+                        <h5>User must be within this distance of the event location to successfully check in</h5>
+                        <h5>Location accuracy is based on users device and requires the user to allow Footprint to view their location</h5>
+                    </div>
+                    <div class="col span-1-of-4">
+                        <input type="radio" value="high" id="loc-tolerance-high" name="loc-tolerance" />
+                        <label for="loc-tolerance-high">High</label>
+                    </div>
+                    <div class="col span-1-of-4">
+                        <input type="radio" value="medium" id="loc-tolerance-medium" name="loc-tolerance" />
+                        <label for="loc-tolerance-medium">Medium</label>
+                    </div>
+                    <div class="col span-1-of-4">
+                        <input type="radio" value="low" id="loc-tolerance-low" name="loc-tolerance" checked />
+                        <label for="loc-tolerance-low">Low</label>
+                    </div>
+                    <div class="col span-1-of-4">
+                        <input type="radio" value="custom" id="loc-tolerance-custom" name="loc-tolerance" />
+                        <label for="loc-tolerance-custom">Custom</label>
+                    </div>
+
+
+                </div>
+                <div class="row location-tolerance-custom" style="display:none;">
+                    <div class="row">
                         <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
                     </div>
-                    <div class="col span-2-of-3">
-                        <input asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
+                </div>
+                <div class="row location-tolerance-custom" style="display:none;">
+                    <div class="row">
+                        <input id="l" asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
                     </div>
                 </div>
             </div>

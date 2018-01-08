@@ -59,7 +59,7 @@ EditEventAttendees = {
         },
         PendingAttendeeDivClicked: function () {
             var $links = $(this).closest("div[data-user-id]").find("div.pending-attendee-links");
-            if ($(this).css('opacity') == 0.5) {
+            if ($(this).css('opacity') == 0.3) {
                 $links.hide();
                 $(this).css('opacity', 1);
             }
@@ -69,7 +69,7 @@ EditEventAttendees = {
                 $("div.pending-attendee-links").hide();
                 $("div.pending-attendee-info").css('opacity', 1);
 
-                $(this).css('opacity', 0.5);
+                $(this).css('opacity', 0.3);
                 $links.show();
             }
         },
@@ -81,7 +81,7 @@ EditEventAttendees = {
         AttendeeInfoDivClicked: function () {
             console.log('attendee info click');
             var $links = $(this).closest("div[data-user-id]").find("div.attendee-links");
-            if ($(this).css('opacity') == 0.5) {
+            if ($(this).css('opacity') == 0.3) {
                 //links are showing
                 console.log('links are showing');
                 $("div.attendee-links").hide();
@@ -91,7 +91,7 @@ EditEventAttendees = {
                 //we do this to close any other open attendee links in the grid
                 $("div.attendee-links").hide();
                 $("div.attendee-info").css('opacity', 1);
-                $(this).css('opacity', 0.5);
+                $(this).css('opacity', 0.3);
                 $links.show();
 
             }
@@ -189,7 +189,19 @@ EditEventAttendees = {
             $infoDiv.css('opacity', 1);
         },
         AutocompleteSourceChanged: function () {
-            if ($(this).attr('data-action') === 'manual') {
+            //if ($(this).attr('data-action') === 'manual') {
+            //    console.log('hiding autocomplete');
+            //    $('.row.select-existing-contacts').hide();
+            //    $('.row.manual-search').show();
+            //}
+            //else {
+            //    console.log('showing autocomplete');
+            //    $('.row.select-existing-contacts').show();
+            //    $('.row.manual-search').hide();
+            //}
+            console.log('source changed');
+            console.log($(this).val());
+            if ($(this).val() === 'new') {
                 console.log('hiding autocomplete');
                 $('.row.select-existing-contacts').hide();
                 $('.row.manual-search').show();
@@ -216,7 +228,8 @@ EditEventAttendees = {
                 Id: -1,
                 Name: $("#txtNewUserName").val(),
                 Email: $("#txtNewUserEmail").val(),
-                Owner: $(".unregistered-owner span.switch-selected").attr("data-action") === 'yes',
+                //Owner: $(".unregistered-owner span.switch-selected").attr("data-action") === 'yes',
+                Owner: $("#unregistered-organizer-yes").is(':checked'),
                 Group: false
             };
             EditEventAttendees.AddAttendee(attendee);
@@ -226,7 +239,8 @@ EditEventAttendees = {
             var attendee = {
                 Id: Number($("#txtAttendees").attr("data-contact-id")),
                 Name: $("#txtAttendees").val(),
-                Owner: $(".registered-owner span.switch-selected").attr("data-action") === 'yes',
+                Owner: $("#registered-organizer-yes").is(':checked'),
+                //Owner: $(".registered-owner span.switch-selected").attr("data-action") === 'yes',
                 Group: $("#txtAttendees").attr("data-group") === 'true',
                 Email: null
             };
@@ -250,7 +264,8 @@ EditEventAttendees = {
         //attendee remove/view profile
         $("html").on("click", "div.attendee-info", EditEventAttendees.EventHandlers.AttendeeInfoDivClicked);
         $("html").on("click", ".attendee-links a", EditEventAttendees.EventHandlers.AttendeeInfoLinkClicked);
-        $("#divEditEventAttendees div").on("click", ".switch-container > div", EditEventAttendees.EventHandlers.AutocompleteSourceChanged);
+        //$("#divEditEventAttendees div").on("click", ".switch-container > div", EditEventAttendees.EventHandlers.AutocompleteSourceChanged);
+        $(".row.attendee-search-method input[type=radio]").on("change", EditEventAttendees.EventHandlers.AutocompleteSourceChanged);
         $("#btnAddNewUser").on("click", EditEventAttendees.EventHandlers.AddNewUserClicked);
         $("#btnAddAttendee").on('click', EditEventAttendees.EventHandlers.AddAttendeeClicked);
         $("#txtAttendees").on("input", EditEventAttendees.EventHandlers.AttendeeSearchTextChanged);
@@ -270,7 +285,10 @@ EditEventAttendees = {
             source: function (request, response) {
                 var _response = response;
                 var urlPrefix = null;
-                if ($("div.search-method div.switch-selected").attr('data-action') === 'all') urlPrefix = "/Users/SearchAllUsers/";
+                //if ($("div.search-method div.switch-selected").attr('data-action') === 'all') urlPrefix = "/Users/SearchAllUsers/";
+                //else urlPrefix = "/Users/SearchUserConnections/";
+
+                if ($("#all-users").is(':checked')) urlPrefix = "/Users/SearchAllUsers/";
                 else urlPrefix = "/Users/SearchUserConnections/";
 
                 console.log(urlPrefix + request.term);

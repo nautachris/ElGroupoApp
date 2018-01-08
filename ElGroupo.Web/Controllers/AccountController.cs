@@ -460,7 +460,7 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> ViewAttendeeGroups([FromRoute] int uid)
         {
             var user = await CurrentUser();
-            return View("_AttendeeGroupList", _accountService.GetUserAttendeeGroupList(user.Id));
+            return View("_AttendeeGroupList", await _accountService.GetUserAttendeeGroupList(user.Id));
         }
 
 

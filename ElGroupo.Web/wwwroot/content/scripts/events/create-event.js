@@ -4,7 +4,7 @@
 
 CreateEvent = {
     MapLoaded: false,
-    ActiveStep : 1,
+    ActiveStep: 1,
     LoadStep: function () {
         $("div[data-create-step]").hide();
         $("div[data-create-step=" + CreateEvent.ActiveStep + "]").show();
@@ -49,7 +49,7 @@ CreateEvent = {
                     //CreateEvent.MapLoaded = true;
                 }
 
-                
+
                 break;
             case 4:
                 $('#create-step').text('Step 4 of 4');
@@ -67,11 +67,20 @@ CreateEvent = {
             //dateFormat: "mm/dd/yyyy",
             //defaultDate: new Date(Date.now())
         });
-        $("html").on("click", ".switch-container.map-select > span", CreateEvent.EventHandlers.MapSelectionModeChanged);
-        $(".switch-container.checkin-type > span").on("click", CreateEvent.EventHandlers.CheckInModeChanged);
+
+        //location-search-method
+        //$("html").on("click", ".switch-container.map-select > span", CreateEvent.EventHandlers.MapSelectionModeChanged);
+        $("html").on("change", "div.location-search-method input[type = radio]", CreateEvent.EventHandlers.MapSelectionModeChanged);
+        //$(".switch-container.checkin-type > span").on("click", CreateEvent.EventHandlers.CheckInModeChanged);
+        $("div.checkin-type input[type=radio]").on("change", CreateEvent.EventHandlers.CheckInModeChanged);
         $(".row.days-of-week span[data-day-index]").on("click", CreateEvent.EventHandlers.DayOfWeekClicked);
-        $("div.switch-container[data-replace-element='Recurrence_Pattern'] span").on("click", CreateEvent.EventHandlers.RecurrencePatternChanged);
-        $("div.switch-container.is-recurring span").on("click", CreateEvent.EventHandlers.RecurrenceChanged);
+        //$("div.switch-container[data-replace-element='Recurrence_Pattern'] span").on("click", CreateEvent.EventHandlers.RecurrencePatternChanged);
+        //$("div.switch-container.is-recurring span").on("click", CreateEvent.EventHandlers.RecurrenceChanged);
+
+        $("div.location-tolerance input[type=radio]").on("change", CreateEvent.EventHandlers.LocationToleranceChanged);
+
+        $("div.recurrence-pattern input[type=radio]").on("change", CreateEvent.EventHandlers.RecurrencePatternChanged);
+        $("div.is-recurring input[type=radio]").on("change", CreateEvent.EventHandlers.RecurrenceChanged);
         $("#btnSubmit").on("click", CreateEvent.EventHandlers.SubmitClicked);
         $("#btnSearchAddress").on("click", CreateEvent.EventHandlers.AddressSearchClicked);
 
@@ -88,6 +97,26 @@ CreateEvent = {
         });
     },
     EventHandlers: {
+        LocationToleranceChanged: function () {
+            console.log('location tolerance changed');
+            switch ($(this).val()) {
+                case 'high':
+                    $("div.location-tolerance-custom").hide();
+                    $("div.location-tolerance-custom input").val('500');
+                    break;
+                case 'medium':
+                    $("div.location-tolerance-custom").hide();
+                    $("div.location-tolerance-custom input").val('3000');
+                    break;
+                case 'low':
+                    $("div.location-tolerance-custom").hide();
+                    $("div.location-tolerance-custom input").val('10000');
+                    break;
+                default:
+                    $("div.location-tolerance-custom").show();
+                    break;
+            }
+        },
         AddressSearchClicked: function () {
             var addressText = [];
             if ($("#Address1").val() !== '') addressText.push($("#Address1").val());
@@ -106,10 +135,18 @@ CreateEvent = {
             //var frm2 = $("#frmCreateEvent").serialize();
             //console.log(frm2);
 
+
+            console.log($("#frmCreateEvent").serialize());
+            console.log($("#frmCreateEvent").serializeArray());
             $("#frmCreateEvent").submit();
         },
         RecurrenceChanged: function () {
-            if ($(this).attr('data-replace-val') === 'True') {
+
+            console.log($(this).val());
+            if ($(this).val() == true) {
+                console.log('== true');
+            }
+            if ($(this).val() === 'True') {
                 $("#divRecurrence").show();
                 $("#lblEventDate").text('Starting Date:');
             }
@@ -117,11 +154,18 @@ CreateEvent = {
                 $("#divRecurrence").hide();
                 $("#lblEventDate").text('Event Date:');
             }
+            //if ($(this).attr('data-replace-val') === 'True') {
+            //    $("#divRecurrence").show();
+            //    $("#lblEventDate").text('Starting Date:');
+            //}
+            //else {
+            //    $("#divRecurrence").hide();
+            //    $("#lblEventDate").text('Event Date:');
+            //}
         },
         RecurrencePatternChanged: function () {
-            console.log('recur pattern click');
-            console.log($(this).attr('data-replace-val'));
-            var pattern = $(this).attr('data-replace-val');
+
+            var pattern = $(this).val();
             switch (pattern) {
                 case 'Daily':
                     $("#lblInterval").text('Days');
@@ -151,12 +195,12 @@ CreateEvent = {
             else $chk.prop('checked', false);
         },
         CheckInModeChanged: function () {
-            switch ($(this).attr('data-replace-val')) {
+            switch ($(this).val()) {
                 case "None":
                     $(".verification-code").hide();
                     $(".location-tolerance").hide();
                     break;
-                case "PasswordAndLocation":
+                case "PasswordOrLocation":
                     $(".verification-code").show();
                     $(".location-tolerance").show();
                     break;
@@ -171,7 +215,8 @@ CreateEvent = {
             $(".row.manual-search input[type=text]").val('');
             Maps.RemoveMarker();
             console.log($(this).attr('data-map-select'));
-            switch ($(this).attr('data-map-select')) {
+            //switch ($(this).attr('data-map-select')) {
+            switch ($(this).val()) {
                 case 'address':
                     Maps.UpdateDrawingVisibility(false);
                     $("#lblSearchType").text('Search by Street Address');
@@ -229,7 +274,7 @@ CreateEvent = {
         var zip = '';;
 
         if (!place.address_components) return;
-        
+
         for (var x = 0; x < place.address_components.length; x++) {
             for (var y = 0; y < place.address_components[x].types.length; y++) {
                 switch (place.address_components[x].types[y].toString()) {

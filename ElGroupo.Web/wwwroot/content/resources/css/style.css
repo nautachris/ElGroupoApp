@@ -21,6 +21,74 @@ html, body {
     overflow-x: hidden;
 }
 
+.btn {
+    text-transform: uppercase;
+    border-radius: 15px;
+}
+
+.btn-primary {
+    background-color: black;
+    color: white;
+    text-transform: uppercase;
+    padding: 8px;
+    border-color: transparent;
+}
+
+a.links {
+    text-transform: uppercase;
+}
+
+
+.attendee-info {
+    z-index: 2;
+}
+
+    .attendee-info span.attendee-name {
+        font-weight: bold;
+        padding: 5px;
+        text-transform: uppercase;
+        border-radius: 5px;
+        border: 1px solid;
+        background-color:white;
+    }
+    .attendee-info span.attendee-name.none{
+        color:gray;
+        border-color:gray;
+
+    }
+        .attendee-info span.attendee-name.no {
+            color: red;
+            border-color: red;
+        }
+        .attendee-info span.attendee-name.maybe {
+            color: coral;
+            border-color: coral;
+        }
+        .attendee-info span.attendee-name.yes {
+            color: green;
+            border-color: green;
+        }
+
+.btn-primary:hover {
+    background-color: white;
+    color: black;
+    border: 3px solid black;
+}
+
+.btn-ghost {
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+}
+
+    .btn-ghost:hover {
+        background-color: black;
+        color: white;
+        border: 3px solid white;
+    }
+
+
+
 
 
 input, select, textarea, a, button {
@@ -28,31 +96,33 @@ input, select, textarea, a, button {
     /*font-family: 'Lato', 'Arial', sans-serif;*/
     color: #808080;
 }
+
 .sans-pro {
     font-family: 'Source Sans Pro';
 }
 
-.uppercase{
-    text-transform:uppercase;
+.uppercase {
+    text-transform: uppercase;
 }
-.btn, a {
+/*.btn, a {
     color: #fff;
-}
-.left{
-    text-align:left;
+}*/
+.left {
+    text-align: left;
 }
 
 #frmCreateEvent label, #frmCreateEvent h3 {
     font-family: 'Source Sans Pro';
-    text-align:center;
+    text-align: center;
 }
 
-#frmCreateEvent div[data-create-step] > div{
-    text-align:center;
-    margin:10px;
+#frmCreateEvent div[data-create-step] > div {
+    text-align: center;
+    margin: 10px;
 }
-h4, h5{
-    text-align:center;
+
+h4, h5 {
+    text-align: center;
 }
 
 #tblContacts {
@@ -173,7 +243,7 @@ h2 {
     font-size: 180%;
     word-spacing: 2px;
     text-align: center;
-    margin: 30px;
+    margin: 10px;
     letter-spacing: 1px;
 }
 
@@ -267,23 +337,23 @@ input[type=submit] {
     color: #e67e22;
 }
 
-.btn:hover,
+/*.btn:hover,
 .btn:active,
 input[type=submit]:hover,
 input[type=submit]:active {
     background-color: #cf6d17;
-}
+}*/
 
 .btn-full:hover,
 .btn-full:active {
     border: 1px solid #cf6d17;
 }
 
-.btn-ghost:hover,
+/*.btn-ghost:hover,
 .btn-ghost:active {
     border: 1px solid #cf6d17;
     color: #fff;
-}
+}*/
 
 
 /* --------------------------- */
@@ -339,8 +409,7 @@ header {
 
         .main-nav li a:link,
         .main-nav li a:visited,
-        a.btn.btn-info,
-        .btn-primary {
+        a.btn.btn-info {
             /*color: #fff;*/
             color: black;
             text-decoration: none;
@@ -556,7 +625,7 @@ a {
         color: #23527c;
         padding-bottom: 3px;
         border-bottom: 1px solid black;
-        text-decoration:none;
+        text-decoration: none;
         /*text-decoration:underline;*/
     }
 
@@ -943,7 +1012,8 @@ li span {
 }
 
 .rounded-border {
-    border: 1px solid blue;
+    border: 1px solid black;
+    padding: 5px;
     border-radius: 10px;
 }
 
@@ -1080,8 +1150,8 @@ li span {
         margin-left: -2px;
         margin-right: -2px;
     }
-    .switch-container-multi > div {
 
+    .switch-container-multi > div {
         margin-left: -2px;
         margin-right: -2px;
     }
@@ -1118,13 +1188,18 @@ select {
 }
 
 .connection-links a, .attendee-links a {
+    text-transform:uppercase;
     display: inline-block;
-    width: 90%;
-    background-color: #337ab7;
-    color: white;
+    /*width: 90%;*/
+    /*background-color: #337ab7;*/
+    /*color: white;*/
+    color:black;
 }
 
-.user-photo-list {
+.connection-links a:hover, .attendee-links a:hover {
+    padding-bottom:1px;
+}
+    .user-photo-list {
     text-align: center;
     position: relative;
     cursor: pointer;

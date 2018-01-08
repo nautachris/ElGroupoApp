@@ -60,13 +60,13 @@
     <h2 id="lblEventName">@Model.Details.Name</h2>
 
     @*<h3 class="centered">
-        Organizer(s):
-        @foreach (var org in Model.Organizers)
-        {
-            <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a>
+            Organizer(s):
+            @foreach (var org in Model.Organizers)
+            {
+                <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a>
 
-        }
-    </h3>*@
+            }
+        </h3>*@
 </div>
 <h3 class="centered">Organizers</h3>
 <li style="list-style:none; text-align:center;">
@@ -108,21 +108,21 @@
 
         @if (Model.IsRecurring && Model.EventRecurrence?.Length > 0)
         {
-            <div class="col span-1-of-6"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+            <div class="col span-1-of-6"><a class="links bold" data-link-type="details" href="#">Details</a></div>
             <div class="col span-1-of-6"><a class="links" data-link-type="add-attendees" href="#">Add New Attendees</a></div>
             <div class="col span-1-of-6"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
-            <div class="col span-1-of-6"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+            <div class="col span-1-of-6"><a class="links" data-link-type="notifications" href="#">Notifications</a></div>
             <div class="col span-1-of-6"><a class="links" data-link-type="messages" href="#">Messages</a></div>
             <div class="col span-1-of-6"><a class="links" data-link-type="recurrence" href="#">Recurrence</a></div>
 
         }
         else
         {
-            <div class="col span-1-of-5"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
+            <div class="col span-1-of-5"><a class="links bold" data-link-type="details" href="#">Details</a></div>
             <div class="col span-1-of-5"><a class="links" data-link-type="add-attendees" href="#">Add New Attendees</a></div>
             <div class="col span-1-of-5"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
-                        <div class="col span-1-of-5"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
-                        <div class="col span-1-of-5"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+            <div class="col span-1-of-5"><a class="links" data-link-type="notifications" href="#">Notifications</a></div>
+            <div class="col span-1-of-5"><a class="links" data-link-type="messages" href="#">Messages</a></div>
 
         }
 
@@ -136,9 +136,9 @@
                 @*<a>bears</a>*@
                 <a href="@GetCheckInUrl(Model.EventId)" style="background-color:red; color:white; font-weight:bold; border: 1px solid black; margin:14px; padding:4px;">Check In Now!</a>
                 @*<span class="centered width-100">
-                    
-                </span>*@
-                
+
+                    </span>*@
+
             </div>
 
 
@@ -168,8 +168,8 @@
             {
                 <div class="col span-1-of-4"><a class="links bold" data-link-type="details" href="#">Event&nbsp;Details</a></div>
                 <div class="col span-1-of-4"><a class="links" data-link-type="attendees" href="#">Attendees</a></div>
-                            <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
-                            <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
+                <div class="col span-1-of-4"><a class="links" data-link-type="notifications" href="#">Event&nbsp;Notifications</a></div>
+                <div class="col span-1-of-4"><a class="links" data-link-type="messages" href="#">Messages</a></div>
 
 
             }
@@ -192,9 +192,9 @@
     {
         <div style="display:none;" id="divEditDetails"></div>
         <div class="row centered">
-            <a id="btnEditDetails" href="#">Edit</a>
-            <a style="display:none;" id="btnCancelEditDetails" href="#">Cancel</a>
-            <a style="display:none;" id="btnSaveEditDetails" href="#">Save</a>
+            <span class="btn btn-primary" id="btnEditDetails">Edit Event Details</span>
+            <span style="display:none;" id="btnCancelEditDetails" class="btn btn-ghost">Cancel Event Changes</span>
+            <span style="display:none;" id="btnSaveEditDetails" class="btn btn-primary">Save Event Changes</span>
         </div>
 
     }
@@ -216,9 +216,9 @@
     {
         <div style="display:none;" id="divEditLocation"></div>
         <div class="row centered">
-            <a id="btnEditLocation" href="#">Edit Location</a>
-            <a style="display:none;" id="btnCancelEditLocation" href="#">Cancel Location Changes</a>
-            <a style="display:none;" id="btnSaveEditLocation" href="#">Save Location Changes</a>
+            <span class="btn btn-primary" id="btnEditLocation">Edit Location</span>
+            <span  class="btn btn-ghost" style="display:none;" id="btnCancelEditLocation">Cancel Location Changes</span>
+            <span class="btn btn-primary" style="display:none;" id="btnSaveEditLocation">Save Location Changes</span>
         </div>
     }
 
@@ -234,7 +234,7 @@
 {
 
     <div class="row tab add-attendees contact-form" style="display:none;">
-        <h2>Invite more people to your event</h2>
+        @*<h2>Invite more people to your event</h2>*@
         @Html.Partial("_EditEventAttendees", Model.Details)
 
     </div>
@@ -250,7 +250,7 @@
 
 </div>
 <div class="row tab notifications contact-form">
-    <h2>Notifications</h2>
+    @*<h2>Notifications</h2>*@
     <div id="divNotifications">
         @Html.Partial("_ViewEventNotifications", Model.Notifications)
     </div>
@@ -263,7 +263,7 @@
 </div>
 
 <div class="row tab messages contact-form">
-    <h2>Message Board</h2>
+    @*<h2>Message Board</h2>*@
     <div id="divMessages">
         @Html.Partial("_ViewEventMessages", Model.Messages)
     </div>
@@ -320,7 +320,7 @@
     <script type="text/javascript" src="~/content/scripts/events/view-event.js"></script>
     <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
     <script type="text/javascript" src="~/content/scripts/events/view-event-notifications.js"></script>
-<script type="text/javascript" src="~/content/scripts/events/edit-event-attendees.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/edit-event-attendees.js"></script>
     @if (Model.IsOrganizer)
     {
         <script type="text/javascript" src="~/content/scripts/events/edit-event-notifications.js"></script>

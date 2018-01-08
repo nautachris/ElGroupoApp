@@ -67,8 +67,8 @@
 
                         </div>
                         <div class="connection-links centered" style="z-index:3; display:none; position:absolute; top: 40%; left:5%; width:90%;">
-                            <a class="no-decoration" data-action="profile" data-profile-link="@GetUserViewLink(connection.UserId)">View Profile</a>
-                            <a class="no-decoration" data-action="remove" style="display:inline-block; width:100%;">Remove Connection</a>
+                            <a data-action="profile" data-profile-link="@GetUserViewLink(connection.UserId)">View Profile</a>
+                            <a data-action="remove" style="display:inline-block;">Remove Connection</a>
                         </div>
                     </div>
 
@@ -77,8 +77,8 @@
                 else
                 {
                     <div data-connection-email="@connection.Email" class="col span-1-of-4 rounded-border" style="text-align:center; position:relative;">
-                        <div style="font-weight:bold; display:inline-block; width:100%; text-transform:uppercase;">@connection.Email</div>
-                        <div style="font-weight:bold; display:inline-block; width:100%; text-transform:uppercase;">@connection.Name</div>
+                        <div style="font-weight:bold; display:inline-block; text-transform:uppercase;">@connection.Email</div>
+                        <div style="font-weight:bold; display:inline-block; text-transform:uppercase;">@connection.Name</div>
                         <a>Delete?</a>
                     </div>
                 }

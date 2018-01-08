@@ -1214,7 +1214,10 @@ namespace ElGroupo.Web.Services
                 e.Description = model.Description;
                 e.StartTime = model.GetFullStartDate(user.TimeZoneId);
                 e.EndTime = model.GetFullEndDate(user.TimeZoneId);
-             
+                e.MustRSVP = model.RSVPRequired;
+                e.CheckInLocationTolerance = model.LocationTolerance;
+                e.VerificationMethod = model.AttendanceVerificationMethod;
+                e.VerificationCode = model.VerificationCode;
                 e.Status = model.Status;
                _dbContext.Update(e);
                 await _dbContext.SaveChangesAsync();
@@ -1313,7 +1316,7 @@ namespace ElGroupo.Web.Services
             model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             model.Attendees = new ViewEventAttendeesModel();
-            foreach (var att in e.Attendees.Where(x => x.User.Id != userId))
+            foreach (var att in e.Attendees.Where(x => x.User.Id != userId).OrderBy(x=>x.User.Name))
             {
                 model.Attendees.Attendees.Add(new EventAttendeeModel
                 {
@@ -1456,7 +1459,7 @@ namespace ElGroupo.Web.Services
                 if (e == null) return SaveDataResponse.FromErrorMessage("Event Not Found");
                 var ea = await _dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
                 if (ea == null) return SaveDataResponse.FromErrorMessage("Event Attendee Not Found");
-                if (e.VerificationMethod != AttendanceVerificationMethods.PasswordAndLocation) return SaveDataResponse.FromErrorMessage("This event requires a password to check in");
+                if (e.VerificationMethod != AttendanceVerificationMethods.PasswordOrLocation) return SaveDataResponse.FromErrorMessage("This event requires a password to check in");
                 if (GetDistance(lat, lon, e.CoordinateY, e.CoordinateX) > e.CheckInLocationTolerance) return SaveDataResponse.FromErrorMessage("Distance is outside the tolerace");
 
 

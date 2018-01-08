@@ -88,25 +88,45 @@
 
     </div>
     <div class="row">
-        <div class="col span-1-of-4">
+        <div class="col span-1-of-3">
             <label>RSVP Required?</label>
         </div>
-        <div data-replace-element="RSVPRequired" class="switch-container col span-3-of-4 rsvp-required">
+        <div class="col span-1-of-3">
+            <input id="idRSVPYes" type="radio" asp-for="RSVPRequired" value="true" />
+            <label for="idRSVPYes">Yes</label>
+        </div>
+        <div class="col span-1-of-3">
+            <input id="idRSVPNo" type="radio" asp-for="RSVPRequired" value="false"/>
+            <label for="idRSVPNo">No</label>
+        </div>
+        @*<div data-replace-element="RSVPRequired" class="switch-container col span-3-of-4 rsvp-required">
             <input class="invisible" asp-for="RSVPRequired" />
             <span data-replace-val="true" class="switch-selected col span-1-of-2">Yes</span>
             <span data-replace-val="false" class="col span-1-of-2">No</span>
-        </div>
+        </div>*@
     </div>
-    <div class="row">
+    <div class="row verification-method">
         <div class="col span-1-of-4">
             <label>Check-In Verification:</label>
         </div>
-        <div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
+        <div class="col span-1-of-4">
+            <input id="rbVerifyNone" type="radio" asp-for="AttendanceVerificationMethod" value="None"/>
+            <label for="rbVerifyNone">None</label>
+        </div>
+        <div class="col span-1-of-4">
+            <input id="rbVerifyPasswordOrLocation" type="radio" asp-for="AttendanceVerificationMethod" value="PasswordOrLocation" />
+            <label for="rbVerifyPasswordOrLocation">Password or Location</label>
+        </div>
+        <div class="col span-1-of-4">
+            <input id="rbVerifyPassword" type="radio" asp-for="AttendanceVerificationMethod" value="PasswordOnly" />
+            <label for="rbVerifyPassword">Password Only</label>
+        </div>
+        @*<div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
             <input type="hidden" asp-for="AttendanceVerificationMethod" />
             <span data-replace-val="None" class="switch-selected col span-1-of-3">None</span>
             <span data-replace-val="PasswordAndLocation" class="col span-1-of-3">Password or Location</span>
             <span data-replace-val="PasswordOnly" class="col span-1-of-3">Password Only</span>
-        </div>
+        </div>*@
     </div>
     <div class="row verification-code" style="display:none;">
         <div class="col span-1-of-3">
@@ -116,12 +136,45 @@
             <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Code...">
         </div>
     </div>
-    <div class="row location-tolerance" style="display:none;">
+    @*<div class="row location-tolerance" style="display:none;">
         <div class="col span-1-of-3">
             <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
         </div>
         <div class="col span-2-of-3">
             <input asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
+        </div>
+    </div>*@
+    <div class="row location-tolerance" style="display:none;">
+        <div class="row">
+            <label>Location Accuracy</label>
+        </div>
+        <div class="col span-1-of-4">
+            <input type="radio" value="high" id="loc-tolerance-high" name="loc-tolerance" />
+            <label for="loc-tolerance-high">High</label>
+        </div>
+        <div class="col span-1-of-4">
+            <input type="radio" value="medium" id="loc-tolerance-medium" name="loc-tolerance" />
+            <label for="loc-tolerance-medium">Medium</label>
+        </div>
+        <div class="col span-1-of-4">
+            <input type="radio" value="low" id="loc-tolerance-low" name="loc-tolerance" />
+            <label for="loc-tolerance-low">Low</label>
+        </div>
+        <div class="col span-1-of-4">
+            <input type="radio" value="custom" id="loc-tolerance-custom" name="loc-tolerance" />
+            <label for="loc-tolerance-custom">Custom</label>
+        </div>
+
+
+    </div>
+    <div class="row location-tolerance-custom" style="display:none;">
+        <div class="row">
+            <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
+        </div>
+    </div>
+    <div class="row location-tolerance-custom" style="display:none;">
+        <div class="row">
+            <input  asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
         </div>
     </div>
     <div class="row">

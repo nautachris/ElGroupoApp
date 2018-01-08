@@ -47,8 +47,20 @@
 
 <div id="divAddConnections">
 
-
     <div class="row">
+        <label>Add Connections</label>
+    </div>
+    <div class="row add-connections centered">
+        <div class="col span-1-of-2">
+            <input name="connection-type" type="radio" value="connection-existing-members" id="connection-existing-members" checked />
+            <label for="connection-existing-members">Search Existing Footprint Members</label>
+        </div>
+        <div class="col span-1-of-2">
+            <input name="connection-type" type="radio" value="connection-add-new" id="connection-add-new" />
+            <label for="connection-add-new">Enter Name and Email</label>
+        </div>
+    </div>
+    @*<div class="row">
         <div class="col span-2-of-2 centered">
             <label>Add Connections!</label>
         </div>
@@ -56,7 +68,7 @@
             <div data-action="all" class="span-1-of-2 switch-selected">Search for ElGroupo Members</div>
             <div data-action="manual" class="span-1-of-2">Enter Name and Email</div>
         </div>
-    </div>
+    </div>*@
     <div class="row select-existing-contacts centered">
         <label class="span-2-of-2">Enter Name or Email Address:</label>
         <div class="col width-100 centered">
