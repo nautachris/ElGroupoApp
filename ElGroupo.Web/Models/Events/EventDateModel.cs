@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 namespace ElGroupo.Web.Models.Events
 {
-    public abstract class EventDateModel
+    public abstract class EventDateModel : EventModelBase
     {
         [Required]
         [Display(Description = "Start Hour")]
@@ -31,20 +31,39 @@ namespace ElGroupo.Web.Models.Events
         [Display(Description = "Event Date")]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
-        public DateTime EventDate { get; set; } = DateTime.Now;
+        public DateTime StartDate { get; set; } = DateTime.Now;
 
-        public DateTime GetFullStartDate(string tzId)
+        [Required]
+        [Display(Description = "Event Date")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
+        public DateTime EndDate { get; set; } = DateTime.Now;
+
+        public DateTime GetEventStartTimeUTC(string tzId)
         {
             int startHour = GetAdjustedHour(this.StartHour, StartAMPM);
-            var startDate = new DateTime(EventDate.Year, EventDate.Month, EventDate.Day, startHour, StartMinute, 0);
+            var startDate = new DateTime(StartDate.Year, StartDate.Month, StartDate.Day, startHour, StartMinute, 0);
             if (tzId == null) return startDate;
             return TimeZoneInfo.ConvertTimeToUtc(startDate, TimeZoneInfo.FindSystemTimeZoneById(tzId));
         }
-        public DateTime GetFullEndDate(string tzId)
+        public DateTime GetEventEndTimeUTC(string tzId)
         {
             int endHour = GetAdjustedHour(this.EndHour, EndAMPM);
-            var endDate = new DateTime(EventDate.Year, EventDate.Month, EventDate.Day, endHour, EndMinute, 0);
+            var endDate = new DateTime(EndDate.Year, EndDate.Month, EndDate.Day, endHour, EndMinute, 0);
             return TimeZoneInfo.ConvertTimeToUtc(endDate, TimeZoneInfo.FindSystemTimeZoneById(tzId));
+        }
+        public DateTime GetEventStartTimeLocal()
+        {
+            int startHour = GetAdjustedHour(this.StartHour, StartAMPM);
+            var startDate = new DateTime(StartDate.Year, StartDate.Month, StartDate.Day, startHour, StartMinute, 0);
+            return startDate;
+
+        }
+        public DateTime GetEventEndTimeLocal()
+        {
+            int endHour = GetAdjustedHour(this.EndHour, EndAMPM);
+            var endDate = new DateTime(EndDate.Year, EndDate.Month, EndDate.Day, endHour, EndMinute, 0);
+            return endDate;
         }
 
         private int GetAdjustedHour(int hour, Enums.AMPM ampm)

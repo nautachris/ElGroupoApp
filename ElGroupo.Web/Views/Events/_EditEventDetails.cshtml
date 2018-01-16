@@ -6,165 +6,89 @@
 
     Layout = null;
 }
-<form id="frmEditEventDetails">
-    <input type="hidden" id="OriginalStatus" value="@Model.Status" />
+<form id="frmEditEventDetails" class="contact-form centered">
+    @*<input type="hidden" id="OriginalStatus" value="@Model.Status" />*@
     <input asp-for="EventId" type="hidden" />
     <div class="row">
-        <div class="col span-1-of-3">
+        <div class="row">
             <label asp-for="Name">Name:</label>
         </div>
-        <div class="col span-2-of-3">
+        <div class="row">
             <input class="width-100" asp-for="Name" placeholder="Enter Event Name...">
         </div>
     </div>
     <div class="row">
-        <div class="col span-1-of-3">
+        <div class="row">
             <label asp-for="Description">Description:</label>
         </div>
-        <div class="col span-2-of-3">
+        <div class="row">
             <textarea class="width-100" asp-for="Description" placeholder="Enter Event Description..."></textarea>
         </div>
     </div>
     <div class="row">
-        <div class="col span-1-of-3">
-            <label asp-for="EventDate">Date:</label>
-        </div>
-        <div class="col span-2-of-3">
-            <input asp-for="EventDate" type="text" class="width-100" placeholder="Enter Event Date...">
-        </div>
+        <label>RSVP Required?</label>
     </div>
     <div class="row">
-        <div class="col span-1-of-6">
-            <label asp-for="StartHour">Start:</label>
-        </div>
-        <div class="col span-2-of-6">
-            <select asp-for="StartHour" style="float:right;">
-                <option value="12" selected>12</option>
-                @for (int hour = 1; hour <= 11; hour++)
-                {
-                    <option value="@hour">@hour.ToString()</option>
-                }
-            </select>
-        </div>
-        <div data-replace-element="StartMinute" class="switch-container start-minute col span-2-of-6">
-            <input type="hidden" asp-for="StartMinute" />
-            <span data-replace-val="0" class="col span-1-of-4">00</span>
-            <span data-replace-val="15" class="col span-1-of-4">15</span>
-            <span data-replace-val="30" class="col span-1-of-4">30</span>
-            <span data-replace-val="45" class="col span-1-of-4">45</span>
-        </div>
-        <div data-replace-element="StartAMPM" class="switch-container start-ampm col span-1-of-6">
-            <input type="hidden" asp-for="StartAMPM" />
-            <span data-replace-val="AM" class="col span-1-of-2">AM</span>
-            <span data-replace-val="PM" class="col span-1-of-2">PM</span>
-        </div>
 
-    </div>
-    <div class="row">
-        <div class="col span-1-of-6">
-            <label asp-for="EndHour">End:</label>
-        </div>
-        <div class="col span-2-of-6">
-            <select asp-for="EndHour" style="float:right;">
-                <option value="12" selected>12</option>
-                @for (int hour = 1; hour <= 11; hour++)
-                {
-                    <option value="@hour">@hour.ToString()</option>
-                }
-            </select>
-        </div>
-        <div data-replace-element="EndMinute" class="switch-container end-minute col span-2-of-6">
-            <input type="hidden" asp-for="EndMinute" />
-            <span data-replace-val="0" class="col span-1-of-4">00</span>
-            <span data-replace-val="15" class="col span-1-of-4">15</span>
-            <span data-replace-val="30" class="col span-1-of-4">30</span>
-            <span data-replace-val="45" class="col span-1-of-4">45</span>
-        </div>
-        <div data-replace-element="EndAMPM" class="switch-container end-ampm col span-1-of-6">
-            <input type="hidden" asp-for="EndAMPM" />
-            <span data-replace-val="AM" class="col span-1-of-2">AM</span>
-            <span data-replace-val="PM" class="col span-1-of-2">PM</span>
-        </div>
-
-    </div>
-    <div class="row">
-        <div class="col span-1-of-3">
-            <label>RSVP Required?</label>
-        </div>
-        <div class="col span-1-of-3">
+        <div class="col span-1-of-2">
             <input id="idRSVPYes" type="radio" asp-for="RSVPRequired" value="true" />
             <label for="idRSVPYes">Yes</label>
         </div>
-        <div class="col span-1-of-3">
-            <input id="idRSVPNo" type="radio" asp-for="RSVPRequired" value="false"/>
+        <div class="col span-1-of-2">
+            <input id="idRSVPNo" type="radio" asp-for="RSVPRequired" value="false" />
             <label for="idRSVPNo">No</label>
         </div>
-        @*<div data-replace-element="RSVPRequired" class="switch-container col span-3-of-4 rsvp-required">
-            <input class="invisible" asp-for="RSVPRequired" />
-            <span data-replace-val="true" class="switch-selected col span-1-of-2">Yes</span>
-            <span data-replace-val="false" class="col span-1-of-2">No</span>
-        </div>*@
     </div>
     <div class="row verification-method">
-        <div class="col span-1-of-4">
-            <label>Check-In Verification:</label>
-        </div>
-        <div class="col span-1-of-4">
-            <input id="rbVerifyNone" type="radio" asp-for="AttendanceVerificationMethod" value="None"/>
+        <label>Check-In Verification:</label>
+    </div>
+    <div class="row verification-method">
+
+        <div class="col span-1-of-3">
+            <input id="rbVerifyNone" type="radio" asp-for="AttendanceVerificationMethod" value="None" />
             <label for="rbVerifyNone">None</label>
         </div>
-        <div class="col span-1-of-4">
+        <div class="col span-1-of-3">
             <input id="rbVerifyPasswordOrLocation" type="radio" asp-for="AttendanceVerificationMethod" value="PasswordOrLocation" />
             <label for="rbVerifyPasswordOrLocation">Password or Location</label>
         </div>
-        <div class="col span-1-of-4">
+        <div class="col span-1-of-3">
             <input id="rbVerifyPassword" type="radio" asp-for="AttendanceVerificationMethod" value="PasswordOnly" />
             <label for="rbVerifyPassword">Password Only</label>
         </div>
-        @*<div data-replace-element="AttendanceVerificationMethod" class="switch-container checkin-type col span-3-of-4">
-            <input type="hidden" asp-for="AttendanceVerificationMethod" />
-            <span data-replace-val="None" class="switch-selected col span-1-of-3">None</span>
-            <span data-replace-val="PasswordAndLocation" class="col span-1-of-3">Password or Location</span>
-            <span data-replace-val="PasswordOnly" class="col span-1-of-3">Password Only</span>
-        </div>*@
     </div>
     <div class="row verification-code" style="display:none;">
-        <div class="col span-1-of-3">
-            <label asp-for="VerificationCode">Code:</label>
-        </div>
-        <div class="col span-2-of-3">
-            <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Code...">
-        </div>
+        <label asp-for="VerificationCode">Code:</label>
+
     </div>
-    @*<div class="row location-tolerance" style="display:none;">
-        <div class="col span-1-of-3">
-            <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
-        </div>
-        <div class="col span-2-of-3">
-            <input asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
-        </div>
-    </div>*@
+    <div class="row verification-code" style="display:none;">
+
+        <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Code...">
+
+    </div>
     <div class="row location-tolerance" style="display:none;">
-        <div class="row">
-            <label>Location Accuracy</label>
-        </div>
-        <div class="col span-1-of-4">
+        <label>Location Accuracy</label>
+    </div>
+    <div class="row location-tolerance" style="display:none;">
+
+        <div class="col span-1-of-6"></div>
+        <div class="col span-1-of-6">
             <input type="radio" value="high" id="loc-tolerance-high" name="loc-tolerance" />
             <label for="loc-tolerance-high">High</label>
         </div>
-        <div class="col span-1-of-4">
+        <div class="col span-1-of-6">
             <input type="radio" value="medium" id="loc-tolerance-medium" name="loc-tolerance" />
             <label for="loc-tolerance-medium">Medium</label>
         </div>
-        <div class="col span-1-of-4">
+        <div class="col span-1-of-6">
             <input type="radio" value="low" id="loc-tolerance-low" name="loc-tolerance" />
             <label for="loc-tolerance-low">Low</label>
         </div>
-        <div class="col span-1-of-4">
+        <div class="col span-1-of-6">
             <input type="radio" value="custom" id="loc-tolerance-custom" name="loc-tolerance" />
             <label for="loc-tolerance-custom">Custom</label>
         </div>
-
+        <div class="col span-1-of-6"></div>
 
     </div>
     <div class="row location-tolerance-custom" style="display:none;">
@@ -174,10 +98,10 @@
     </div>
     <div class="row location-tolerance-custom" style="display:none;">
         <div class="row">
-            <input  asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
+            <input asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
         </div>
     </div>
-    <div class="row">
+    @*<div class="row">
         <div class="col span-1-of-4">
             <label>Saved as Draft?</label>
         </div>
@@ -188,9 +112,9 @@
                 <span data-replace-val="Draft" class="switch-selected col span-1-of-3">Draft</span>
 
             }
-            
+
             <span data-replace-val="Active" class="col span-1-of-3">Active</span>
             <span data-replace-val="Cancelled" class="col span-1-of-3">Cancelled</span>
         </div>
-    </div>
+    </div>*@
 </form>

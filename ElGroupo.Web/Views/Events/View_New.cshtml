@@ -1,0 +1,260 @@
+﻿@using ElGroupo.Web.Models.Events
+@using System.Collections.Generic
+@using ElGroupo.Web.Models.Enums
+@model EventViewModel
+
+
+@functions{
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+    public string GetImageUrl(int id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+
+    public string GetUserViewLink(int id)
+    {
+        var url = Url.Action("View", "Account", new { id = id });
+        return url;
+
+    }
+    private string GetCheckInUrl(long eid)
+    {
+
+        var url = Url.Action("CheckIn", "Events", new { eid = eid });
+        return url;
+
+    }
+}
+
+
+
+<input type="hidden" asp-for="EventId" />
+<input type="hidden" asp-for="IsRecurring" />
+<div class="row">
+    <h3 id="lblEventName" class="centered bold">@Model.Details.Name</h3>
+    @if (Model.Organizers.Count == 1)
+    {
+        <h3 class="centered">Organizer:&nbsp;<a href="@Url.Action("View", "Account", new { userId = Model.Organizers[0].Id })">@Model.Organizers[0].Name</a></h3>
+
+    }
+    else
+    {
+        <h3 class="centered">
+            <span>Organizers: </span>
+            @foreach (var org in Model.Organizers)
+            {
+                <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a> @:&nbsp;
+        }
+        </h3>
+
+    }
+</div>
+<div class="row centered">
+    <h3>@Model.Details.Description</h3>
+    @if (Model.IsOrganizer)
+    {
+        <span class="smaller-text edit-links" data-edit-type="details">Edit</span>
+        @*<span class="smaller-text delete-links">Delete</span>*@
+
+    }
+
+</div>
+
+
+<div class="row view-event-dashboard">
+    <div class="border-right">
+        <h3>Date &amp; Time</h3>
+        <div>Starts: @Model.Details.StartTime</div>
+        <div>Ends: @Model.Details.EndTime</div>
+        @if (Model.IsOrganizer)
+            {
+            <div>
+
+                <span class="edit-links" data-edit-type="time">Edit</span>
+            </div>
+        }
+
+    </div>
+
+    <div class="border-right">
+
+        <h3>Location</h3>
+        @if (!string.IsNullOrEmpty(Model.Location.LocationName))
+        {
+            <div>@Model.Location.LocationName</div>
+
+        }
+        <div>@Model.Location.Address1</div>
+        @if (!string.IsNullOrEmpty(Model.Location.Address2))
+        {
+            <div>@Model.Location.Address2</div>
+
+        }
+        <div>@Model.Location.City, @Model.Location.State @Model.Location.ZipCode</div>
+        <div>
+            @if (Model.IsOrganizer)
+            {
+                <span class="edit-links" data-edit-type="location">Edit</span>
+
+            }
+            else
+            {
+                <a>View</a>
+
+            }
+        </div>
+
+    </div>
+    <div>
+
+        <h3>News</h3>
+        @if (Model.Notifications.Notifications.Any())
+                {
+                    var newest = Model.Notifications.Notifications.OrderByDescending(x => x.PostedDate).First();
+            <div class="smaller-text">@newest.DateText</div>
+                    <div>@newest.OrganizerName: @newest.NotificationText</div>
+        }
+        else
+        {
+            <h3>Slow News Day!</h3>
+
+        }
+
+        <div>
+            <span class="edit-links" data-edit-type="news">View</span>
+        </div>
+
+    </div>
+</div>
+
+<div id="details-view-container" style="display:none;" data-view-type="none">
+    <div class="row" id="details-view"></div>
+
+    @*look at an article on WAPO and their social bar on the left*@
+
+    @*this will contain all details views*@
+    @*if organizer - should we pre-load the edit views?*@
+    @*view mode
+        location
+        messages
+
+        edit mode
+        details
+        date
+        location*@
+
+
+    @*shit we're missing
+    recurrence info - ADD TO A VIEW TIME DETAILS VIEW
+        LOCATION - LINK TO GOOGLE MAPS URL
+    send reminders to non-rsvpd attendees - add to button panel!!
+    edit rsvp
+    check in (if applicable)
+    notifications vs messages*@
+
+    <div class="row centered">
+        @if (Model.IsOrganizer)
+        {
+            <span class="save-links">Save</span>
+        }
+        <span class="close-links">Close</span>
+    </div>
+
+</div>
+
+<div class="row centered">
+    <h3>Group</h3>
+</div>
+<div class="row centered">
+    @Html.Partial("_ViewEventAttendees", Model.Attendees)
+</div>
+
+@if (Model.IsOrganizer && Model.Details.Status != ElGroupo.Domain.Enums.EventStatus.Active)
+{
+    <span style="display:none;" id="spanStatus">@Model.Details.Status</span>
+    <div class="row centered">
+        <h3>Event Status</h3>
+
+    </div>
+    <div class="row centered event-status">
+        <div class="col span-1-of-3">
+            <input asp-for="Details.Status" value="Cancelled" id="rbStatusCancelled" type="radio" />
+            <label for="rbStatusCancelled">Cancelled</label>
+        </div>
+        <div class="col span-1-of-3">
+            <input asp-for="Details.Status" value="Draft" id="rbStatusDraft" type="radio" />
+            <label for="rbStatusDraft">Draft</label>
+        </div>
+        <div class="col span-1-of-3">
+            <input asp-for="Details.Status" value="Active" id="rbStatusActive" type="radio" />
+            <label for="rbStatusActive">Active</label>
+        </div>
+    </div>
+
+}
+
+@if (Model.IsOrganizer)
+{
+    <div class="row centered" style="margin-top:20px; margin-bottom:40px;">
+        <button id="btnDeleteEvent" class="btn-primary">Delete Event</button>
+    </div>
+
+
+}
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/events/view-event-new.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/message-board-new.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/view-event-notifications.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/edit-event-attendees-new.js"></script>
+    @if (Model.IsOrganizer)
+    {
+        <script type="text/javascript" src="~/content/scripts/events/edit-event-notifications-new.js"></script>
+        <script type="text/javascript" src="~/content/scripts/events/edit-event-new.js"></script>
+
+
+    }
+    <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>
+    <script type="text/javascript">
+
+            Maps.Init({
+                mapDiv: 'divMap',
+                initOnLoad: false,
+                mapLoadedCallback: ViewEvent.MapLoaded
+            });
+
+
+    </script>
+
+    @*AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk*@
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=@Model.GoogleApiKey&libraries=places,drawing&callback=Maps.InitMap">
+    </script>
+
+}

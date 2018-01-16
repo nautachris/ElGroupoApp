@@ -255,11 +255,11 @@
         @Html.Partial("_ViewEventNotifications", Model.Notifications)
     </div>
 
-    @if (Model.IsOrganizer)
+    @*@if (Model.IsOrganizer)
     {
         @Html.Partial("_EditEventNotifications")
 
-    }
+    }*@
 </div>
 
 <div class="row tab messages contact-form">
@@ -276,6 +276,7 @@
     <div class="row tab recurrence contact-form" style="display:none;">
         @if (Model.EventRecurrence?.Length > 0)
         {
+            <h3>Other Related Events</h3>
 
             <ul style="list-style:none;">
                 @foreach (var e in Model.EventRecurrence)
@@ -338,7 +339,10 @@
 
         });
     </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk&libraries=places,drawing&callback=Maps.InitMap">
-    </script>
+@*AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk*@
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=@Model.GoogleApiKey&libraries=places,drawing&callback=Maps.InitMap">
+</script>
+
+
 
 }

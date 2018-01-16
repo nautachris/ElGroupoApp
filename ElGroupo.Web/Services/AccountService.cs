@@ -347,6 +347,8 @@ namespace ElGroupo.Web.Services
                 HasPhoto = user.PhotoId.HasValue,
                 Id = user.Id,
                 Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
                 ZipCode = user.ZipCode,
                 TimeZones = TimeZoneInfo.GetSystemTimeZones().ToDictionary(x=>x.Id, x=>x.DisplayName),
@@ -459,6 +461,8 @@ namespace ElGroupo.Web.Services
                 userRecord.Email = model.EmailAddress;
                 userRecord.PhoneNumber = model.PhoneNumber;
                 userRecord.Name = model.Name;
+                userRecord.FirstName = model.FirstName;
+                userRecord.LastName = model.LastName;
                 userRecord.TimeZoneId = model.TimeZoneId;
                 if (model.UpdatedPhoto != null)
                 {

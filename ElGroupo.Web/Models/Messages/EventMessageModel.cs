@@ -13,6 +13,7 @@ namespace ElGroupo.Web.Models.Messages
         public DateTime PostedDate { get; set; }
         public string Subject { get; set; }
         public string MessageText { get; set; }
+        public string DateText { get; set; }
         public bool IsNew { get; set; }
         public long Id { get; set; }
     }

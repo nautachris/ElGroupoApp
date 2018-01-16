@@ -14,20 +14,11 @@ namespace ElGroupo.Web.Models.Events
             this.Name = e.Name;
             this.Description = e.Description;
             this.Location = e.LocationName;
-            this.StartTime = e.GetStartTimeText(tzId);
-            this.EndTime = e.GetEndTimeText(tzId);
+            this.StartTime = e.GetStartTimeText(tzId, false);
+            this.EndTime = e.GetEndTimeText(tzId, false);
             this.Status = e.Status;
             this.IsRecurring = e.Recurrence != null;
             if (this.IsRecurring) this.RecurrenceText = GetRecurrenceText(e.Recurrence);
-
-
-
-
-
-
-
-
-
         }
 
         private string GetNthDay(int day)
@@ -36,13 +27,13 @@ namespace ElGroupo.Web.Models.Events
             switch (dayChar)
             {
                 case "1":
-                    return dayChar + "st";
+                    return day.ToString() + "st";
                 case "2":
-                    return dayChar + "nd";
+                    return day.ToString() + "nd";
                 case "3":
-                    return dayChar + "rd";
+                    return day.ToString() + "rd";
                 default:
-                    return dayChar + "th";
+                    return day.ToString() + "th";
                 
             }
            
@@ -65,7 +56,7 @@ namespace ElGroupo.Web.Models.Events
             var intDays = new List<int>();
             foreach(var d in uniqueDays)
             {
-                intDays.Add(Convert.ToInt32(d));
+                intDays.Add(Convert.ToInt32(d.Trim()));
             }
             intDays.Sort();
 

@@ -1,0 +1,82 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Web.Models.Enums
+@model ElGroupo.Web.Models.Events.EditEventDateModel
+
+@{
+
+    Layout = null;
+}
+<form id="frmEditEventDates" class="contact-form">
+    <input asp-for="EventId" type="hidden" />
+
+
+
+    <div class="row centered">
+        <label>Start Time</label> 
+    </div>
+    <div class="row centered">
+        <div class="col span-3-of-6">
+            <input asp-for="StartDate" type="text" class="width-100" placeholder="Enter Event Start Date...">
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="StartHour">
+                <option value="12" selected>12</option>
+                @for (int hour = 1; hour <= 11; hour++)
+                {
+                    <option value="@hour">@hour.ToString()</option>
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="StartMinute">
+                @for (var min = 0; min <60; min++)
+                {
+                    <option value="@min">@min.ToString()</option>
+
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="StartAMPM">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+            </select>
+        </div>
+    </div>
+    <div class="row centered">
+        <label>End Time</label>
+    </div>
+    <div class="row centered">
+        <div class="col span-3-of-6">
+            <input asp-for="EndDate" type="text" class="width-100" placeholder="Enter Event End Date...">
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="EndHour">
+                <option value="12" selected>12</option>
+                @for (int hour = 1; hour <= 11; hour++)
+                {
+                    <option value="@hour">@hour.ToString()</option>
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="EndMinute">
+                @for (var min = 0; min < 60; min++)
+                {
+                    <option value="@min">@min.ToString()</option>
+
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-6">
+            <select asp-for="EndAMPM">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+            </select>
+        </div>
+    </div>
+
+
+</form>
+
+@Html.Partial("_ViewEventRecurrence", Model.Recurrence)

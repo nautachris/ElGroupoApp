@@ -10,7 +10,7 @@
     <link href="~/content/resources/css/queries.css" rel="stylesheet" />
     <link href="~/content/lib/css/jquery-ui.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,300i,400" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700" rel="stylesheet">
     @*font-family: 'Raleway', sans-serif;*@
     @*font-family: 'Source Sans Pro', sans-serif;*@
     <link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
@@ -21,6 +21,17 @@
 </head>
 <body class="panel-body">
     @await Component.InvokeAsync("HeaderComponent")
+    <div style="position:fixed; right:10px; top:100px; width:50px; height:200px; background-color:green; cursor:pointer;">
+        @*rsvp yes/no/maybe*@
+        @*checkin*@
+        @*location
+            date/time
+            details
+            recurrence*@
+        <div style="width:100%; height:40px; background-color:yellow">Yes</div>
+        <div style="width:100%; height:40px; background-color:rebeccapurple">Maybe</div>
+        <div style="width:100%; height:40px; background-color:khaki">No</div>
+    </div>
     <div id="main" style="min-height:65%;z-index:1">
         @RenderBody()
     </div>

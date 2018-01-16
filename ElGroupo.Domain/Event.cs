@@ -31,19 +31,37 @@ namespace ElGroupo.Domain
 
         }
 
-        public string GetStartTimeText(string timeZoneId)
+        public string GetStartTimeText(string timeZoneId, bool includeTimeZoneDescription)
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             var localStartTime = TimeZoneInfo.ConvertTimeFromUtc(this.StartTime, tz);
-            var tzName = tz.IsDaylightSavingTime(localStartTime) ? tz.DaylightName : tz.StandardName;
-            return localStartTime.DayOfWeek.ToString() + " " + localStartTime.ToString("d") + " " + localStartTime.ToString("t") + " - " + tzName;
+
+            if (includeTimeZoneDescription)
+            {
+                var tzName = tz.IsDaylightSavingTime(localStartTime) ? tz.DaylightName : tz.StandardName;
+                return localStartTime.DayOfWeek.ToString() + " " + localStartTime.ToString("d") + " " + localStartTime.ToString("t") + " - " + tzName;
+            }
+            else
+            {
+                return localStartTime.DayOfWeek.ToString() + " " + localStartTime.ToString("d") + " " + localStartTime.ToString("t");
+            }
+
         }
-        public string GetEndTimeText(string timeZoneId)
+        public string GetEndTimeText(string timeZoneId, bool includeTimeZoneDescription)
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             var localEndTime = TimeZoneInfo.ConvertTimeFromUtc(this.EndTime, tz);
-            var tzName = tz.IsDaylightSavingTime(localEndTime) ? tz.DaylightName : tz.StandardName;
-            return localEndTime.DayOfWeek.ToString() + " " + localEndTime.ToString("d") + " " + localEndTime.ToString("t") + " - " + tzName;
+            if (includeTimeZoneDescription)
+            {
+                var tzName = tz.IsDaylightSavingTime(localEndTime) ? tz.DaylightName : tz.StandardName;
+                return localEndTime.DayOfWeek.ToString() + " " + localEndTime.ToString("d") + " " + localEndTime.ToString("t") + " - " + tzName;
+            }
+            else
+            {
+                var tzName = tz.IsDaylightSavingTime(localEndTime) ? tz.DaylightName : tz.StandardName;
+                return localEndTime.DayOfWeek.ToString() + " " + localEndTime.ToString("d") + " " + localEndTime.ToString("t");
+            }
+
         }
         public Event()
         {

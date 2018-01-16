@@ -5,6 +5,7 @@
     $("#main").css('opacity', 0.2);
     $("#divConfirm").show();
     $("#spanConfirmationMessage").text(message);
+    $("#spanConfirmationMessage")[0].scrollIntoView();
     $("#btnConfirmYes").on("click", function () {
         $("#main").css('opacity', 1);
         $("#divConfirm").hide();
@@ -28,6 +29,7 @@ var MessageDialog = function (message) {
     $("#main").css('opacity', 0.2);
     $("#divMessageDialog").show();
     $("#spanMessageDialog").text(message);
+    $("#spanMessageDialog")[0].scrollIntoView();
     $("#btnMessageDialogOK").on("click", function () {
         $("#main").css('opacity', 1);
         $("#divMessageDialog").hide();

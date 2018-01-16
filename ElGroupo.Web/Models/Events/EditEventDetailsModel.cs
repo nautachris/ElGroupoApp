@@ -4,20 +4,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using ElGroupo.Web.Models.Enums;
 using ElGroupo.Domain.Enums;
-
+using ElGroupo.Web.Classes;
 namespace ElGroupo.Web.Models.Events
 {
     public class EditEventDetailsModel: EventDateModel
     {
         public EditEventDetailsModel() { }
-        public EditEventDetailsModel(ElGroupo.Domain.Event e)
+        public EditEventDetailsModel(ElGroupo.Domain.Event e, string tzId)
         {
+            var localStart = e.EndTime.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(tzId));
             this.EventId = e.Id;
             this.Description = e.Description;
+            this.EndDate = e.EndTime.Date;
             this.EndAMPM = e.EndTime.Hour >= 12 ? Models.Enums.AMPM.PM : Models.Enums.AMPM.AM;
             this.EndHour = e.EndTime.Hour;
             this.EndMinute = e.EndTime.Minute;
-            this.EventDate = e.StartTime.Date;
+            this.StartDate = e.StartTime.Date;
             this.Name = e.Name;
             this.StartAMPM = e.StartTime.Hour >= 12 ? Models.Enums.AMPM.PM : Models.Enums.AMPM.AM;
             this.StartHour = e.StartTime.Hour;
@@ -30,12 +32,12 @@ namespace ElGroupo.Web.Models.Events
 
         }
 
-        public bool UpdateRecurring { get; set; }
+        //public bool UpdateRecurring { get; set; }
 
         public EventRecurrenceModel Recurrence { get; set; }
 
         public EventStatus Status { get; set; }
-        public long EventId { get; set; }
+        //public long EventId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public bool RSVPRequired { get; set; }

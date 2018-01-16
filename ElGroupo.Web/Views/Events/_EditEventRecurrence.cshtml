@@ -30,30 +30,51 @@
         <label for="rbRecurrenceDaily">Daily</label>
     </div>
     <div class="col span-1-of-3">
-        <input id="rbRecurrenceWeekly" type="radio" asp-for="Recurrence.Pattern" value="Weekly"/>
+        <input id="rbRecurrenceWeekly" type="radio" asp-for="Recurrence.Pattern" value="Weekly" />
         <label for="rbRecurrenceDaily">Weekly</label>
     </div>
     <div class="col span-1-of-3">
-        <input id="rbRecurrenceMonthly" type="radio" asp-for="Recurrence.Pattern" value="Monthly"/>
+        <input id="rbRecurrenceMonthly" type="radio" asp-for="Recurrence.Pattern" value="Monthly" />
         <label for="rbRecurrenceDaily">Monthly</label>
     </div>
 </div>
-@*<div class="row">
 
-    <label asp-for="Recurrence.Pattern">Pattern:</label>
-    <div data-replace-element="Recurrence_Pattern" class="row switch-container">
-        <input type="hidden" asp-for="Recurrence.Pattern" />
-        <span data-replace-val="Daily" class="col span-1-of-3">Daily</span>
-        <span data-replace-val="Weekly" class="col span-1-of-3">Weekly</span>
-        <span data-replace-val="Monthly" class="col span-1-of-3">Monthly</span>
-    </div>
-</div>*@
 
 @*only show this when weekly is selected*@
 <div class="row days-of-week" style="display:none;">
 
-    <label>On:</label>
-    <div class="row switch-container-multi" style="text-align:center;">
+    <div class="col span-1-of-7">
+        <input id="chkDay0" type="checkbox" asp-for="Recurrence.Days[0]" />
+        <label for="chkDay0">Monday</label>
+    </div>
+    <div class="col span-1-of-7">
+        <input id="chkDay1" type="checkbox" asp-for="Recurrence.Days[1]" />
+        <label for="chkDay1">Tuesday</label>
+    </div>
+    <div class="col span-1-of-7">
+        <input id="chkDay2" type="checkbox" asp-for="Recurrence.Days[2]" />
+        <label for="chkDay2">Wednesday</label>
+    </div>
+    <div class="col span-1-of-7">
+        <input id="chkDay3" type="checkbox" asp-for="Recurrence.Days[3]" />
+        <label for="chkDay3">Thursday</label>
+    </div>
+    <div class="col span-1-of-7">
+        <input id="chkDay4" type="checkbox" asp-for="Recurrence.Days[4]" />
+        <label for="chkDay4">Friday</label>
+    </div>
+    <div class="col span-1-of-7">
+        <input id="chkDay5" type="checkbox" asp-for="Recurrence.Days[5]" />
+        <label for="chkDay5">Saturday</label>
+    </div>
+    <div class="col span-1-of-7">
+        <input id="chkDay6" type="checkbox" asp-for="Recurrence.Days[6]" />
+        <label for="chkDay6">Sunday</label>
+    </div>
+
+</div>
+
+@*<div class="row switch-container-multi" style="text-align:center;">
         @for (var x = 0; x < Model.Recurrence.Days.Length; x++)
             {
             <input class="invisible" data-day-index="@x" type="checkbox" asp-for="Recurrence.Days[x]" />
@@ -65,12 +86,8 @@
         <span data-day-index="4" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Friday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Friday)</span>
         <span data-day-index="5" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Saturday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Saturday)</span>
         <span data-day-index="6" data-selected="false" data-val="@Convert.ToInt32(DaysOfWeek.Sunday)" class="col span-1-of-7">@GetEnumDisplayName(DaysOfWeek.Sunday)</span>
+    </div>*@
 
-
-
-
-    </div>
-</div>
 <div class="row monthly-recurrence" style="display:none;">
     <div class="col span-1-of-4">
         <label>Day(s) of Month (separate by commas)</label>

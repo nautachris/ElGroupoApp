@@ -10,5 +10,6 @@ namespace ElGroupo.Web.Models.Configuration
         public string GoogleClientId { get; set; }
         public string GoogleClientSecret { get; set; }
         public string GoogleApiKey { get; set; }
+        public string GoogleMapsApiKey { get; set; }
     }
 }

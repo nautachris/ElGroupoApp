@@ -8,6 +8,7 @@ namespace ElGroupo.Web.Models.Events
 {
     public class EventRecurrenceModel
     {
+
         public int RecurrenceInterval { get; set; } = 1;
         public int RecurrenceLimit { get; set; } = 10;
         public RecurrencePatterns Pattern { get; set; } = RecurrencePatterns.Daily;

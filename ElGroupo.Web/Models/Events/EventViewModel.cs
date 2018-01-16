@@ -18,6 +18,8 @@ namespace ElGroupo.Web.Models.Events
             this.Location = new ViewEventLocationModel(e);
             this.IsRecurring = e.Recurrence != null;
         }
+
+        public string GoogleApiKey { get; set; }
                 public CheckInStatuses CheckInStatus { get; set; }
         public RecurrenceListModel[] EventRecurrence { get; set; }
         public bool IsRecurring { get; set; }
@@ -35,7 +37,7 @@ namespace ElGroupo.Web.Models.Events
 
 
 
-        public List<EventNotificationModel> Notifications { get; set; }
+        public EventNotificationModelContainer Notifications { get; set; }
         public List<EventMessageModel> Messages { get; set; }
 
 

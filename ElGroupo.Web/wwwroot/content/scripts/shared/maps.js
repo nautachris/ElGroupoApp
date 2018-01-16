@@ -70,15 +70,18 @@ Maps = {
     },
     Init: function (obj) {
         this.$mapDiv = $('#' + obj.mapDiv);
+        if (obj.hasOwnProperty('initOnLoad')) {
+            this.initOnLoad = obj.initOnLoad;
+        }
         if (obj.txtAutocomplete) this.$txtAutocomplete = $("#" + obj.txtAutocomplete);
         if (obj.placeChangeCallback) this.placeChangeCallback = obj.placeChangeCallback;
         if (obj.mapLoadedCallback) this.mapLoadedCallback = obj.mapLoadedCallback;
         if (obj.showDrawTools) this.showDrawTools = obj.showDrawTools;
         if (obj.createDrawTools) this.createDrawTools = obj.createDrawTools;
         //$("#divContactList").on("click", " #tblContacts a", function () {
-        $("#" + obj.mapDiv).on("click", "a.select-link", function () {
-            alert('place selected!');
-        });
+        //$("#" + obj.mapDiv).on("click", "a.select-link", function () {
+        //    alert('place selected!');
+        //});
     },
     InitDrawingManager: function () {
         Maps.drawingManager = new google.maps.drawing.DrawingManager({
@@ -103,7 +106,10 @@ Maps = {
         });
     },
     InitMap: function () {
+        console.log('maps.initmap');
+        console.log(this.initOnLoad);
         if (this.initOnLoad) {
+            console.log('create map object');
             this.map = new google.maps.Map(this.$mapDiv[0], {
                 zoom: 10,
                 center: { lat: 35.11, lng: -106.62 }
@@ -125,7 +131,15 @@ Maps = {
         }
 
     },
-    InitMapManual: function () {
+    InitMapManual: function (options) {
+        console.log('maps.initmapmanual');
+        if (options) {
+            this.$mapDiv = $('#' + options.mapDiv);
+            this.$txtAutocomplete = $('#' + options.txtAutocomplete);
+            this.placeChangeCallback = options.placeChangeCallback;
+        }
+
+        console.log(this.$mapDiv.length);
         this.map = new google.maps.Map(this.$mapDiv[0], {
             zoom: 10,
             center: { lat: 35.11, lng: -106.62 }
@@ -179,6 +193,7 @@ Maps = {
         }
     },
     InitAutocomplete: function () {
+        console.log('initautocomplete');
         this.autocomplete = new google.maps.places.Autocomplete(
             this.$txtAutocomplete[0],
             {

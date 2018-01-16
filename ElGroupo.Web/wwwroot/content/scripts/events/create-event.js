@@ -25,6 +25,8 @@ CreateEvent = {
                 $("#btnPreviousStep").show();
                 $("#btnNextStep").show();
                 $("#divSubmit").hide();
+                $("#StartDate").datepicker();
+                $("#EndDate").datepicker();
                 break;
             case 3:
                 $('#create-step').text('Step 3 of 4');
@@ -63,10 +65,8 @@ CreateEvent = {
     },
     Init: function () {
 
-        $("#EventDate").datepicker({
-            //dateFormat: "mm/dd/yyyy",
-            //defaultDate: new Date(Date.now())
-        });
+        $("#StartDate").datepicker();
+        $("#EndDate").datepicker();
 
         //location-search-method
         //$("html").on("click", ".switch-container.map-select > span", CreateEvent.EventHandlers.MapSelectionModeChanged);

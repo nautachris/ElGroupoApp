@@ -1,0 +1,19 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Web.Models.Enums
+@model ElGroupo.Web.Models.Events.ViewEventDatesModel
+
+@{
+
+    Layout = null;
+}
+<div class="row contact-form centered">
+    <div class="row"><label>Event Start</label></div>
+    <div class="row">@Model.StartText</div>
+
+    <div class="row"><label>Event End</label></div>
+    <div class="row">@Model.EndText</div>
+</div>
+
+
+
+@Html.Partial("_ViewEventRecurrence", Model.Recurrence)

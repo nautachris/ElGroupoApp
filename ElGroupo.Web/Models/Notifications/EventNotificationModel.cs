@@ -14,8 +14,14 @@ namespace ElGroupo.Web.Models.Notifications
         public DateTime PostedDate { get; set; }
         public string NotificationText { get; set; }
         public string Subject { get; set; }
-        public bool CanEdit { get; set; }
 
+        public string DateText { get; set; }
         public bool IsNew { get; set; }
+    }
+
+    public class EventNotificationModelContainer
+    {
+        public List<EventNotificationModel> Notifications { get; set; }
+        public bool IsOrganizer { get; set; }
     }
 }

@@ -47,7 +47,7 @@ namespace ElGroupo.Web.Controllers
                 {
                     PostedBy = user,
                     Event = e,
-                    PostedDate = DateTime.Now,
+                    PostedDate = DateTime.Now.ToUniversalTime(),
                     MessageText = model.Text,
                     Subject = model.Subject
                 };

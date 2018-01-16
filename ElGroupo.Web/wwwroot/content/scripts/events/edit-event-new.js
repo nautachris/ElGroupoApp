@@ -7,13 +7,42 @@ EditEvent = {
         EditEvent.EventId = Number($("#EventId").val());
         EditEvent.IsRecurring = $("#IsRecurring").val() === 'True';
         EditEvent.EventName = $("#lblEventName").text();
+        $(".edit-links").on("click", function () {
+            console.log('edit links click');
+            console.log($(this).attr('data-edit-type'));
+            switch ($(this).attr('data-edit-type')) {
+                case 'time':
+                    EditEvent.LoadEventDates();
+                    break;
+                case 'details':
+                    EditEvent.LoadEventDetails();
+                    break;
+                case 'location':
+                    EditEvent.LoadEventLocation();
+                    break;
+                case 'news':
+                    EditEvent.LoadEventNotifications();
+                    break;
+            }
 
-        $("#btnEditDetails").on("click", EditEvent.EventHandlers.HandleEditDetailsClick);
-        $("#btnCancelEditDetails").on("click", EditEvent.EventHandlers.HandleCancelEditDetailsClick);
-        $("#btnEditLocation").on("click", EditEvent.EventHandlers.HandleEditLocationClick);
-        $("#btnCancelEditLocation").on("click", EditEvent.EventHandlers.HandleCancelLocationEditClick);
-        $("#btnSaveEditLocation").on("click", EditEvent.EventHandlers.HandleSaveLocationEditClick);
-        $("#btnSaveEditDetails").on("click", EditEvent.EventHandlers.HandleSaveDetailsClick);
+        });
+
+        $(".close-links").on("click", EditEvent.ClearDetailsView);
+
+        $(".save-links").on("click", function () {
+            switch ($("#details-view-container").attr('data-view-type')) {
+                case 'details':
+                    break;
+                case 'location':
+                    break;
+                case 'time':
+                    break;
+            }
+        });
+
+
+        $("html").on("change", "#frmEditEventLocation .location-search-method input[type=radio]", EditEvent.MapSelectionModeChanged);
+
         $("#btnSubmit").on("click", EditEvent.EventHandlers.HandleSubmitClick);
 
         //change to delegates
@@ -22,10 +51,60 @@ EditEvent = {
         $("html").on("change", "#frmEditEventDetails div.location-tolerance input[type=radio]", EditEvent.EventHandlers.LocationToleranceChanged);
 
         $("html").on("click", "#btnDeleteEvent", EditEvent.EventHandlers.HandleDeleteEventClick);
-        $("html").on("click", ".switch-container.event-status > span", EditEvent.EventHandlers.HandleEventStatusChanged);
+        $("html").on("change", ".event-status input[type=radio]", EditEvent.EventHandlers.HandleEventStatusChanged);
         $("html").on("click", ".switch-container.checkin-type > span", EditEvent.EventHandlers.HandleCheckinTypeChanged);
     },
 
+    MapSelectionModeChanged: function () {
+        $("#txtAutocompleteSearch").val('');
+        $(".row.manual-search input[type=text]").val('');
+        Maps.RemoveMarker();
+        console.log($(this).attr('data-map-select'));
+        //switch ($(this).attr('data-map-select')) {
+        switch ($(this).val()) {
+            case 'address':
+                Maps.UpdateDrawingVisibility(false);
+                $("#lblSearchType").text('Search by Street Address');
+                //$(".row.map-search").show();
+                $(".row.location-search").show();
+                $(".row.manual-search-button").hide();
+                //$(".row.manual-search input[type=text]").prop('disabled', true);
+                Maps.autocomplete.setTypes(['geocode']);
+                $("#LocationName").val('');
+                break;
+            case 'draw':
+                Maps.UpdateDrawingVisibility(true);
+                //$(".row.map-search").show();
+                $(".row.location-search").hide();
+                $(".row.manual-search-button").hide();
+                //$(".row.manual-search input[type=text]").prop('disabled', true);
+                break;
+            case 'business':
+                Maps.UpdateDrawingVisibility(false);
+                $("#lblSearchType").text('Search by Business Name');
+                //$(".row.map-search").show();
+                $(".row.location-search").show();
+                //$(".row.manual-search").hide();
+                //$(".row.manual-search input[type=text]").prop('disabled', true);
+                $(".row.manual-search-button").hide();
+                Maps.autocomplete.setTypes(['establishment']);
+                $("#LocationName").val('');
+                break;
+            case 'manual':
+                Maps.UpdateDrawingVisibility(false);
+                //$(".row.map-search").show();
+                $(".row.location-search").hide();
+                //$(".row.manual-search input[type=text]").prop('disabled', false);
+                $(".row.manual-search-button").show();
+                break;
+        }
+    },
+    ClearDetailsView: function () {
+        $("#details-view").empty();
+        $("#details-view-container").hide();
+        $(".edit-links").show();
+        $(".save-links").show();
+    },
     DeleteEvent: function (recurring) {
 
 
@@ -43,6 +122,70 @@ EditEvent = {
         else {
             Ajax.Post({ url: "/Events/EditDetails", data: obj }).done(EditEvent.SaveDetailsComplete);
         }
+    },
+    PopulateDetails: function (html, type) {
+        $("#details-view-container").attr('data-view-type', type).show();
+        $("#details-view").empty().html(html);
+        $(".edit-links").hide();
+        $(".save-links").show();
+        $(".close-links").show();
+    },
+    LoadEventDetails() {
+        Ajax.Get("/Events/" + EditEvent.EventId + "/EditDetails").done(function (results) {
+            EditEvent.PopulateDetails(results, 'details');
+            SwitchContainer.init("#divEditDetails");
+
+            //trigger the verification mode change event
+            $("#frmEditEventDetails div.verification-method :checked").change();
+            //500, 3000, 10000
+            switch ($("#LocationTolerance").val()) {
+                case '500':
+                    $("#loc-tolerance-high").prop('checked', true);
+                    break;
+                case '3000':
+                    $("#loc-tolerance-medium").prop('checked', true);
+                    break;
+                case '10000':
+                    $("#loc-tolerance-low").prop('checked', true);
+                    break;
+                default:
+                    $("#loc-tolerance-custom").prop('checked', true);
+                    break;
+            }
+            $("#frmEditEventDetails div.location-tolerance input[type=radio] :checked").change();
+        });
+    },
+    LoadEventLocation: function() {
+        Ajax.Get("/Events/" + EditEvent.EventId + "/EditLocationNew").done(function (results) {
+            EditEvent.PopulateDetails(results, 'location');
+            console.log('LoadEventLocation - divMap');
+            console.log($("#divMap").length);
+            Maps.InitMapManual({ mapDiv: 'divMap', txtAutocomplete: 'txtAutocompleteSearch', placeChangeCallback: EditEvent.PlaceChange });
+            //init map here
+        });
+    },
+    LoadEventDates: function () {
+        Ajax.Get("/Events/" + EditEvent.EventId + "/EditDates").done(function (results) {
+            EditEvent.PopulateDetails(results, 'time');
+            $("#StartDate").datepicker();
+            $("#EndDate").datepicker();
+            //SwitchContainer.init("#frmEditEventDates");
+            //init map here
+        });
+    },
+    LoadEventMessages: function () {
+        Ajax.Get("/Events/" + EditEvent.EventId + "/LoadMessages").done(function (results) {
+            EditEvent.PopulateDetails(results, 'new');
+            //SwitchContainer.init("#frmEditEventDates");
+            //init map here
+        });
+    },
+    LoadEventNotifications: function () {
+        Ajax.Get("/Events/" + EditEvent.EventId + "/LoadNotifications").done(function (results) {
+            EditEvent.PopulateDetails(results, 'news');
+            //SwitchContainer.init("#frmEditEventDates");
+            //init map here
+        });
     },
     EventHandlers: {
         VerificationMethodChanged: function () {
@@ -95,17 +238,12 @@ EditEvent = {
                 cache: false,
                 dataType: 'html',
                 success: function success(results) {
-                    console.log(results);
-                    $("#btnEditLocation").hide();
-                    $("#divViewLocation").hide();
-                    $("#btnSaveEditLocation").show();
-                    $("#btnCancelEditLocation").show();
-                    $("#divEditLocation").empty().html(results).show();
-
-
-
-                    //$("html").on("change", "#frmEditEventDetails div.verification-method input[type=radio]", EditEvent.EventHandlers.VerificationMethodChanged);
-                    //$("html").on("change", "#frmEditEventDetails div.location-tolerance input[type=radio]", EditEvent.EventHandlers.LocationToleranceChanged);
+                    EditEvent.PopulateDetails(results);
+                    //we need to init maps here!!
+                    //Maps.Init({
+                    //    mapDiv: 'divMap',
+                    //    mapLoadedCallback: ViewEvent.MapLoaded
+                    //});
 
                 },
                 error: function error(err) {
@@ -120,53 +258,13 @@ EditEvent = {
             $("#btnEditDetails").show();
             $("#divViewDetails").show();
         },
-        HandleEditDetailsClick: function () {
-            $.ajax({
-                url: "/Events/" + EditEvent.EventId + "/EditDetails",
-                type: 'GET',
-                contentType: "application/json; charset=utf-8",
-                async: true,
-                cache: false,
-                dataType: 'html',
-                success: function success(results) {
-                    $("#btnEditDetails").hide();
-                    $("#divViewDetails").hide();
-                    $("#btnSaveEditDetails").show();
-                    $("#btnCancelEditDetails").show();
-                    $("#divEditDetails").empty().html(results).show();
-                    $("#EventDate").datepicker();
-                    SwitchContainer.init("#divEditDetails");
-
-                    //trigger the verification mode change event
-                    $("#frmEditEventDetails div.verification-method :checked").change();
-
-                    //500, 3000, 10000
-                    console.log($("#LocationTolerance").val());
-                    switch ($("#LocationTolerance").val()) {
-                        case '500':
-                            $("#loc-tolerance-high").prop('checked', true);
-                            break;
-                        case '3000':
-                            $("#loc-tolerance-medium").prop('checked', true);
-                            break;
-                        case '10000':
-                            $("#loc-tolerance-low").prop('checked', true);
-                            break;
-                        default:
-                            $("#loc-tolerance-custom").prop('checked', true);
-                            break;
-
-                    }
-                    console.log($("#frmEditEventDetails div.location-tolerance :checked").length);
-                    $("#frmEditEventDetails div.location-tolerance input[type=radio] :checked").change();
-                },
-                error: function error(err) {
-                    alert('error');
-                }
-            });
+        HandleCloseDetailsClick: function () {
+            $("#details-view").empty().hide();
 
         },
         HandleSaveDetailsClick: function () {
+
+            //depending on what details view is active, this can do one of many things
             var obj = $("#frmEditEventDetails").serializeArray();
             var newObj = {};
             for (var x = 0; x < obj.length; x++) {
@@ -193,16 +291,17 @@ EditEvent = {
             $("#frmEditEvent").submit();
         },
         HandleEventStatusChanged: function () {
-            var $this = $(this);
-            console.log('event status change');
 
-            var currentVal = $("#" + $(this).closest('div[data-replace-element]').attr('data-replace-element')).val();
-            if (currentVal === $(this).attr('data-replace-val')) {
+            //radio button
+            var oldStatus = $("#spanStatus").text();
+            var newStatus = $(this).val();
+            console.log('status change');
+            console.log('old: ' + oldStatus);
+            console.log('new: ' + newStatus);
+            if (oldStatus === newStatus) return;
 
-                return false;
-            }
 
-            Confirm("Do you want to change the status of this event to " + $(this).attr('data-replace-val') + "?  This action cannot be undone!", function () {
+            Confirm("Do you want to change the status of this event to " + newStatus + "?  This action cannot be undone!", function () {
                 if ($("#IsRecurring").val() == "True") {
                     Confirm("Do you to update all recurring events?", function () {
                         $.ajax({
@@ -211,7 +310,7 @@ EditEvent = {
                             contentType: "application/json",
                             data: JSON.stringify({
                                 eventId: Number($("#EventId").val()),
-                                status: $this.attr('data-replace-val'),
+                                status: newStatus,
                                 updateRecurring: true
                             }),
                             async: true,
@@ -231,12 +330,11 @@ EditEvent = {
                             contentType: "application/json",
                             data: JSON.stringify({
                                 eventId: Number($("#EventId").val()),
-                                status: $this.attr('data-replace-val'),
+                                status: newStatus,
                                 updateRecurring: false
                             }),
                             async: true,
                             cache: false,
-                            //dataType: 'html',
                             success: function success(results) {
                                 location.reload(true);
                             },
@@ -270,12 +368,7 @@ EditEvent = {
                 }
             }, function () {
 
-
-
-                //reset selected container
-                $this.closest('.switch-container').find('span').removeClass('switch-selected');
-                var $replaceEl = $("#" + $this.closest('div.switch-container').attr('data-replace-element'));
-                $this.closest('.switch-container').find('span[data-replace-val=' + $replaceEl.val() + ']').addClass('switch-selected');
+                $(".event-status input[type=radio][value=" + oldStatus + "]").prop('checked', true);
             });
         },
         HandleCheckinTypeChanged: function () {
@@ -296,19 +389,6 @@ EditEvent = {
         },
 
         HandleDeleteEventClick: function () {
-            //if (EditEvent.IsRecurring === true) {
-            //    var saveObj = obj;
-            //    Confirm('Do you want to update all recurring events?', function () {
-            //        saveObj.updateRecurring = true;
-            //        Ajax.Post("/Events/EditDetails", saveObj).done(EditEvent.SaveDetailsComplete);
-            //    }, function () {
-            //        Ajax.Post({ url: "/Events/EditDetails", data: saveObj }).done(EditEvent.SaveDetailsComplete);
-            //    });
-            //}
-            //else {
-            //    Ajax.Post({ url: "/Events/EditDetails", data: obj }).done(EditEvent.SaveDetailsComplete);
-            //}
-
             var saveObj = { EventId: EditEvent.EventId, UpdateRecurring: false };
             Confirm('Do you want to delete the event ' + EditEvent.EventName + '?', function () {
                 if (EditEvent.IsRecurring === true) {
@@ -339,15 +419,29 @@ EditEvent = {
         },
     },
     SaveDetailsComplete: function (results) {
-
-        console.log('in EditEvent.SaveDetailsComplete');
-        console.log(results);
-        $("#divEditDetails").empty().hide();
-        $("#divViewDetails").html(results).show();
-        $("#btnCancelEditDetails").hide();
-        $("#btnSaveEditDetails").hide();
-        $("#btnEditDetails").show();
+        EditEvent.ClearDetailsView();
         MessageDialog("Your event has been updated!");
+
+        //problem - we need to update the "banner" area with the updated information
+    },
+    SaveLocation: function () {
+        var obj = $("#frmEditEventLocation").serializeArray();
+        var saveObj = {};
+        for (var x = 0; x < obj.length; x++) {
+            saveObj[obj[x].name] = obj[x].value;
+        }
+
+        if (EditEvent.IsRecurring === true) {
+            Confirm('Do you want to update all recurring events?', function () {
+                saveObj.updateRecurring = true;
+                Ajax.Post("/Events/EditLocationNew", saveObj).done(EditEvent.SaveDetailsComplete);
+            }, function () {
+                Ajax.Post({ url: "/Events/EditLocationNew", data: saveObj }).done(EditEvent.SaveDetailsComplete);
+            });
+        }
+        else {
+            Ajax.Post({ url: "/Events/EditLocationNew", data: obj }).done(EditEvent.SaveDetailsComplete);
+        }
     },
     SaveDetails: function (obj) {
         if (EditEvent.IsRecurring === true) {

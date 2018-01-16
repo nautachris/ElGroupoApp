@@ -13,30 +13,49 @@ using ElGroupo.Domain.Enums;
 using ElGroupo.Web.Models.Messages;
 using ElGroupo.Web.Models.Notifications;
 using ElGroupo.Web.Models.Shared;
+using ElGroupo.Web.Models.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace ElGroupo.Web.Services
 {
-    public class EventService:BaseService
+    public class EventService : BaseService
     {
 
         private readonly IEmailService mailService;
         private UserManager<User> userManager;
-        public EventService(ElGroupoDbContext ctx, IEmailService service, UserManager<User> manager): base(ctx)
+        private GoogleConfigOptions googleOptions;
+        public EventService(ElGroupoDbContext ctx, IEmailService service, UserManager<User> manager, IOptions<GoogleConfigOptions> googConfig) : base(ctx)
         {
             this._dbContext = ctx;
             this.mailService = service;
             this.userManager = manager;
+            this.googleOptions = googConfig.Value;
         }
 
-        public async Task<EditAccessTypes> CheckEventAccess(ClaimsPrincipal principal, long eventId)
+        //public async Task<EditAccessTypes> CheckEventAccess(ClaimsPrincipal principal, long eventId)
+        //{
+
+        //    if (principal.IsInRole("admin")) return EditAccessTypes.Edit;
+
+        //    var user = await this.userManager.GetUserAsync(principal);
+        //    if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
+        //    if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId)) return EditAccessTypes.View;
+        //    return EditAccessTypes.None;
+        //}
+
+        public async Task<(EditAccessTypes accessType, long userId)> CheckEventAccess(ClaimsPrincipal principal, long eventId)
         {
-            
-            if (principal.IsInRole("admin")) return EditAccessTypes.Edit;
+
+
+
             var user = await this.userManager.GetUserAsync(principal);
-            if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId && x.IsOrganizer)) return EditAccessTypes.Edit;
-            if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId)) return EditAccessTypes.View;
-            return EditAccessTypes.None;
+            if (principal.IsInRole("admin")) return (EditAccessTypes.Edit, user.Id);
+            if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId && x.IsOrganizer)) return (EditAccessTypes.Edit, user.Id);
+            if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == user.Id && x.EventId == eventId)) return (EditAccessTypes.View, user.Id);
+            return (EditAccessTypes.None, user.Id);
         }
+
+
         public async Task<EditAccessTypes> CheckEventAccess(ClaimsPrincipal principal, long eventId, long userId)
         {
             if (principal.IsInRole("admin")) return EditAccessTypes.Edit;
@@ -120,29 +139,23 @@ namespace ElGroupo.Web.Services
             return model;
         }
 
-        public async Task<SaveDataResponse> DeleteEvent(long eventId)
+        public async Task<SaveDataResponse> DeleteRecurringEvent(long eventId)
         {
 
-            var e = _dbContext.Events.FirstOrDefault(x => x.Id == eventId);
-
+            var e = _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefault(x => x.Id == eventId);
             if (e == null) return SaveDataResponse.FromErrorMessage("Event Id " + eventId + " not found");
-
+            var allids = e.Recurrence.Events.Select(x => x.Id).ToList();
+            allids.Add(eventId);
             try
             {
-                var unregisteredEventAttendees = _dbContext.UnregisteredEventAttendees.Where(x => x.EventId == eventId).ToList();
-                foreach (var u in unregisteredEventAttendees) _dbContext.Remove(unregisteredEventAttendees);
+                var toDelete = await _dbContext.Events.
+                    Include(x => x.Recurrence).
+                    Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).
+                    Include(x => x.MessageBoardItems).
+                    Include(x => x.Notifications).
+                    Include(x => x.UnregisteredAttendees).Where(x => allids.Contains(x.Id)).ToListAsync();
+                foreach (var del in toDelete) _dbContext.Remove(del);
 
-                var mbias = _dbContext.MessageBoardItemAttendees.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
-                foreach (var mbia in mbias) _dbContext.Remove(mbia);
-
-                var mbis = _dbContext.MessageBoardItems.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
-                foreach (var mbi in mbis) _dbContext.Remove(mbi);
-
-                var eatns = _dbContext.EventAttendeeNotifications.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
-                foreach (var eatn in eatns) _dbContext.Remove(eatn);
-
-                var eans = _dbContext.EventAttendees.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
-                foreach (var ean in eans) _dbContext.Remove(ean);
 
                 await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
@@ -151,6 +164,61 @@ namespace ElGroupo.Web.Services
             {
                 return SaveDataResponse.FromException(ex);
             }
+
+
+
+        }
+
+        public async Task<SaveDataResponse> DeleteEvent(long eventId)
+        {
+            var toDelete = _dbContext.Events.
+                    Include(x => x.Recurrence).
+                    Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).
+                    Include(x => x.MessageBoardItems).
+                    Include(x => x.Notifications).
+                    Include(x => x.UnregisteredAttendees).FirstOrDefault(x => x.Id == eventId);
+            if (toDelete == null) return SaveDataResponse.FromErrorMessage("Event Id " + eventId + " not found");
+
+            try
+            {
+                _dbContext.Remove(toDelete);
+                await _dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
+            //var e = _dbContext.Events.FirstOrDefault(x => x.Id == eventId);
+
+            //if (e == null) return SaveDataResponse.FromErrorMessage("Event Id " + eventId + " not found");
+
+            //try
+            //{
+            //    var unregisteredEventAttendees = _dbContext.UnregisteredEventAttendees.Where(x => x.EventId == eventId).ToList();
+            //    foreach (var u in unregisteredEventAttendees) _dbContext.Remove(unregisteredEventAttendees);
+
+            //    var mbias = _dbContext.MessageBoardItemAttendees.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
+            //    foreach (var mbia in mbias) _dbContext.Remove(mbia);
+
+            //    var mbis = _dbContext.MessageBoardItems.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
+            //    foreach (var mbi in mbis) _dbContext.Remove(mbi);
+
+            //    var eatns = _dbContext.EventAttendeeNotifications.Include(x => x.Attendee).ThenInclude(x => x.Event).Where(x => x.Attendee.Event.Id == eventId).ToList();
+            //    foreach (var eatn in eatns) _dbContext.Remove(eatn);
+
+            //    var eans = _dbContext.EventAttendees.Include(x => x.Event).Where(x => x.Event.Id == eventId).ToList();
+            //    foreach (var ean in eans) _dbContext.Remove(ean);
+
+            //    await _dbContext.SaveChangesAsync();
+            //    return SaveDataResponse.Ok();
+            //}
+            //catch (Exception ex)
+            //{
+            //    return SaveDataResponse.FromException(ex);
+            //}
 
 
 
@@ -344,13 +412,13 @@ namespace ElGroupo.Web.Services
             try
             {
                 //dbContext.RecurringEvents.First().
-                var eids =_dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).First(x => x.Id == model.EventId).Recurrence.Events.Select(x => x.Id).ToList();
+                var eids = _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).First(x => x.Id == model.EventId).Recurrence.Events.Select(x => x.Id).ToList();
                 foreach (var ea in _dbContext.EventAttendees.Where(x => eids.Contains(x.EventId) && x.User.Id == user.Id))
                 {
                     ea.ResponseStatus = model.Status;
                     ea.Viewed = true;
                     if (ea.ResponseStatus != RSVPTypes.None) ea.ShowRSVPReminder = false;
-                   _dbContext.Update(ea);
+                    _dbContext.Update(ea);
                 }
 
                 //var ea =_dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
@@ -364,7 +432,7 @@ namespace ElGroupo.Web.Services
                 return SaveDataResponse.FromException(ex);
             }
         }
-        public async Task<SaveDataResponse> SendRSVPReminders(User user, SendRSVPRequestModel model)
+        public async Task<SaveDataResponse> SendRSVPReminders(SendRSVPRequestModel model)
         {
             try
             {
@@ -376,7 +444,7 @@ namespace ElGroupo.Web.Services
                     {
                         rev.ShowRSVPReminder = true;
                         //send email
-                       _dbContext.Update(rev);
+                        _dbContext.Update(rev);
                     }
                 }
                 else
@@ -386,7 +454,7 @@ namespace ElGroupo.Web.Services
                     {
                         ea.ShowRSVPReminder = true;
                         //send email
-                       _dbContext.Update(ea);
+                        _dbContext.Update(ea);
                     }
                 }
 
@@ -402,7 +470,7 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var ea =_dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
+                var ea = _dbContext.EventAttendees.Include(x => x.Event).Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Event.Id == model.EventId);
                 if (ea == null) return SaveDataResponse.FromErrorMessage("User not found");
                 ea.ResponseStatus = model.Status;
                 ea.Viewed = true;
@@ -445,9 +513,9 @@ namespace ElGroupo.Web.Services
                 e.Zip = model.ZipCode;
 
 
-                e.StartTime = model.GetFullStartDate(user.TimeZoneId);
-                e.EndTime = model.GetFullEndDate(user.TimeZoneId);
-               _dbContext.Events.Add(e);
+                e.StartTime = model.GetEventStartTimeUTC(user.TimeZoneId);
+                e.EndTime = model.GetEventEndTimeUTC(user.TimeZoneId);
+                _dbContext.Events.Add(e);
 
                 var ea = new EventAttendee
                 {
@@ -456,7 +524,7 @@ namespace ElGroupo.Web.Services
                     IsOrganizer = true,
                     Viewed = true
                 };
-               _dbContext.EventAttendees.Add(ea);
+                _dbContext.EventAttendees.Add(ea);
 
                 await _dbContext.SaveChangesAsync();
 
@@ -470,225 +538,279 @@ namespace ElGroupo.Web.Services
 
         }
 
-        private DateTime AdjustDateByDays(DateTime startDate, DaysOfWeek allowedDays)
+        private EventDate AdjustDateByDays(DateTime startTime, DateTime endTime, DaysOfWeek allowedDays)
         {
-            switch (startDate.DayOfWeek)
+            //this expects the event organizer time zone
+            int dayOffset = 0;
+            switch (startTime.DayOfWeek)
             {
                 case DayOfWeek.Monday:
                     if (allowedDays.HasFlag(DaysOfWeek.Monday))
                     {
-                        return startDate;
+                        dayOffset = 0;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Tuesday))
                     {
-                        return startDate.AddDays(1);
+                        dayOffset = 1;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Wednesday))
                     {
-                        return startDate.AddDays(2);
+                        dayOffset = 2;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Thursday))
                     {
-                        return startDate.AddDays(3);
+                        dayOffset = 3;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Friday))
                     {
-                        return startDate.AddDays(4);
+                        dayOffset = 4;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Saturday))
                     {
-                        return startDate.AddDays(5);
+                        dayOffset = 5;
+                        break;
                     }
                     else
                     {
-                        return startDate.AddDays(6);
+                        dayOffset = 6;
+                        break;
                     }
                 case DayOfWeek.Tuesday:
                     if (allowedDays.HasFlag(DaysOfWeek.Tuesday))
                     {
-                        return startDate;
+                        dayOffset = 0;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Wednesday))
                     {
-                        return startDate.AddDays(1);
+                        dayOffset = 1;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Thursday))
                     {
-                        return startDate.AddDays(2);
+                        dayOffset = 2;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Friday))
                     {
-                        return startDate.AddDays(3);
+                        dayOffset = 3;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Saturday))
                     {
-                        return startDate.AddDays(4);
+                        dayOffset = 4;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Sunday))
                     {
-                        return startDate.AddDays(5);
+                        dayOffset = 5;
+                        break;
                     }
                     else
                     {
+                        dayOffset = 6;
                         //monday
-                        return startDate.AddDays(6);
+                        break;
                     }
                 case DayOfWeek.Wednesday:
                     if (allowedDays.HasFlag(DaysOfWeek.Wednesday))
                     {
-                        return startDate;
+                        dayOffset = 0;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Thursday))
                     {
-                        return startDate.AddDays(1);
+                        dayOffset = 1;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Friday))
                     {
-                        return startDate.AddDays(2);
+                        dayOffset = 2;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Saturday))
                     {
-                        return startDate.AddDays(3);
+                        dayOffset = 3;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Sunday))
                     {
-                        return startDate.AddDays(4);
+                        dayOffset = 4;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Monday))
                     {
-                        return startDate.AddDays(5);
+                        dayOffset = 5;
+                        break;
                     }
                     else
                     {
+                        dayOffset = 6;
                         //tuesday
-                        return startDate.AddDays(6);
+                        break;
                     }
                 case DayOfWeek.Thursday:
                     if (allowedDays.HasFlag(DaysOfWeek.Thursday))
                     {
-                        return startDate;
+                        dayOffset = 0;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Friday))
                     {
-                        return startDate.AddDays(1);
+                        dayOffset = 1;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Saturday))
                     {
-                        return startDate.AddDays(2);
+                        dayOffset = 2;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Sunday))
                     {
-                        return startDate.AddDays(3);
+                        dayOffset = 3;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Monday))
                     {
-                        return startDate.AddDays(4);
+                        dayOffset = 4;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Tuesday))
                     {
-                        return startDate.AddDays(5);
+                        dayOffset = 5;
+                        break;
                     }
                     else
                     {
+                        dayOffset = 6;
                         //wed
-                        return startDate.AddDays(6);
+                        break;
                     }
                 case DayOfWeek.Friday:
                     if (allowedDays.HasFlag(DaysOfWeek.Friday))
                     {
-                        return startDate;
+                        dayOffset = 0;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Saturday))
                     {
-                        return startDate.AddDays(1);
+                        dayOffset = 1;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Sunday))
                     {
-                        return startDate.AddDays(2);
+                        dayOffset = 2;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Monday))
                     {
-                        return startDate.AddDays(3);
+                        dayOffset = 3;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Tuesday))
                     {
-                        return startDate.AddDays(4);
+                        dayOffset = 4;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Wednesday))
                     {
-                        return startDate.AddDays(5);
+                        dayOffset = 5;
+                        break;
                     }
                     else
                     {
+                        dayOffset = 6;
                         //thursday
-                        return startDate.AddDays(6);
+                        break;
                     }
 
                 case DayOfWeek.Saturday:
                     if (allowedDays.HasFlag(DaysOfWeek.Saturday))
                     {
-                        return startDate;
+                        dayOffset = 0;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Sunday))
                     {
-                        return startDate.AddDays(1);
+                        dayOffset = 1;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Monday))
                     {
-                        return startDate.AddDays(2);
+                        dayOffset = 2;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Tuesday))
                     {
-                        return startDate.AddDays(3);
+                        dayOffset = 3;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Wednesday))
                     {
-                        return startDate.AddDays(4);
+                        dayOffset = 4;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Thursday))
                     {
-                        return startDate.AddDays(5);
+                        dayOffset = 5;
+                        break;
                     }
                     else
                     {
+                        dayOffset = 6;
                         //friday
-                        return startDate.AddDays(6);
+                        break;
                     }
 
                 case DayOfWeek.Sunday:
                     if (allowedDays.HasFlag(DaysOfWeek.Sunday))
                     {
-                        return startDate;
+                        dayOffset = 0;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Monday))
                     {
-                        return startDate.AddDays(1);
+                        dayOffset = 1;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Tuesday))
                     {
-                        return startDate.AddDays(2);
+                        dayOffset = 2;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Wednesday))
                     {
-                        return startDate.AddDays(3);
+                        dayOffset = 3;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Thursday))
                     {
-                        return startDate.AddDays(4);
+                        dayOffset = 4;
+                        break;
                     }
                     else if (allowedDays.HasFlag(DaysOfWeek.Friday))
                     {
-                        return startDate.AddDays(5);
+                        dayOffset = 5;
+                        break;
                     }
                     else
                     {
+                        dayOffset = 6;
                         //saturday
-                        return startDate.AddDays(6);
+                        break;
                     }
                 default:
-                    return startDate;
+                    dayOffset = 0;
+                    break;
 
             }
+            if (dayOffset == 0) return new EventDate(startTime, endTime);
+            return new EventDate(startTime.AddDays(dayOffset), endTime.AddDays(dayOffset));
         }
         private bool MatchDayEnums(DayOfWeek systemDay, DaysOfWeek appDay)
         {
@@ -712,23 +834,62 @@ namespace ElGroupo.Web.Services
                     return false;
             }
         }
-        private List<DateTime> GetRecurrenceDates(EventRecurrenceModel model, DateTime startDate)
+
+        /// <summary>
+        /// event start and end times IN UTC
+        /// </summary>
+        private class EventDate
         {
-            var list = new List<DateTime>();
-            DateTime currentDate = startDate;
-            if (model.Pattern == Domain.Enums.RecurrencePatterns.Daily)
+            public EventDate ToUtc(TimeZoneInfo tzi)
             {
-                for (var cnt = 0; cnt < model.RecurrenceLimit; cnt++)
+                return new EventDate(TimeZoneInfo.ConvertTimeToUtc(this.start, tzi), TimeZoneInfo.ConvertTimeToUtc(this.end, tzi));
+            }
+
+
+            public EventDate(DateTime startTime, DateTime endTime)
+            {
+                this.start = startTime;
+                this.end = endTime;
+            }
+            public DateTime start { get; set; }
+            public DateTime end { get; set; }
+        }
+
+
+
+
+
+        private List<EventDate> GetRecurrenceDates(CreateEventModel model, string tzId)
+        {
+
+            var list = new List<EventDate>();
+
+            var userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(tzId);
+            //bool startedInDST = userTimeZone.SupportsDaylightSavingTime && userTimeZone.IsDaylightSavingTime(model.GetEventStartTimeLocal());
+
+            //userTimeZone.GetAdjustmentRules()[0].DaylightTransitionEnd.
+
+            //if start date is in standard time, dates in daylight time need to be pushed forward an hour
+            //if start date is in daylight time, dates in standard time need to be pushed back an hour
+            DateTime currentStart = DateTime.Now;
+            DateTime currentEnd = DateTime.Now;
+            if (model.Recurrence.Pattern == RecurrencePatterns.Daily)
+            {
+                currentStart = model.GetEventStartTimeLocal();
+                currentEnd = model.GetEventEndTimeLocal();
+                //this is all in UTC 
+                for (var cnt = 0; cnt < model.Recurrence.RecurrenceLimit; cnt++)
                 {
-                    list.Add(currentDate);
-                    currentDate = currentDate.AddDays(model.RecurrenceInterval);
-                    cnt++;
+                    //list.Add(new EventDate(currentStart.AdjustForDST(startedInDST, userTimeZone, true), currentEnd.AdjustForDST(startedInDST, userTimeZone, true)));
+                    list.Add(new EventDate(currentStart.ToUTC(userTimeZone), currentEnd.ToUTC(userTimeZone)));
+                    currentStart = currentStart.AddDays(model.Recurrence.RecurrenceInterval);
+                    currentEnd = currentEnd.AddDays(model.Recurrence.RecurrenceInterval);
                 }
             }
-            else if (model.Pattern == Domain.Enums.RecurrencePatterns.Monthly)
+            else if (model.Recurrence.Pattern == Domain.Enums.RecurrencePatterns.Monthly)
             {
                 var daysOfMonth = new List<int>();
-                foreach (var d in model.DaysOfMonth.Split(','))
+                foreach (var d in model.Recurrence.DaysOfMonth.Split(','))
                 {
                     int testInt;
                     if (int.TryParse(d.Trim(), out testInt))
@@ -738,117 +899,142 @@ namespace ElGroupo.Web.Services
                 }
                 daysOfMonth.Sort();
 
-                var baseDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+                //do we need the current date based on the time zone event was created in????
+                //if the server is in russia it may be august 1st already, but if the evennt was created in abq, it may be july 31st still
+                //if the user wants events on the 2nd, 16th and 31st, it would skip july 31st unless we account for the time zone the date was created in
+                var localStartDate = model.GetEventStartTimeLocal();
+                var localEndDate = model.GetEventEndTimeLocal();
+                var baseDate = new DateTime(localStartDate.Year, localStartDate.Month, 1);
                 //var eventCount = 1;
                 var monthCount = 0;
-                while (list.Count < model.RecurrenceLimit)
+                while (list.Count < model.Recurrence.RecurrenceLimit)
                 {
                     var baseMonthDate = baseDate.AddMonths(monthCount);
                     for (var dayCount = 0; dayCount < daysOfMonth.Count; dayCount++)
                     {
+                        //daysOfMonth i.e. 9th, 16th, 30th, 31st
+                        //baseMonthDate is in local time of event organizer
                         var daysInMonth = DateTime.DaysInMonth(baseMonthDate.Year, baseMonthDate.Month);
-                        if (daysInMonth < daysOfMonth[dayCount]) currentDate = new DateTime(baseMonthDate.Year, baseMonthDate.Month, daysInMonth);
-                        else currentDate = new DateTime(baseMonthDate.Year, baseMonthDate.Month, daysOfMonth[dayCount]);
+                        if (daysInMonth < daysOfMonth[dayCount])
+                        {
+                            //if they choose 31st and current month if feb
+                            currentStart = new DateTime(baseMonthDate.Year, baseMonthDate.Month, daysInMonth, localStartDate.Hour, localStartDate.Minute, localStartDate.Second);
+                            currentEnd = new DateTime(baseMonthDate.Year, baseMonthDate.Month, daysInMonth, localEndDate.Hour, localEndDate.Minute, localEndDate.Second);
+                        }
+                        else
+                        {
+                            currentStart = new DateTime(baseMonthDate.Year, baseMonthDate.Month, daysOfMonth[dayCount], localStartDate.Hour, localStartDate.Minute, localStartDate.Second);
+                            currentEnd = new DateTime(baseMonthDate.Year, baseMonthDate.Month, daysOfMonth[dayCount], localEndDate.Hour, localEndDate.Minute, localEndDate.Second);
+                        }
+
+                        //convert to utc
+                        //currentStart = currentStart.AdjustForDST(startedInDST, userTimeZone, true);
+                        //currentEnd = currentStart.AdjustForDST(startedInDST, userTimeZone, true);
+                        currentStart = currentStart.ToUTC(userTimeZone);
+                        currentEnd = currentStart.ToUTC(userTimeZone);
+
 
                         //in case some idiot choose 30 and 31 and we're in february
-                        if (!list.Contains(currentDate) && currentDate.Date >= DateTime.Today.Date) list.Add(currentDate);
+                        if (!list.Any(x => x.start == currentStart && x.end == currentEnd) && currentStart >= DateTime.UtcNow)
+                        {
+                            list.Add(new EventDate(currentStart, currentEnd));
+                        }
 
                         //eventCount++;
                     }
-                    monthCount += model.RecurrenceInterval;
+                    monthCount += model.Recurrence.RecurrenceInterval;
 
                 }
-                //for (var cnt = 0; cnt < model.RecurrenceLimit; cnt++)
-                //{
-                //    list.Add(currentDate);
-                //    currentDate = currentDate.AddMonths(model.RecurrenceInterval);
-                //    cnt++;
-                //}
             }
-            else if (model.Pattern == Domain.Enums.RecurrencePatterns.Weekly)
+            else if (model.Recurrence.Pattern == Domain.Enums.RecurrencePatterns.Weekly)
             {
-
-                Domain.Enums.DaysOfWeek patternDays = GetDaysOfWeek(model.Days);
-
-
-
-                startDate = AdjustDateByDays(startDate, patternDays);
-                var seedDates = new List<DateTime> { startDate };
-                switch (startDate.DayOfWeek)
+                var localStartDate = model.GetEventStartTimeLocal();
+                var localEndDate = model.GetEventEndTimeLocal();
+                DaysOfWeek patternDays = GetDaysOfWeek(model.Recurrence.Days);
+                var firstOccurance = AdjustDateByDays(localStartDate, localEndDate, patternDays);
+                var seedDates = new List<EventDate> { firstOccurance };
+                switch (firstOccurance.start.DayOfWeek)
                 {
                     case DayOfWeek.Monday:
-                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(startDate.AddDays(1));
-                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(startDate.AddDays(2));
-                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(startDate.AddDays(3));
-                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(startDate.AddDays(4));
-                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(startDate.AddDays(5));
-                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(startDate.AddDays(6));
+                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(1), firstOccurance.end.AddDays(1)));
+                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(2), firstOccurance.end.AddDays(2)));
+                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(3), firstOccurance.end.AddDays(3)));
+                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(4), firstOccurance.end.AddDays(4)));
+                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(5), firstOccurance.end.AddDays(5)));
+                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(6), firstOccurance.end.AddDays(6)));
                         break;
                     case DayOfWeek.Tuesday:
-                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(startDate.AddDays(1));
-                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(startDate.AddDays(2));
-                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(startDate.AddDays(3));
-                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(startDate.AddDays(4));
-                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(startDate.AddDays(5));
-                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(startDate.AddDays(6));
+                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(1), firstOccurance.end.AddDays(1)));
+                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(2), firstOccurance.end.AddDays(2)));
+                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(3), firstOccurance.end.AddDays(3)));
+                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(4), firstOccurance.end.AddDays(4)));
+                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(5), firstOccurance.end.AddDays(5)));
+                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(6), firstOccurance.end.AddDays(6)));
                         break;
                     case DayOfWeek.Wednesday:
-                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(startDate.AddDays(1));
-                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(startDate.AddDays(2));
-                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(startDate.AddDays(3));
-                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(startDate.AddDays(4));
-                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(startDate.AddDays(5));
-                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(startDate.AddDays(6));
+                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(1), firstOccurance.end.AddDays(1)));
+                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(2), firstOccurance.end.AddDays(2)));
+                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(3), firstOccurance.end.AddDays(3)));
+                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(4), firstOccurance.end.AddDays(4)));
+                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(5), firstOccurance.end.AddDays(5)));
+                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(6), firstOccurance.end.AddDays(6)));
                         break;
                     case DayOfWeek.Thursday:
-                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(startDate.AddDays(1));
-                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(startDate.AddDays(2));
-                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(startDate.AddDays(3));
-                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(startDate.AddDays(4));
-                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(startDate.AddDays(5));
-                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(startDate.AddDays(6));
+                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(1), firstOccurance.end.AddDays(1)));
+                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(2), firstOccurance.end.AddDays(2)));
+                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(3), firstOccurance.end.AddDays(3)));
+                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(4), firstOccurance.end.AddDays(4)));
+                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(5), firstOccurance.end.AddDays(5)));
+                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(6), firstOccurance.end.AddDays(6)));
                         break;
                     case DayOfWeek.Friday:
-                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(startDate.AddDays(1));
-                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(startDate.AddDays(2));
-                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(startDate.AddDays(3));
-                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(startDate.AddDays(4));
-                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(startDate.AddDays(5));
-                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(startDate.AddDays(6));
+                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(1), firstOccurance.end.AddDays(1)));
+                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(2), firstOccurance.end.AddDays(2)));
+                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(3), firstOccurance.end.AddDays(3)));
+                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(4), firstOccurance.end.AddDays(4)));
+                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(5), firstOccurance.end.AddDays(5)));
+                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(6), firstOccurance.end.AddDays(6)));
                         break;
                     case DayOfWeek.Saturday:
-                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(startDate.AddDays(1));
-                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(startDate.AddDays(2));
-                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(startDate.AddDays(3));
-                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(startDate.AddDays(4));
-                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(startDate.AddDays(5));
-                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(startDate.AddDays(6));
+                        if (patternDays.HasFlag(DaysOfWeek.Sunday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(1), firstOccurance.end.AddDays(1)));
+                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(2), firstOccurance.end.AddDays(2)));
+                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(3), firstOccurance.end.AddDays(3)));
+                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(4), firstOccurance.end.AddDays(4)));
+                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(5), firstOccurance.end.AddDays(5)));
+                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(6), firstOccurance.end.AddDays(6)));
                         break;
                     case DayOfWeek.Sunday:
-                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(startDate.AddDays(1));
-                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(startDate.AddDays(2));
-                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(startDate.AddDays(3));
-                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(startDate.AddDays(4));
-                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(startDate.AddDays(5));
-                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(startDate.AddDays(6));
+                        if (patternDays.HasFlag(DaysOfWeek.Monday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(1), firstOccurance.end.AddDays(1)));
+                        if (patternDays.HasFlag(DaysOfWeek.Tuesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(2), firstOccurance.end.AddDays(2)));
+                        if (patternDays.HasFlag(DaysOfWeek.Wednesday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(3), firstOccurance.end.AddDays(3)));
+                        if (patternDays.HasFlag(DaysOfWeek.Thursday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(4), firstOccurance.end.AddDays(4)));
+                        if (patternDays.HasFlag(DaysOfWeek.Friday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(5), firstOccurance.end.AddDays(5)));
+                        if (patternDays.HasFlag(DaysOfWeek.Saturday)) seedDates.Add(new EventDate(firstOccurance.start.AddDays(6), firstOccurance.end.AddDays(6)));
                         break;
 
                 }
+
+                //seedDates are in local time zone
                 int eventCount = 0;
                 for (var seedCount = 0; seedCount < seedDates.Count; seedCount++)
                 {
-                    list.Add(seedDates[seedCount]);
+                    //convert to utc
+                    var start = seedDates[seedCount].start.ToUTC(userTimeZone);
+                    var end = seedDates[seedCount].end.ToUTC(userTimeZone);
+                    list.Add(new EventDate(start, end));
                     eventCount++;
                 }
-                int multiplier = model.RecurrenceInterval;
-                while (list.Count < model.RecurrenceLimit)
+                int multiplier = model.Recurrence.RecurrenceInterval;
+                while (list.Count < model.Recurrence.RecurrenceLimit)
                 {
                     for (var seedCount = 0; seedCount < seedDates.Count; seedCount++)
                     {
-                        list.Add(seedDates[seedCount].AddDays(7 * multiplier));
+                        var start = seedDates[seedCount].start.AddDays(7 * multiplier);
+                        var end = seedDates[seedCount].end.AddDays(7 * multiplier);
+                        list.Add(new EventDate(start, end).ToUtc(userTimeZone));
                         eventCount++;
                     }
-                    multiplier = multiplier + model.RecurrenceInterval;
+                    multiplier = multiplier + model.Recurrence.RecurrenceInterval;
                 }
 
 
@@ -898,33 +1084,13 @@ namespace ElGroupo.Web.Services
             return patternDays;
         }
 
-        private DateTime GetUTCDateFromEventModel(CreateEventModel model)
-        {
-            //how do we adjust this for utc?
-            int startHour = 0;
-            int endHour = 0;
-
-            if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-            else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
-
-            if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-            else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
 
 
-            if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
-            else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
-            else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
-            else startHour = model.StartHour + 12;
-
-
-            return new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0).ToUniversalTime();
-
-        }
-
-        public async Task<SaveDataResponse> CreateRecurringEvent(CreateEventModel model, User user)
+        public async Task<SaveDataResponse> CreateRecurringEvent(CreateEventModel model, long userId)
         {
             try
             {
+                var user = this.GetActiveUser(userId);
                 if (model.Recurrence.DaysOfMonth != null)
                 {
                     var uniqueDays = model.Recurrence.DaysOfMonth.Split(',').Distinct().ToList();
@@ -933,7 +1099,7 @@ namespace ElGroupo.Web.Services
                 }
 
 
-                var dates = GetRecurrenceDates(model.Recurrence,GetUTCDateFromEventModel(model));
+                var dates = GetRecurrenceDates(model, user.TimeZoneId);
                 long firstEventId = 0;
 
                 var recur = new RecurringEvent
@@ -944,7 +1110,7 @@ namespace ElGroupo.Web.Services
                     RecurrenceDays = model.Recurrence.Pattern == RecurrencePatterns.Weekly ? GetDaysOfWeek(model.Recurrence.Days) : DaysOfWeek.None,
                     DaysInMonth = model.Recurrence.DaysOfMonth
                 };
-               _dbContext.RecurringEvents.Add(recur);
+                _dbContext.RecurringEvents.Add(recur);
                 foreach (var eventDate in dates)
                 {
                     var e = new Event();
@@ -970,26 +1136,12 @@ namespace ElGroupo.Web.Services
                     e.MustRSVP = model.RSVPRequired;
                     e.Zip = model.ZipCode;
 
-                    int startHour = 0;
-                    int endHour = 0;
-
-                    if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-                    else startHour = model.StartAMPM == Models.Enums.AMPM.AM ? model.StartHour : model.StartHour + 12;
-
-                    if (model.EndHour == 12) endHour = model.EndAMPM == Models.Enums.AMPM.AM ? 0 : 12;
-                    else endHour = model.EndAMPM == Models.Enums.AMPM.AM ? model.EndHour : model.EndHour + 12;
+                    e.StartTime = eventDate.start;
+                    e.EndTime = eventDate.end;
 
 
-                    if (model.StartAMPM == Models.Enums.AMPM.AM && model.StartHour == 12) startHour = 0;
-                    else if (model.StartAMPM == Models.Enums.AMPM.AM) startHour = model.StartHour;
-                    else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
-                    else startHour = model.StartHour + 12;
-
-
-                    e.StartTime = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, startHour, model.StartMinute, 0);
-                    e.EndTime = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, endHour, model.EndMinute, 0);
                     e.Recurrence = recur;
-                   _dbContext.Events.Add(e);
+                    _dbContext.Events.Add(e);
 
                     var ea = new EventAttendee
                     {
@@ -998,7 +1150,7 @@ namespace ElGroupo.Web.Services
                         IsOrganizer = true,
                         Viewed = true
                     };
-                   _dbContext.EventAttendees.Add(ea);
+                    _dbContext.EventAttendees.Add(ea);
 
                     if (firstEventId == 0) firstEventId = e.Id;
                 }
@@ -1024,10 +1176,11 @@ namespace ElGroupo.Web.Services
             model.Address2 = e.Address2;
             model.City = e.City;
             model.Description = e.Description;
+            model.EndDate = e.EndTime.Date;
             model.EndAMPM = e.EndTime.Hour >= 12 ? Models.Enums.AMPM.PM : Models.Enums.AMPM.AM;
             model.EndHour = e.EndTime.Hour;
             model.EndMinute = e.EndTime.Minute;
-            model.EventDate = e.StartTime.Date;
+            model.StartDate = e.StartTime.Date;
             model.GooglePlaceId = e.GooglePlaceId;
             model.LocationName = e.LocationName;
             model.Name = e.Name;
@@ -1054,13 +1207,29 @@ namespace ElGroupo.Web.Services
             return model;
         }
 
-        public async Task<EditEventDetailsModel> EditEventDetails(long eventId)
+        public async Task<EditEventDetailsModel> EditEventDetails(long eventId, long userId)
         {
             var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
-            var model = new EditEventDetailsModel(e);
+            var u = this.GetActiveUser(userId);
+            var model = new EditEventDetailsModel(e, u.TimeZoneId);
             return model;
         }
 
+
+        public async Task<EditEventDateModel> EditEventDates(long eventId, long userId)
+        {
+            var u = await _dbContext.Users.FirstAsync(x => x.Id == userId);
+            var e = await _dbContext.Events.Include(x=>x.Recurrence).ThenInclude(x=>x.Events).FirstOrDefaultAsync(x => x.Id == eventId);
+            var model = new EditEventDateModel(e, u.TimeZoneId);
+            return model;
+        }
+                public async Task<ViewEventDatesModel> ViewEventDates(long eventId, long userId)
+        {
+            var u = await _dbContext.Users.FirstAsync(x => x.Id == userId);
+            var e = await _dbContext.Events.Include(x=>x.Recurrence).ThenInclude(x=>x.Events).FirstOrDefaultAsync(x => x.Id == eventId);
+            var model = new ViewEventDatesModel(e, u.TimeZoneId);
+            return model;
+        }
         public async Task<EditEventLocationModel> EditEventLocation(long eventId)
         {
             var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
@@ -1090,15 +1259,41 @@ namespace ElGroupo.Web.Services
             else if (model.StartAMPM == Models.Enums.AMPM.PM && startHour == 12) startHour = 12;
             else startHour = model.StartHour + 12;
 
-            var modelStartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
-            var modelEndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+            var modelStartTime = new DateTime(model.StartDate.Year, model.StartDate.Month, model.StartDate.Day, startHour, model.StartMinute, 0);
+            var modelEndTime = new DateTime(model.EndDate.Year, model.EndDate.Month, model.EndDate.Day, endHour, model.EndMinute, 0);
 
             if (modelStartTime != e.StartTime) changes.Add("Start Time");
             if (modelEndTime != e.EndTime) changes.Add("End Time");
 
             return changes;
         }
+        public async Task<SaveDataResponse> UpdateRecurringEventLocation(EditEventLocationModel model)
+        {
+            try
+            {
+                var ev = await _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
+                foreach (var e in ev.Recurrence.Events)
+                {
+                    e.Address1 = model.Address1;
+                    e.Address2 = model.Address2;
+                    e.City = model.City;
+                    e.State = model.State;
+                    e.Zip = model.ZipCode;
+                    e.GooglePlaceId = model.GooglePlaceId;
+                    e.CoordinateX = model.XCoord;
+                    e.CoordinateY = model.YCoord;
+                    _dbContext.Update(e);
 
+                }
+                await _dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
+        }
         public async Task<SaveDataResponse> UpdateRecurringEventDetails(EditEventDetailsModel model)
         {
             try
@@ -1130,8 +1325,8 @@ namespace ElGroupo.Web.Services
                     if (e.Id == model.EventId)
                     {
                         //we don't want to change the dates for other events if recurring
-                        e.StartTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, startHour, model.StartMinute, 0);
-                        e.EndTime = new DateTime(model.EventDate.Year, model.EventDate.Month, model.EventDate.Day, endHour, model.EndMinute, 0);
+                        e.StartTime = new DateTime(model.StartDate.Year, model.StartDate.Month, model.StartDate.Day, startHour, model.StartMinute, 0);
+                        e.EndTime = new DateTime(model.EndDate.Year, model.EndDate.Month, model.EndDate.Day, endHour, model.EndMinute, 0);
                     }
                     else
                     {
@@ -1140,7 +1335,7 @@ namespace ElGroupo.Web.Services
                     }
 
                     e.Status = model.Status;
-                   _dbContext.Update(e);
+                    _dbContext.Update(e);
 
                     if (draftChange)
                     {
@@ -1179,7 +1374,7 @@ namespace ElGroupo.Web.Services
                         {
 
                         }
-                       _dbContext.Update(e);
+                        _dbContext.Update(e);
                     }
                 }
                 else
@@ -1190,7 +1385,7 @@ namespace ElGroupo.Web.Services
                     {
                         //emails
                     }
-                   _dbContext.Update(e);
+                    _dbContext.Update(e);
 
                 }
                 await _dbContext.SaveChangesAsync();
@@ -1212,14 +1407,14 @@ namespace ElGroupo.Web.Services
 
                 e.Name = model.Name;
                 e.Description = model.Description;
-                e.StartTime = model.GetFullStartDate(user.TimeZoneId);
-                e.EndTime = model.GetFullEndDate(user.TimeZoneId);
+                e.StartTime = model.GetEventStartTimeUTC(user.TimeZoneId);
+                e.EndTime = model.GetEventEndTimeUTC(user.TimeZoneId);
                 e.MustRSVP = model.RSVPRequired;
                 e.CheckInLocationTolerance = model.LocationTolerance;
                 e.VerificationMethod = model.AttendanceVerificationMethod;
                 e.VerificationCode = model.VerificationCode;
                 e.Status = model.Status;
-               _dbContext.Update(e);
+                _dbContext.Update(e);
                 await _dbContext.SaveChangesAsync();
 
 
@@ -1259,7 +1454,7 @@ namespace ElGroupo.Web.Services
                 e.GooglePlaceId = model.GooglePlaceId;
                 e.CoordinateX = model.XCoord;
                 e.CoordinateY = model.YCoord;
-               _dbContext.Update(e);
+                _dbContext.Update(e);
                 await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
@@ -1269,12 +1464,12 @@ namespace ElGroupo.Web.Services
             }
 
         }
-        private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
-        {
-            if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessful;
-            if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) return CheckInStatuses.AvailableForCheckIn;
-            return CheckInStatuses.NotAvailableForCheckIn;
-        }
+        //private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
+        //{
+        //    if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessful;
+        //    if (e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) return CheckInStatuses.AvailableForCheckIn;
+        //    return CheckInStatuses.NotAvailableForCheckIn;
+        //}
         public async Task<EventCheckInModel> GetEventCheckInModel(long eventId)
         {
             var e = await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == eventId);
@@ -1290,11 +1485,63 @@ namespace ElGroupo.Web.Services
                 EventName = e.Name
             };
         }
+
+        public async Task<EventNotificationModelContainer> GetEventNotifications(long eventId, long userId, EditAccessTypes accessLevel)
+        {
+            var ea = await _dbContext.EventAttendees.Include(x => x.User).FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
+            var model = new EventNotificationModelContainer();
+            model.Notifications = new List<EventNotificationModel>();
+            foreach (var ean in this._dbContext.EventAttendeeNotifications.Include(x => x.Notification).ThenInclude(x => x.PostedBy).ThenInclude(x => x.User).Where(x => x.AttendeeId == ea.Id))
+            {
+                var localPostedDate = ean.Notification.PostedDate.FromUTC(ea.User.TimeZoneId);
+                model.Notifications.Add(new EventNotificationModel
+                {
+                    OrganizerName = ean.Notification.PostedBy.User.Name,
+                    OrganizerId = ean.Notification.PostedBy.User.Id,
+                    PostedDate = ean.Notification.PostedDate,
+                    Subject = ean.Notification.Subject,
+                    DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
+                    NotificationText = ean.Notification.MessageText,
+                    IsNew = !ean.Viewed,
+                    Id = ean.Id
+                });
+            }
+            model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
+            return model;
+        }
+        public async Task<List<EventMessageModel>> GetEventMessages(long eventId, long userId)
+        {
+            //        var e = await _dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).
+            //Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).ThenInclude(x => x.PostedBy).
+            //FirstOrDefaultAsync(x => x.Id == eventId);
+            var ea = await _dbContext.EventAttendees.Include(x => x.User).Include(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
+
+            if (ea == null) return null;
+            var model = new List<EventMessageModel>();
+
+            foreach (var mba in ea.MessageBoardItems)
+            {
+                var localPostedDate = mba.MessageBoardItem.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(ea.User.TimeZoneId));
+                model.Add(new EventMessageModel
+                {
+                    PostedBy = mba.MessageBoardItem.PostedBy.Name,
+                    PostedById = mba.MessageBoardItem.PostedBy.Id,
+                    PostedDate = localPostedDate,
+                    DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
+                    Subject = mba.MessageBoardItem.Subject,
+                    MessageText = mba.MessageBoardItem.MessageText,
+                    CanEdit = mba.MessageBoardItem.PostedBy.Id == userId,
+                    IsNew = !mba.Viewed,
+                    Id = mba.Id
+                });
+            }
+            return model;
+        }
         public async Task<EventViewModel> GetEventViewModel(long eventId, long userId, EditAccessTypes accessLevel)
         {
             //var e = await dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).Include("Attendees.MessageBoardItems.MessageBoardItem.PostedBy").FirstOrDefaultAsync(x => x.Id == eventId);
             var user = this.GetActiveUser(userId);
-            
+
             var e = await _dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).
                 Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).ThenInclude(x => x.PostedBy).
                 FirstOrDefaultAsync(x => x.Id == eventId);
@@ -1302,21 +1549,21 @@ namespace ElGroupo.Web.Services
             if (thisAttendee.Viewed == false)
             {
                 thisAttendee.Viewed = true;
-               _dbContext.Update(thisAttendee);
+                _dbContext.Update(thisAttendee);
                 await _dbContext.SaveChangesAsync();
             }
             //var isOrganizer = e.Organizers.Any(x => x.User.Id == user.Id);
             var model = new EventViewModel(e, user.TimeZoneId);
-
+            model.GoogleApiKey = this.googleOptions.GoogleMapsApiKey;
 
             if (thisAttendee.CheckedIn) model.CheckInStatus = CheckInStatuses.CheckInSuccessful;
-            else if (e.MustRSVP && e.StartTime.ToLocalTime().AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now) model.CheckInStatus = CheckInStatuses.AvailableForCheckIn;
+            else if (e.MustRSVP && e.StartTime.AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.UtcNow) model.CheckInStatus = CheckInStatuses.AvailableForCheckIn;
             else model.CheckInStatus = CheckInStatuses.NotAvailableForCheckIn;
 
             model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             model.Attendees = new ViewEventAttendeesModel();
-            foreach (var att in e.Attendees.Where(x => x.User.Id != userId).OrderBy(x=>x.User.Name))
+            foreach (var att in e.Attendees.Where(x => x.User.Id != userId).OrderBy(x => x.User.Name))
             {
                 model.Attendees.Attendees.Add(new EventAttendeeModel
                 {
@@ -1336,11 +1583,13 @@ namespace ElGroupo.Web.Services
 
             foreach (var mba in thisAttendee.MessageBoardItems)
             {
+                var localPostedDate = mba.MessageBoardItem.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId));
                 model.Messages.Add(new EventMessageModel
                 {
-                    PostedBy = mba.MessageBoardItem.PostedBy.Name,
+                    PostedBy = mba.MessageBoardItem.PostedBy.FirstName,
                     PostedById = mba.MessageBoardItem.PostedBy.Id,
-                    PostedDate = mba.MessageBoardItem.PostedDate,
+                    PostedDate = localPostedDate,
+                    DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
                     Subject = mba.MessageBoardItem.Subject,
                     MessageText = mba.MessageBoardItem.MessageText,
                     CanEdit = mba.MessageBoardItem.PostedBy.Id == userId,
@@ -1351,15 +1600,18 @@ namespace ElGroupo.Web.Services
             model.Messages = model.Messages.OrderByDescending(x => x.PostedBy).ToList();
 
 
-            model.Notifications = new List<EventNotificationModel>();
+            model.Notifications = new EventNotificationModelContainer();
+            model.Notifications.IsOrganizer = accessLevel == EditAccessTypes.Edit;
+            model.Notifications.Notifications = new List<EventNotificationModel>();
             foreach (var ean in this._dbContext.EventAttendeeNotifications.Include("Notification.PostedBy.User").Where(x => x.AttendeeId == thisAttendee.Id))
             {
-                model.Notifications.Add(new EventNotificationModel
+                var localPostedDate = ean.Notification.PostedDate.FromUTC(thisAttendee.User.TimeZoneId);
+                model.Notifications.Notifications.Add(new EventNotificationModel
                 {
                     OrganizerName = ean.Notification.PostedBy.User.Name,
                     OrganizerId = ean.Notification.PostedBy.User.Id,
-                    CanEdit = accessLevel == EditAccessTypes.Edit,
                     PostedDate = ean.Notification.PostedDate,
+                    DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
                     Subject = ean.Notification.Subject,
                     NotificationText = ean.Notification.MessageText,
                     IsNew = !ean.Viewed,
@@ -1369,15 +1621,15 @@ namespace ElGroupo.Web.Services
 
             if (e.RecurrenceId.HasValue)
             {
-                model.EventRecurrence =_dbContext.RecurringEvents.Include(x => x.Events).FirstOrDefault(x => x.Id == e.RecurrenceId.Value).Events.Select(y =>
-                new RecurrenceListModel
-                {
-                    Name = y.Name,
-                    StartDate = y.StartTime.ToLocalTime(),
-                    EndDate = y.EndTime.ToLocalTime(),
-                    Id = y.Id,
-                    DateText = y.GetDateText(user.TimeZoneId)
-                }).ToArray();
+                model.EventRecurrence = _dbContext.RecurringEvents.Include(x => x.Events).FirstOrDefault(x => x.Id == e.RecurrenceId.Value)?.Events.Select(y =>
+                 new RecurrenceListModel
+                 {
+                     Name = y.Name,
+                     StartDate = y.StartTime.FromUTC(thisAttendee.User.TimeZoneId),
+                     EndDate = y.EndTime.FromUTC(thisAttendee.User.TimeZoneId),
+                     Id = y.Id,
+                     DateText = y.GetDateText(user.TimeZoneId)
+                 }).ToArray();
 
                 model.Details.RecurrenceText += " Until " + model.EventRecurrence.OrderBy(x => x.EndDate).Last().EndDate.ToShortDateString() + ".";
             }
@@ -1467,7 +1719,7 @@ namespace ElGroupo.Web.Services
                 ea.CheckInCoordinateX = lon;
                 ea.CheckInCoordinateY = lat;
                 ea.CheckInTime = DateTime.Now.ToUniversalTime();
-               _dbContext.Update(ea);
+                _dbContext.Update(ea);
                 await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
@@ -1505,7 +1757,7 @@ namespace ElGroupo.Web.Services
 
                 ea.CheckInTime = DateTime.Now.ToUniversalTime();
                 ea.CheckedIn = true;
-               _dbContext.Update(ea);
+                _dbContext.Update(ea);
 
                 await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
@@ -1521,10 +1773,10 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var eo =_dbContext.EventAttendees.FirstOrDefault(x => x.Id == attendee);
+                var eo = _dbContext.EventAttendees.FirstOrDefault(x => x.Id == attendee);
                 if (eo == null) return SaveDataResponse.FromErrorMessage("event attendee id " + attendee + " not found");
                 if (eo.EventId != eventId) return SaveDataResponse.FromErrorMessage("attendee is not part of event");
-               _dbContext.EventAttendees.Remove(eo);
+                _dbContext.EventAttendees.Remove(eo);
                 await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
             }
@@ -1541,11 +1793,11 @@ namespace ElGroupo.Web.Services
             IQueryable<Event> events = null;
             if (search == "*")
             {
-                events =_dbContext.Events.Include("Attendees.User");
+                events = _dbContext.Events.Include("Attendees.User");
             }
             else
             {
-                events =_dbContext.Events.Include("Attendees.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
+                events = _dbContext.Events.Include("Attendees.User").Where(x => x.Name.ToUpper().Contains(search.ToUpper()));
             }
 
             var list = new List<EventInformationModel>();

@@ -339,6 +339,8 @@ namespace ElGroupo.Web.Controllers
                         Email = model.EmailAddress,
                         UserName = model.UserName,
                         Name = model.Name,
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
                         ZipCode = model.ZipCode,
                         PhoneNumber = model.PhoneNumber,
                         EmailConfirmed = model.InviteId.HasValue

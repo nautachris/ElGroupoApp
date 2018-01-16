@@ -102,6 +102,53 @@
                 MessageDialog(err.message);
             }
         });
+    },
+    Delete: function (p1, p2, p3, p4) {
+        console.log('in delete');
+        console.log(p1);
+        console.log(p2);
+        console.log(p3);
+        console.log(p4);
+        //p1 is url, p2 is data, p3 is datatype, p4 content type
+        var url = null;
+        var dataType = null;
+        var contentType = null;
+        var data = null;
+        if (typeof (p1) === 'object') {
+            dataType = p1.hasOwnProperty('dataType') ? p1.dataType : 'html';
+            contentType = p1.hasOwnProperty('contentType') ? p1.contentType : 'application/json';
+            data = p1.hasOwnProperty('data') ? typeof (p1.data) === 'string' ? p1.data : JSON.stringify(p1.data) : null;
+            url = p1.url;
+        }
+        else {
+            url = p1;
+            data = typeof (p2) === 'string' ? JSON.stringify(p2) : p2;
+            dataType = (p3 !== undefined) ? p3 : 'html';
+            contentType = (p4 !== undefined) ? p4 : 'html';
+        }
+        console.log('url');
+        console.log(url);
+        console.log('data');
+        console.log(data);
+        console.log('datatype');
+        console.log(dataType);
+        console.log('contentType');
+        console.log(contentType);
+        return $.ajax({
+            url: url,
+            type: 'DELETE',
+            contentType: "application/json",
+            async: true,
+            cache: false,
+            dataType: dataType,
+            data: data,
+            error: function error(err) {
+                console.log('in ajax.js error handler');
+                console.log(JSON.parse(err.responseText));
+                //Loading.Stop();
+                MessageDialog(err.message);
+            }
+        });
     }
 
 }; 

@@ -21,9 +21,9 @@
 </style>
 
 <section class="section-form">
-    <div class="row">
+    @*<div class="row">
         <h2>Create a new event</h2>
-    </div>
+    </div>*@
     <div class="row">
         <div asp-validation-summary="All" class="text-danger"></div>
         <form id="frmCreateEvent" asp-controller="Events" asp-action="Create" method="post" class="contact-form">
@@ -48,15 +48,94 @@
             <div data-create-step="2" style="display:none;">
 
 
-                @*<div class="row">
-                        <label>Event Is Recurring?</label>
-                        <div data-replace-element="IsRecurring" class="switch-container row is-recurring">
-                                <input type="hidden" asp-for="IsRecurring" />
-                                <span data-replace-val="True" class="col span-1-of-2">Yes</span>
-                                <span data-replace-val="False" class="switch-selected col span-1-of-2">No</span>
-                            </div>
 
-                    </div>*@
+
+
+                <div class="row centered">
+                    <label>Start Time</label>
+                </div>
+                <div class="row centered">
+                    <div class="col span-3-of-6">
+                        <input asp-for="StartDate" type="text" class="width-100" placeholder="Enter Event Start Date...">
+                    </div>
+                    <div class="col span-1-of-6">
+                        <select asp-for="StartHour">
+                            <option value="12" selected>12</option>
+                            @for (int hour = 1; hour <= 11; hour++)
+                            {
+                                <option value="@hour">@hour.ToString()</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col span-1-of-6">
+                        <select asp-for="StartMinute">
+                            @for (var min = 0; min < 60; min++)
+                            {
+                                @if (min < 10)
+                                {
+                                    <option value="@min">@("0" + min.ToString())</option>
+
+                                }
+                                else
+                                {
+                                    <option value="@min">@min.ToString()</option>
+
+                                }
+
+                            }
+                        </select>
+                    </div>
+                    <div class="col span-1-of-6">
+                        <select asp-for="StartAMPM">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row centered">
+                    <label>End Time</label>
+                </div>
+                <div class="row centered">
+                    <div class="col span-3-of-6">
+                        <input asp-for="EndDate" type="text" class="width-100" placeholder="Enter Event End Date...">
+                    </div>
+                    <div class="col span-1-of-6">
+                        <select asp-for="EndHour">
+                            <option value="12" selected>12</option>
+                            @for (int hour = 1; hour <= 11; hour++)
+                            {
+                                <option value="@hour">@hour.ToString() </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col span-1-of-6">
+                        <select asp-for="EndMinute">
+                            @for (var min = 0; min < 60; min++)
+                            {
+                                @if (min < 10)
+                                {
+                                    <option value="@min">@("0" + min.ToString())</option>
+
+                                }
+                                else
+                                {
+                                    <option value="@min">@min.ToString()</option>
+
+                                }
+
+
+                            }
+                        </select>
+                    </div>
+                    <div class="col span-1-of-6">
+                        <select asp-for="EndAMPM">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+
+
                 <div class="row">
                     <label>Event is Recurring?</label>
                 </div>
@@ -71,72 +150,12 @@
                         <label for="idRecurringNo">No</label>
                     </div>
                 </div>
-                <div class="row">
-                    <label id="lblEventDate" asp-for="EventDate">Date:</label>
-                    <input type="text" asp-for="EventDate" class="width-100" placeholder="Enter Event Date...">
-                </div>
+
                 <div id="divRecurrence" style="display:none">
                     @Html.Partial("_EditEventRecurrence", Model)
                 </div>
 
-                <div class="row">
-                    <label>Event Time</label>
-                </div>
-                <div class="row">
 
-                    <div class="col span-1-of-6">
-                        <label asp-for="StartHour">Start:</label>
-                    </div>
-                    <div class="col span-2-of-6">
-                        <select asp-for="StartHour" style="float:right;">
-                            <option value="12" selected>12</option>
-                            @for (int hour = 1; hour <= 11; hour++)
-                            {
-                                <option value="@hour">@hour.ToString()</option>
-                            }
-                        </select>
-                    </div>
-                    <div data-replace-element="StartMinute" class="switch-container start-minute col span-2-of-6">
-                        <input type="hidden" asp-for="StartMinute" />
-                        <span data-replace-val="0" class="col span-1-of-4">00</span>
-                        <span data-replace-val="15" class="col span-1-of-4">15</span>
-                        <span data-replace-val="30" class="col span-1-of-4">30</span>
-                        <span data-replace-val="45" class="col span-1-of-4">45</span>
-                    </div>
-                    <div data-replace-element="StartAMPM" class="switch-container start-ampm col span-1-of-6">
-                        <input type="hidden" asp-for="StartAMPM" />
-                        <span data-replace-val="AM" class="col span-1-of-2">AM</span>
-                        <span data-replace-val="PM" class="col span-1-of-2">PM</span>
-                    </div>
-
-                </div>
-                <div class="row">
-                    <div class="col span-1-of-6">
-                        <label asp-for="EndHour">End:</label>
-                    </div>
-                    <div class="col span-2-of-6">
-                        <select asp-for="EndHour" style="float:right;">
-                            <option value="12" selected>12</option>
-                            @for (int hour = 1; hour <= 11; hour++)
-                            {
-                                <option value="@hour">@hour.ToString()</option>
-                            }
-                        </select>
-                    </div>
-                    <div data-replace-element="EndMinute" class="switch-container end-minute col span-2-of-6">
-                        <input type="hidden" asp-for="EndMinute" />
-                        <span data-replace-val="0" class="col span-1-of-4">00</span>
-                        <span data-replace-val="15" class="col span-1-of-4">15</span>
-                        <span data-replace-val="30" class="col span-1-of-4">30</span>
-                        <span data-replace-val="45" class="col span-1-of-4">45</span>
-                    </div>
-                    <div data-replace-element="EndAMPM" class="switch-container end-ampm col span-1-of-6">
-                        <input type="hidden" asp-for="EndAMPM" />
-                        <span data-replace-val="AM" class="col span-1-of-2">AM</span>
-                        <span data-replace-val="PM" class="col span-1-of-2">PM</span>
-                    </div>
-
-                </div>
                 <div class="row">
                     <label>RSVP Required?</label>
                 </div>

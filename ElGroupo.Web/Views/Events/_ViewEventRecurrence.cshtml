@@ -1,0 +1,38 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Web.Models.Enums
+@model IEnumerable<ElGroupo.Web.Models.Events.RecurrenceListModel>
+@{
+
+    Layout = null;
+}
+
+<div class="row contact-form">
+    @if (Model.Any())
+    {
+        <h3>Related Recurring Events</h3>
+        <ul style="list-style:none;">
+            @foreach (var e in Model)
+                {
+                <li data-event-id="@e.Id">
+                    <div class="row">
+                        <div class="col">
+                            <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="no-decoration">
+                                <span id="spanEventName" style="font-weight:bold; ">
+                                    @e.Name
+                                </span>
+                                <span>@e.DateText</span>
+                            </a>
+                        </div>
+                    </div>
+
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <h2>There should be recurring events here...</h2>
+
+    }
+
+</div>

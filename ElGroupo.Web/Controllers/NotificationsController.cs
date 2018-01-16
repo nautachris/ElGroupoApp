@@ -49,11 +49,14 @@ namespace ElGroupo.Web.Controllers
                 {
                     return BadRequest();
                 }
+
+
+
                 var msg = new EventNotification
                 {
                     PostedBy = org,
                     Event = e,
-                    PostedDate = DateTime.Now,
+                    PostedDate = DateTime.Now.ToUniversalTime(),
                     MessageText = model.Text,
                     Subject = model.Subject,
                     Importance = Domain.Enums.NotificationImportanceTypes.Critical,
@@ -120,7 +123,6 @@ namespace ElGroupo.Web.Controllers
                     {
                         OrganizerName = ean.Notification.PostedBy.User.Name,
                         OrganizerId = ean.Notification.PostedBy.User.Id,
-                        CanEdit = ean.Notification.PostedBy.User.Id == user.Id || canEdit,
                         PostedDate = ean.Notification.PostedDate,
                         Subject = ean.Notification.Subject,
                         NotificationText = ean.Notification.MessageText,

@@ -99,6 +99,7 @@
     <PackageReference Include="RazorLight.MVC" Version="1.0.4" />
     <PackageReference Include="RestSharp" Version="105.2.3" />
     <PackageReference Include="SendGrid" Version="9.8.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ElGroupo.Domain\ElGroupo.Domain.csproj" />

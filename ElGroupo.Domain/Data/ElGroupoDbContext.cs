@@ -140,6 +140,45 @@ namespace ElGroupo.Domain.Data
             }
         }
 
+        public static async Task SplitNames(IServiceProvider provider)
+        {
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+            try
+            {
+                
+                var cnt = 0;
+                foreach (var u in ctx.Users.ToList())
+                {
+                    cnt++;
+                    if (u.Name == null) continue;
+                    var ary = u.Name.Split(' ');
+                    if (ary.Length == 1) u.FirstName = ary[0];
+                    else if (ary.Length == 2)
+                    {
+                        u.FirstName = ary[0];
+                        u.LastName = ary[1];
+                    }
+                    else
+                    {
+                        var wtf = 4;
+                    }
+                    ctx.Update(u);
+
+                    if (cnt % 500 == 0)
+                    {
+                        await ctx.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var dd = 4;
+            }
+
+
+            await ctx.SaveChangesAsync();
+        }
+
         public static async Task AddUserPhotos(IServiceProvider provider)
         {
             var ctx = provider.GetRequiredService<ElGroupoDbContext>();

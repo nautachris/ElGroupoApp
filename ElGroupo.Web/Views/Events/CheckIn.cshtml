@@ -3,7 +3,7 @@
 @functions{
     private string GetCheckinTypeAttribute(ElGroupo.Domain.Enums.AttendanceVerificationMethods method)
     {
-        if (method == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordAndLocation) return "location";
+        if (method == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordOrLocation) return "location";
         return "password";
 
 
@@ -19,7 +19,7 @@
     <div class="row">
         Check In to @Model.EventName
     </div>
-    @if (Model.CheckInMethod == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordAndLocation)
+    @if (Model.CheckInMethod == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordOrLocation)
     {
         <div class="row">
             <div style="font-weight:bold;" class="width-100 larger-text current-location pointer">Use Current Location</div>
@@ -37,7 +37,7 @@
     </div>
 
     <div class="row" style="height:50px"></div>
-    @if (Model.CheckInMethod == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordAndLocation)
+    @if (Model.CheckInMethod == ElGroupo.Domain.Enums.AttendanceVerificationMethods.PasswordOrLocation)
     {
         <div id="divLocation">
             <div class="row" id="divLocationMessage"></div>

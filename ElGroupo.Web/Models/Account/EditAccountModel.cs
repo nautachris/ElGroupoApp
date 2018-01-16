@@ -22,6 +22,8 @@ namespace ElGroupo.Web.Models.Account
         public long Id { get; set; }
 
         public string Name { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
 
         [Display(Description = "Email Address")]
         [DataType(DataType.EmailAddress)]

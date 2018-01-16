@@ -1,0 +1,115 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Web.Models.Enums
+@model ElGroupo.Web.Models.Events.EditEventLocationModel
+
+@{
+
+    Layout = null;
+}
+
+<div class="row map-search contact-form">
+    <div class="col span-7-of-7">
+        <div id="divMap" style="width:100%;height:300px"></div>
+        <div id="infowindow-content">
+            <img src="" width="16" height="16" id="place-icon">
+            <span id="place-name" class="title"></span><br>
+            <span id="place-address"></span>
+        </div>
+    </div>
+
+</div>
+<form id="frmEditEventLocation" class="contact-form centered">
+
+
+    <div class="row centered">
+        <div class="row">
+            <label>Location Search Method:</label>
+        </div>
+        <div class="row location-search-method">
+            <div class="col span-1-of-4">
+                <input id="rbSearchAddress" type="radio" name="location-search-method" value="address" checked />
+                <label for="rbSearchAddress">Address</label>
+            </div>
+            <div class="col span-1-of-4">
+                <input id="rbSearchBusiness" type="radio" name="location-search-method" value="business" />
+                <label for="rbSearchBusiness">Business</label>
+            </div>
+            <div class="col span-1-of-4">
+                <input id="rbSearchPin" type="radio" name="location-search-method" value="draw" />
+                <label for="rbSearchPin">Drop a Pin</label>
+            </div>
+            <div class="col span-1-of-4">
+                <input id="rbSearchManual" type="radio" name="location-search-method" value="manual" />
+                <label for="rbSearchManual">Manual Entry</label>
+            </div>
+        </div>
+        <div class="row location-search">
+            <label id="lblSearchType">Search Address:</label>
+            <div class="row">
+                <input style="width:100%;" asp-for="LocationName" id="txtAutocompleteSearch" type="text" />
+            </div>
+        </div>
+    </div>
+    <div class="row centered">
+        <div class="row">
+            <label asp-for="LocationName">Search Location:</label>
+        </div>
+        <div class="row">
+            <input style="width:100%;" asp-for="LocationName" type="text" />
+        </div>
+    </div>
+
+    <div class="row centered">
+        <div class="row">
+            <label for="BusinessName">Business Name:</label>
+        </div>
+        <div class="row">
+            <input class="width-100" id="txtBusinessName" type="text" value="">
+        </div>
+    </div>
+    <div class="row centered">
+        <div class="row">
+            <label asp-for="Address1">Address 1:</label>
+        </div>
+        <div class="row">
+            <input class="width-100" asp-for="Address1">
+        </div>
+    </div>
+    <div class="row centered">
+        <div class="row">
+            <label asp-for="Address2">Address 2:</label>
+        </div>
+        <div class="row">
+            <input class="width-100" asp-for="Address2">
+        </div>
+    </div>
+    <div class="row">
+        <div>
+            <label asp-for="City">City:</label>
+        </div>
+        <div>
+            <input class="width-100" asp-for="City">
+        </div>
+    </div>
+    <div class="row">
+        <div>
+            <label asp-for="State">State:</label>
+        </div>
+        <div>
+            <input class="width-100" asp-for="State">
+        </div>
+    </div>
+    <div class="row">
+        <div>
+            <label asp-for="ZipCode">Zip:</label>
+        </div>
+        <div>
+            <input class="width-100" asp-for="ZipCode">
+        </div>
+    </div>
+
+
+    <input type="hidden" asp-for="XCoord" />
+    <input type="hidden" asp-for="YCoord" />
+    <input type="hidden" asp-for="GooglePlaceId" />
+</form>

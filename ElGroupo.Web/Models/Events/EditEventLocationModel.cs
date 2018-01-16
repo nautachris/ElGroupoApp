@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace ElGroupo.Web.Models.Events
 {
-    public class EditEventLocationModel
+    public class EditEventLocationModel : EventModelBase
     {
-        public long EventId { get; set; }
+
         public EditEventLocationModel(ElGroupo.Domain.Event e)
         {
             this.EventId = e.Id;
@@ -19,8 +19,9 @@ namespace ElGroupo.Web.Models.Events
             this.State = e.State;
             this.XCoord = e.CoordinateX;
             this.YCoord = e.CoordinateY;
+            
         }
-                public string Address1 { get; set; }
+        public string Address1 { get; set; }
         public string Address2 { get; set; }
         public string City { get; set; }
         public string State { get; set; }

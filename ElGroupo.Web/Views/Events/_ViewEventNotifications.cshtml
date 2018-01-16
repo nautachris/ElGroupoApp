@@ -1,5 +1,5 @@
 ﻿@using ElGroupo.Web.Models.Notifications
-@model IEnumerable<EventNotificationModel>
+@model EventNotificationModelContainer
 @functions{
 
     public string GetImageUrl(long id)
@@ -13,9 +13,9 @@
     Layout = null;
 }
 
-@if (Model.Any())
+@if (Model.Notifications.Any())
 {
-    foreach (var notification in Model)
+    foreach (var notification in Model.Notifications)
     {
         <div class="row">
             <div class="col span-1-of-3" style="text-align:center;">
@@ -26,7 +26,7 @@
                 @if (notification.IsNew)
                 {
                     <div class="unread-notification-subject" data-notification-id="@notification.Id">
-                        <span class="width-100 inline-block">@notification.PostedDate.ToLocalTime().ToString("d") &nbsp; @notification.PostedDate.ToLocalTime().ToString("t")</span>
+                        <span class="width-100 inline-block">@notification.DateText</span>
                         <span class="width-100 inline-block">@notification.Subject</span>
                     </div>
                     <span class="message-container" data-notification-id="@notification.Id">@notification.NotificationText</span>
@@ -34,11 +34,11 @@
                 }
                 else
                 {
-                    <span class="width-100 inline-block">@notification.PostedDate.ToLocalTime().ToString("d") &nbsp; @notification.PostedDate.ToLocalTime().ToString("t")</span>
+                    <span class="width-100 inline-block">@notification.DateText</span>
                     <span class="width-100 inline-block">@notification.Subject</span>
                     <span>@notification.NotificationText</span>
                 }
-                @if (notification.CanEdit)
+                @if (Model.IsOrganizer)
                 {
                     <a style="float:right;" class="btn btn-primary delete-message" data-notification-id="@notification.Id">Delete</a>
                     @*<div class="row">
@@ -56,5 +56,39 @@
 else
 {
     <h2>You have no event notifications...</h2>
+
+}
+
+@if (Model.IsOrganizer)
+{
+    <div class="row centered">
+        <a href="#" class="btn btn-primary" id="btnShowNotificationDiv">Add Notification</a>
+        <div id="divCreateNotification" style="display:none;">
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label>Subject:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input type="text" id="txtNotificationSubject" class="width-100" placeholder="Enter Notification Subject...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-3">
+                    <label>Message:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <textarea id="txtNotificationText" style="height:300px;" class="width-100" placeholder="Enter Notification Text..."></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col span-1-of-2">
+                    <a class="btn btn-ghost" id="btnCancelNotifcation">Cancel</a>
+                </div>
+                <div class="col span-1-of-2">
+                    <a class="btn btn-primary" id="btnPostNotifcation">Post Notification</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 }
