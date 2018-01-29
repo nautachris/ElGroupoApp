@@ -21,16 +21,20 @@
 </head>
 <body class="panel-body">
     @await Component.InvokeAsync("HeaderComponent")
-    <div style="position:fixed; right:10px; top:100px; width:50px; height:200px; background-color:green; cursor:pointer;">
+    <div style="position:fixed; right:10px; top:100px; border:2px solid black; border-radius:9px; padding:20px; cursor:pointer; text-align:center; ">
         @*rsvp yes/no/maybe*@
         @*checkin*@
         @*location
             date/time
             details
             recurrence*@
-        <div style="width:100%; height:40px; background-color:yellow">Yes</div>
-        <div style="width:100%; height:40px; background-color:rebeccapurple">Maybe</div>
-        <div style="width:100%; height:40px; background-color:khaki">No</div>
+        <div alt="RSVP Yes" class="ion-ios-checkmark-outline zoom-2"></div>
+        <div class="ion-ios-close-outline zoom-2"></div>
+        <div class="ion-ios-help-empty zoom-2"></div>
+        <div style="height:2px; width:100%; background-color:black; margin-bottom:25px;"></div>
+        <div class="ion-pin zoom-2"></div>
+        <div class="ion-ios-calendar-outline zoom-2"></div>
+        <div class="ion-ios-location-outline zoom-2" style="margin-bottom:0px;"></div>
     </div>
     <div id="main" style="min-height:65%;z-index:1">
         @RenderBody()

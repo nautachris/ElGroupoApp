@@ -30,7 +30,27 @@ namespace ElGroupo.Domain
             }
 
         }
+        public string GetSimpleDateText(string timeZoneId)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
+            var localStartTime = TimeZoneInfo.ConvertTimeFromUtc(this.StartTime, tz);
+            //var startTimezoneName = tz.IsDaylightSavingTime(localStartTime) ? tz.DaylightName : tz.StandardName;
+            var localEndTime = TimeZoneInfo.ConvertTimeFromUtc(this.EndTime, tz);
+            //var endTimezoneName = tz.IsDaylightSavingTime(localEndTime) ? tz.DaylightName : tz.StandardName;
+            if (localStartTime.Date == localEndTime.Date)
+            {
+                //ev.ev.StartTime.ToLocalTime().DayOfWeek.ToString() + " " + ev.ev.StartTime.ToLocalTime().ToString("d") + " " + ev.ev.StartTime.ToLocalTime().ToString("t")
+                return localStartTime.ToString("d") + " " + localStartTime.ToString("t") + " - " + localEndTime.ToString("t");
+            }
+            else
+            {
+                return localStartTime.ToString("d") + " " + localStartTime.ToString("t") + " - " + localEndTime.ToString("d") + " " + localEndTime.ToString("t");
+                
+
+            }
+
+        }
         public string GetStartTimeText(string timeZoneId, bool includeTimeZoneDescription)
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);

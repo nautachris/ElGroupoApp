@@ -16,88 +16,107 @@
         return url;
 
     }
+
+    private string GetEventRowClass(bool isNew)
+    {
+        return isNew ? "unviewed-event" : "viewed-event";
+
+    }
+
+    private string GetDateRowText(EventInformationModel model)
+    {
+        string str = null;
+        if (model.IsRecurring) str = model.DateText + " | recurring";
+        else str = model.DateText;
+        if (model.RSVPRequested) str += "*";
+        return str;
+
+    }
 }
 <ul style="list-style:none;">
     @foreach (var e in Model)
             {
 
         <li data-event-id="@e.Id">
-            <div class="row" style="border:1px solid gray; border-radius:5px; margin:5px;">
-                <div class="col span-7-of-8">
-                    <div>
-                        <span id="spanEventName" style="font-weight:bold; ">
-                            <a href="@GetEventViewUrl(e.Id)">@e.Name</a>
+            <div class="row @GetEventRowClass(e.IsNew)" data-event-link="@GetEventViewUrl(e.Id)" style="margin:5px; display:flex; width:100%; cursor:pointer;">
+
+                <div style="display:flex; flex-direction:column; flex:2;">
+                    <span id="spanEventName" style="font-weight:bold; ">@e.Name</span>
+                    @*<a href="@GetEventViewUrl(e.Id)">@e.Name</a>*@
+
+                    @if (!e.OrganizedByUser)
+                    {
+                        <span>by: @e.OrganizerName</span>
+                    }
+                    <span>@GetDateRowText(e)</span>
+                    @*if the event does not require a rsvp, say "rsvp not required"*@
+                    @if (e.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.AvailableForCheckIn && e.RSVPStatus != ElGroupo.Domain.Enums.RSVPTypes.None)
+                    {
+                        <a class="checkin-link" href="@GetCheckInUrl(e.Id)" style="background-color:red; color:white;">Check In Now!</a>
+
+                    }
+                    else if (e.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.CheckInSuccessful)
+                    {
+                        <div style="display:table;">
+                            <div style="width:25px; border-radius:100%; background-color:green; display:table-cell; vertical-align:middle;"></div>
+                            <div style="margin-left:10px; vertical-align:middle;">Checked In</div>
+                        </div>
+
+                    }
+                    else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
+                    {
+                        <div style="display:table;">
+                            <div style="width:25px; border-radius:100%; background-color:gray; display:table-cell; vertical-align:middle;"></div>
+                            <div style="margin-left:10px; vertical-align:middle;">Response Pending</div>
+                        </div>
+                            <div>Respond Now<a class="quick-response" data-response-type="yes">Yes</a><a class="quick-response" data-response-type="no">No</a>
+                            </div>
+
+                    }
+                    else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
+                    {
+                        <div style="display:table;">
+                            <div style="width:25px; border-radius:100%; background-color:darkgoldenrod; display:table-cell; vertical-align:middle;"></div>
+                            <div style="margin-left:10px; vertical-align:middle;">I might go</div>
+                        </div>
+
+                    }
+                    else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
+                    {
+                        <div style="display:table;">
+                            <div style="width:25px; border-radius:100%; background-color:red; display:table-cell; vertical-align:middle;"></div>
+                            <div style="margin-left:10px; vertical-align:middle;">Can't make it!</div>
+                        </div>
+
+                    }
+                    else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
+                    {
+                        <div style="display:table;">
+                            <div style="width:25px; border-radius:100%; background-color:green; display:table-cell; vertical-align:middle;"></div>
+                            <div style="margin-left:10px; vertical-align:middle;">I'm in!</div>
+                        </div>
+
+                    }
+                </div>
+                <div style="display:flex; flex-direction:column; align-self:center; margin-right:30px; font-size:20px; font-weight:bold;">@(e.IsNew ? "New!!" : ">")</div>
+
+                @*<div style="margin-left:30px;">
+                        <span>
+                            &bull; Quick Response:<a style="padding-right:10px; margin-left:10px; cursor:pointer;">Yes</a>
+                            <a style="padding-right:10px; cursor:pointer;">No</a>
                         </span>
-                        @if (!e.OrganizedByUser)
-                        {
-                            <span>Organized by: @e.OrganizerName</span>
-                        }
-                        @if (e.IsRecurring)
-                        {
-                            <span>
-                                @e.DateText | recurring
-                            </span>
 
-                        }
-                        else
-                        {
-                            <span>
-                                @e.DateText
-                            </span>
+                    </div>*@
 
-                        }
 
-                        @if (e.RSVPRequested)
-                        {
-                            <span>* RSVP Requested</span>
 
-                        }
-                        @*if the event does not require a rsvp, say "rsvp not required"*@
-                        else if (e.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.AvailableForCheckIn && e.RSVPStatus != ElGroupo.Domain.Enums.RSVPTypes.None)
-                        {
-                            <a class="checkin-link" href="@GetCheckInUrl(e.Id)" style="background-color:red; color:white;">Check In Now!</a>
 
-                        }
-                        else if (e.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.CheckInSuccessful)
-                        {
-                            <div style="background-color:green; color:white;">You are checked in!</div>
-
-                        }
-                        else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
-                        {
-                            <div style="background-color:gray; color:white;">Response Pending</div>
-
-                        }
-                        else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
-                        {
-                            <div style="background-color:yellow; color:black;">I might go</div>
-
-                        }
-                        else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
-                        {
-                            <div style="background-color:red; color:white;">Sorry, can't make it!</div>
-
-                        }
-                        else if (e.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
-                        {
-                            <div style="background-color:green; color:white;">Hell yeah I'm in!</div>
-
-                        }
-                        <div><span>Quick Response:</span><a style="padding-right:10px; cursor:pointer;">Yes</a><a style="padding-right:10px; cursor:pointer;">No</a></div>
-                    </div>
-                </div>
-                <div class="col span-1-of-8">
-                    @if (e.IsNew && !e.OrganizedByUser)
-                    {
-                        @: New
-                    }
-                    else if (e.OrganizedByUser)
-                    {
-                        @: My Event
-
-                    }
-                </div>
             </div>
+
+            <div class="row" style="margin-top:10px;">
+                <div class="span-5-of-8 centered" style="margin:0 auto; height:1px; background-color:darkgray"></div>
+            </div>
+
         </li>
     }
 </ul>

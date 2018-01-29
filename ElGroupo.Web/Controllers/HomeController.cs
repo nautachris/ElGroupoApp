@@ -59,7 +59,7 @@ namespace ElGroupo.Web.Controllers
                 {
                     EndDate = ev.ev.EndTime,
                     StartDate = ev.ev.StartTime,
-                    DateText = ev.ev.GetDateText(user.TimeZoneId),
+                    DateText = ev.ev.GetSimpleDateText(user.TimeZoneId),
                     Id = ev.ev.Id,
                     CheckInStatus = GetCheckInStatus(ev.ev, ev.ea),
                     OrganizedByUser = true,
@@ -76,7 +76,7 @@ namespace ElGroupo.Web.Controllers
                 {
                     EndDate = ev.Event.EndTime,
                     StartDate = ev.Event.StartTime,
-                    DateText = ev.Event.GetDateText(user.TimeZoneId),
+                    DateText = ev.Event.GetSimpleDateText(user.TimeZoneId),
                     Id = ev.Event.Id,
                     OrganizedByUser = false,
                     CheckInStatus = GetCheckInStatus(ev.Event, ev),

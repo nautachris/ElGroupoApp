@@ -57,9 +57,9 @@
             {
             <div style="display:table;" class="width-100">
 
-                <div style="display:table-cell; vertical-align:middle; text-transform:uppercase; font-size:16px; text-align:left; padding-left:10%;" class="span-4-of-8">
-                    <a asp-controller="Account" style="vertical-align:middle;" asp-action="Edit">@Model.ActiveUser.Name</a>
-                    <span style="font-family: 'bebas_neuebold';color:black; font-size:2.5em; vertical-align:middle; padding-left:100px;">Footprint</span>
+                <div style="display:table-cell; vertical-align:middle; text-transform:uppercase; font-size:16px; text-align:left; padding-left:2%;" class="span-2-of-8">
+
+                    <span style="font-family: 'bebas_neuebold';color:black; font-size:2.5em; vertical-align:middle;">Footprint</span>
                     @if (Model.IsAdmin)
                     {
                         <span style="margin-left:5px; font-weight:bold;">Admin</span>
@@ -67,27 +67,44 @@
                 </div>
 
 
-                <div style="display:table-cell; vertical-align:middle; text-transform:uppercase; font-size:16px; text-align:right; padding-right:10%;" class="span-4-of-8">
-                    <span style="display:inline-block; text-align:center;" class="span-1-of-4">
+                <div style="display:table-cell; vertical-align:middle; text-transform:uppercase; font-size:16px; text-align:center; padding-right:2%;" class="span-3-of-8">
+                    <div style="display:inline-block; text-align:center;" class="span-1-of-4">
                         <a asp-controller="Events" asp-action="Create">Create New</a>
-                    </span>
-                    <span style="display:inline-block; text-align:center;" class="span-1-of-4">
+                    </div>
+                    <div style="display:inline-block; text-align:center;" class="span-1-of-4">
                         <a asp-controller="Account" asp-action="Edit">My Connections</a>
-                    </span>
-                    <span style="display:inline-block; text-align:center;" class="span-1-of-4">
+                    </div>
+                    <div style="display:inline-block; text-align:center;" class="span-1-of-4">
                         <a asp-controller="Home" asp-action="Dashboard">My Events</a>
-                    </span>
-                    <span style="display:inline-block; text-align: center;" class="span-1-of-4">
+                    </div>
+                    <div style="text-align:center;" class="span-1-of-4 menu-dropdown">
+                        <div class="menu-dropdown-button">@Model.ActiveUser.Name</div>
+                        <div class="menu-dropdown-content">
+                            <div style="width:100%; text-align:center;">
+                                <a asp-controller="Account" asp-action="Edit">Account Details</a>
+                            </div>
+                            <div style="width:100%; text-align:center;">
+                                <a asp-controller="Account" asp-action="Edit">My Attendance</a>
+                            </div>
+                            <div style="width:100%; text-align:center;">
+                                <a asp-controller="Account" asp-action="Logout">Sign Out</a>
+                            </div>
+
+                        </div>
+                        
+                    </div>
+                    
+                    @*<div style="display:inline-block; text-align: center;" class="span-1-of-5">
                         <a asp-controller="Account" asp-action="Logout">Sign Out</a>
-                    </span>
+                    </div>*@
 
                 </div>
 
 
             </div>
             @*<div class=" col span-1-of-8">
-                <span style="font-size:30px;cursor:pointer; float:right;" onclick="openNav()">&#9776;</span>
-            </div>*@
+                    <span style="font-size:30px;cursor:pointer; float:right;" onclick="openNav()">&#9776;</span>
+                </div>*@
             <div class="row width-100" style="display:table;">
                 <div id="mySidenav" class="sidenav">
 
@@ -109,7 +126,7 @@
         }
         else
         {
-            <div style="display:table; padding-left:10%; padding-right:10%;" class="width-100" >
+            <div style="display:table; padding-left:10%; padding-right:10%;" class="width-100">
                 <span style="display:table-cell; vertical-align:middle; font-family: 'bebas_neuebold';color:black; font-size:29px; letter-spacing:6.3px; line-height:1.28;">Footprint</span>
                 <div style="display:table-cell; vertical-align:middle; text-align:right; text-transform:uppercase;">
                     <span style="padding-right:100px;">
@@ -118,9 +135,9 @@
                     <span>
                         <a asp-action="About" asp-controller="Account">About</a>
                     </span>
-                    
+
                 </div>
-              
+
             </div>
             <hr />
         }
