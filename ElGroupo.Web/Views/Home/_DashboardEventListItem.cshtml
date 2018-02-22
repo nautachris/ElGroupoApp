@@ -1,0 +1,156 @@
+﻿@using ElGroupo.Web.Models.Events
+@model EventInformationModel
+@{
+    Layout = null;
+}
+@functions{
+    private string GetCheckInUrl(long eid)
+    {
+
+        var url = Url.Action("CheckIn", "Events", new { eid = eid });
+        return url;
+
+    }
+    private string GetEventViewUrl(long eid)
+    {
+
+        var url = Url.Action("View", "Events", new { eid = eid });
+        return url;
+
+    }
+
+    private string GetEventRowClass(bool isNew)
+    {
+        return isNew ? "unviewed-event dashboard-event-item" : "viewed-event dashboard-event-item";
+
+    }
+
+    private string GetDateRowText(EventInformationModel model)
+    {
+        string str = null;
+        if (model.IsRecurring) str = model.DateText + " | recurring";
+        else str = model.DateText;
+        if (model.RSVPRequested) str += "*";
+        return str;
+
+    }
+}
+
+
+<div style="display:flex; flex-direction:column; flex:6;">
+    <span id="spanEventName" style="font-weight:bold; font-size:16px; ">@Model.Name</span>
+    @*<a href="@GetEventViewUrl(e.Id)">@e.Name</a>*@
+
+    @if (!Model.OrganizedByUser)
+    {
+        <span>@Model.OrganizerName</span>
+    }
+    <span>@GetDateRowText(Model)</span>
+    @*if the event does not require a rsvp, say "rsvp not required"*@
+    @if (Model.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.AvailableForCheckIn && Model.RSVPStatus != ElGroupo.Domain.Enums.RSVPTypes.None)
+    {
+        <div>
+            <a class="checkin-link" href="@GetCheckInUrl(Model.Id)" style="background-color:red; color:white; padding-left:10px; padding-right:10px; display:inline-block; border-radius:10px;">Check In Now!</a>
+        </div>
+
+
+    }
+    else if (Model.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.CheckInSuccessful)
+    {
+        <div style="display:table;font-size:14px;">
+            <div style="width:20px; border-radius:100%; background-color:green; display:table-cell; vertical-align:middle;"></div>
+            <div style="margin-left:10px; vertical-align:middle;">Checked In</div>
+        </div>
+
+    }
+    else if (Model.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.CheckInExpired)
+    {
+        <div style="display:table;font-size:14px;">
+            @*<div style="width:20px; border-radius:100%; background-color:gray; display:table-cell; vertical-align:middle;"></div>*@
+            <div style="width:20px; display:table-cell; height:20px;"><img src="~/content/images/dot-no.png" style="transform:scale(3,3); max-height:100%; max-width:100%;" /></div>
+            <div style="margin-left:10px; vertical-align:middle; font-size:14px; letter-spacing:normal;">Event has expired!</div>
+        </div>
+
+    }
+    else if (Model.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.None)
+    {
+        if (!Model.IsNew)
+        {
+            <div style="display:table;font-size:14px;">
+                @*<div style="width:20px; border-radius:100%; background-color:gray; display:table-cell; vertical-align:middle;"></div>*@
+                <div style="width:20px; display:table-cell; height:20px;"><img src="~/content/images/dot-unknown.png" style="transform:scale(3,3); max-height:100%; max-width:100%;" /></div>
+                <div style="margin-left:10px; vertical-align:middle; font-size:14px; letter-spacing:normal;">Response Pending</div>
+            </div>
+            <div style="font-size:14px;">
+                RSVP Now<a class="quick-response" data-response-type="yes">Yes</a><a class="quick-response" data-response-type="maybe">Maybe</a><a class="quick-response" data-response-type="no">No</a>
+
+
+            </div>
+        }
+        else
+        {
+            <div style="display:table;font-size:14px;">
+                @*<div style="width:20px; border-radius:100%; background-color:gray; display:table-cell; vertical-align:middle;"></div>*@
+                <div style="width:20px; display:table-cell; height:20px;"><img src="~/content/images/dot-new.png" style="transform:scale(3,3); max-height:100%; max-width:100%;" /></div>
+                <div style="margin-left:10px; vertical-align:middle; font-size:14px; letter-spacing:normal;">NEW</div>
+            </div>
+
+        }
+
+
+
+
+    }
+    else if (Model.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
+    {
+        <div style="display:table; font-size:14px;">
+            <div style="width:20px; display:table-cell; height:20px;"><img src="~/content/images/dot-maybe.png" style="transform:scale(3,3); max-height:100%; max-width:100%;" /></div>
+            <div style="margin-left:10px; vertical-align:middle; letter-spacing:normal;">I might go</div>
+        </div>
+
+    }
+    else if (Model.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
+    {
+        <div style="display:table;font-size:14px;">          
+            <div style="width:20px; display:table-cell; height:20px;"><img src="~/content/images/dot-no.png" style="transform:scale(3,3); max-height:100%; max-width:100%;" /></div>
+            <div style="margin-left:10px; vertical-align:middle; letter-spacing:normal;">Can't make it!</div>
+        </div>
+
+    }
+    else if (Model.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.Yes)
+    {
+        <div style="display:table;font-size:14px;">
+            <div style="width:20px; display:table-cell; height:20px;"><img src="~/content/images/dot-yes.png" style="transform:scale(3,3); max-height:100%; max-width:100%;" /></div>
+            <div style="margin-left:10px; vertical-align:middle; letter-spacing:normal;">I'm in!</div>
+        </div>
+
+    }
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div style="height:25px; display:flex; flex:1; align-self:center;"><img src="~/content/images/open-event.png" style="max-height:100%; max-width:100%" /></div>
+
+@*@if (Model.IsNew)
+    {
+        <div style="display:flex; flex:1; flex-direction:column; align-self:center; margin-right:30px; font-size:16px; font-weight:bold; background:darkgreen; padding:5px; border-radius:10px; color:white;">New</div>
+        <div style="display:flex; flex:1; flex-direction:column; align-self:center;"></div>
+
+    }
+    else
+    {
+        <div style="display:flex; flex-direction:column; align-self:center; margin-right:30px; font-size:20px; font-weight:bold;">></div>
+
+    }*@
+

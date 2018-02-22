@@ -32,7 +32,7 @@
 
     }
 
-    <div class="row page-nav" style="width:100%;">
+    <div class="row page-nav" style="width:100%; margin-top:52px; margin-bottom:5px;">
 
         <div class="col span-1-of-4">
             <a class="links bold" data-link-type="future-events" href="#">Upcoming (@Model.FutureEvents.Count.ToString())</a>
@@ -73,8 +73,8 @@
         else
         {
             <div class="col width-100" style="text-align:center;">
-                <h3>You have no upcoming events.  Click "Create New" to start one of your own!</h3>
-                <a asp-controller="Events" asp-action="Create" class="btn btn-primary">Create New!</a>
+                <h4>You have no upcoming events.  Click "Create New" to start one of your own!</h4>
+                <a asp-controller="Events" asp-action="Create" class="btn btn-primary" style="margin-top:20%;">Create New!</a>
             </div>
             
         }
@@ -90,7 +90,7 @@
         else
         {
             <div class="col width-100" style="text-align:center;">
-                <h3>You have no past events</h3>
+                <h4>You have no past events</h4>
             </div>
 
         }
@@ -106,7 +106,7 @@
         else
         {
             <div class="col width-100" style="text-align:center;">
-                <h3>You are not the organizer of any events</h3>
+                <h4>You are not the organizer of any events</h4>
             </div>
 
         }
@@ -122,7 +122,7 @@
         else
         {
             <div class="col width-100" style="text-align:center;">
-                <h3>You have no draft events</h3>
+                <h4>You have no draft events</h4>
             </div>
 
         }

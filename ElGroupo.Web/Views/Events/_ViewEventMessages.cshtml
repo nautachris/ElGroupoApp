@@ -1,5 +1,5 @@
 ﻿@using ElGroupo.Web.Models.Messages
-@model IEnumerable<EventMessageModel>
+@model EventMessageContainerModel
 
 @functions{
 
@@ -14,47 +14,89 @@
     Layout = null;
 }
 
-@if (Model.Any())
+@if (Model.Topics.Any())
 {
-    foreach (var message in Model)
+    foreach (var topic in Model.Topics)
     {
-        <div class="row">
-            <div class="col span-1-of-3" style="text-align:center;">
-                <img class="image-circle-100" style="background-image:url('@GetImageUrl(message.PostedById)')" />
-                <span style="font-weight:bold; text-transform:uppercase;">@message.PostedBy</span>
-            </div>
-            <div class="col span-2-of-3">
-                @if (message.IsNew)
-                {
-                    <div class="unread-message-subject" data-message-id="@message.Id">
-                        <span class="width-100 inline-block">@message.PostedDate.ToString("d") &nbsp; @message.PostedDate.ToString("t")</span>
-                        <span class="width-100 inline-block">@message.Subject</span>
-                    </div>
-                    <span class="message-container" data-message-id="@message.Id">@message.MessageText</span>
+        <div class="row topic-container" data-topic-id="@topic.Id">
+            <div class="row topic-header" style="cursor:pointer;">
+                <div class="col span-1-of-2">
 
-                }
-                else
+                    @if (topic.Messages.Any(x => x.IsNew))
+                    {
+                        <div class="width-100 bold" style="float:left;">@topic.Subject &nbsp; (@topic.Messages.Count(x=>x.IsNew) New)</div>
+
+                    }
+                    else
+                    {
+                        <div class="width-100 bold" style="float:left;">@topic.Subject</div>
+
+                    }
+                    <div class="width-100">Posted By: @topic.StartedBy on @topic.Messages.First().PostedDate.ToString("d") &nbsp; @topic.Messages.First().PostedDate.ToString("t")</div>
+                </div>
+                <div class="col span-1-of-2" style="text-align:right">@topic.Messages.Count.ToString() Replies</div>
+            </div>
+
+            <div class="topic-messages-container" style="display:none;">
+
+
+                @foreach (var msg in topic.Messages)
                 {
-                    <span class="width-100 inline-block">@message.PostedDate.ToString("d") &nbsp; @message.PostedDate.ToString("t")</span>
-                    <span class="width-100 inline-block">@message.Subject</span>
-                    <span>@message.MessageText</span>
-                }
-                @if (message.CanEdit)
-                {
-                    <a style="float:right;" class="btn btn-primary delete-message" data-message-id="@message.Id">Delete</a>
-                    @*<div class="row">
-                        <div class="col span-3-of-3">
-                            
+                    <div class="row width-100">
+                        <div class="col span-1-of-3" style="text-align:center;">
+                            <img class="image-circle-100" style="background-image:url('@GetImageUrl(msg.PostedById)')" />
+                            <span style="font-weight:bold; text-transform:uppercase;">@msg.PostedBy</span>
                         </div>
-                    </div>*@
+                        <div class="col span-2-of-3">
+                            @if (msg.IsNew)
+                            {
+                                <div class="unread-message-subject" data-message-id="@msg.Id">
+                                    <span class="width-100 inline-block">@msg.PostedDate.ToString("d") &nbsp; @msg.PostedDate.ToString("t")</span>
+                                </div>
+                                <span class="message-container" data-message-id="@msg.Id">@msg.MessageText</span>
 
+                            }
+                            else
+                            {
+                                <span class="width-100 inline-block">@msg.PostedDate.ToString("d") &nbsp; @msg.PostedDate.ToString("t")</span>
+                                <span>@msg.MessageText</span>
+                            }
+                            @if (msg.CanEdit)
+                            {
+                                <a style="float:right;" class="btn btn-primary delete-message" data-message-id="@msg.Id">Delete</a>
+                            }
+                        </div>
+                    </div>
                 }
+                <div class="width-100 centered">
+                    <a class="btn btn-primary topic-reply-show" data-topic-id="@topic.Id">Reply</a>
+                    <div class="row width-100 topic-reply" data-topic-id="@topic.Id" style="display:none;">
+                        <div class="row">
+                            <label>Message:</label>
+                        </div>
+                        <div class="row">
+                            <textarea spellcheck="true" style="height:200px; width:60%"></textarea>
+                        </div>
+                        <div class="row" style="width:60%;">
+                            <div class="col span-1-of-2">
+                                <a class="btn btn-ghost topic-reply-cancel">Cancel</a>
+                            </div>
+                            <div class="col span-1-of-2">
+                                <a class="btn btn-primary topic-reply-post">Post Reply</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+
         </div>
+
     }
 
 }
-else { 
+else
+{
     <h2>You have no messages...</h2>
 
 }

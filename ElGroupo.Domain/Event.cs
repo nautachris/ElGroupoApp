@@ -96,7 +96,7 @@ namespace ElGroupo.Domain
         [MaxLength(10)]
         public string VerificationCode { get; set; }
 
-        public bool MustRSVP { get; set; }
+        //public bool MustRSVP { get; set; }
         public string LocationName { get; set; }
 
         [MaxLength(50)]
@@ -129,7 +129,7 @@ namespace ElGroupo.Domain
         public long? RecurrenceId { get; set; }
 
         public virtual ICollection<EventAttendee> Attendees { get; set; }
-        public virtual ICollection<MessageBoardItem> MessageBoardItems { get; set; }
+        public virtual ICollection<MessageBoardTopic> MessageBoardTopics { get; set; }
 
         public virtual ICollection<EventNotification> Notifications { get; set; }
 

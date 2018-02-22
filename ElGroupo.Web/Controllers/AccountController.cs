@@ -46,6 +46,14 @@ namespace ElGroupo.Web.Controllers
             _userManager = userMgr;
         }
 
+
+        [AllowAnonymous]
+        [HttpGet("GoogleConfig")]
+        public IActionResult GoogleConfig()
+        {
+            return Json(new { config = googleOptions });
+        }
+
         [AllowAnonymous]
         [HttpGet("About")]
         public IActionResult About()

@@ -188,6 +188,31 @@ namespace ElGroupo.Web.Controllers
 
 
         }
+        //Dictionary<string, string> args
+        [HttpPost]
+        [Authorize]
+        [Route("UpdateRSVPStatusFromDashboard")]
+        public async Task<IActionResult> UpdateRSVPStatusFromDashboard([FromBody]UpdateRSVPStatusModel model)
+        {
+            //var model = new UpdateRSVPStatusModel
+            //{
+            //    EventId = Convert.ToInt64(args["eventId"]),
+            //    Status = (RSVPTypes)Enum.Parse(typeof(RSVPTypes), args["status"])
+            //};
+            var user = await CurrentUser();
+            var response = await this.eventService.UpdateRSVP(user, model);
+            if (response.Success)
+            {
+                var responseModel = await this.eventService.GetDashboardEventItem(model.EventId, user.Id);
+                return View("../Home/_DashboardEventListItem", responseModel);
+            }
+            else
+            {
+                return BadRequest(new { error = response.ErrorMessage });
+            }
+
+
+        }
 
         [HttpPost]
         [Authorize]
@@ -508,7 +533,28 @@ namespace ElGroupo.Web.Controllers
 
 
 
-
+                /// <summary>
+        /// view new wants messages as an entire new page
+        /// </summary>
+        /// <param name="eid"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        [HttpPost]
+        [Route("{eid}/Messages", Name ="ViewMessages")]
+        public async Task<IActionResult> ViewMessages([FromRoute]long eid)
+        {
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
+            var user = await CurrentUser();
+            var model = new EventMessagePageModel();
+            model.EventId = eid;
+            model.Messages = await this.eventService.GetEventMessages(eid, user, accessLevel.accessType == EditAccessTypes.Edit);
+            var e = await this.eventService.GetEvent(eid);
+            model.EventName = e.Name;
+            model.Description = e.Description;
+            model.Organizers = e.Attendees.Where(x => x.IsOrganizer).Select(x => new EventOrganizerModel { Id = x.User.Id, Name = x.User.Name }).ToList();
+            return View("Messages", model);
+        }
 
 
 

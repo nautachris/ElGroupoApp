@@ -19,11 +19,11 @@
         display: none;
     }*/
 </style>
-
+<h3 style="padding-left:2%;">Create New Event</h3>
 <section class="section-form">
     @*<div class="row">
-        <h2>Create a new event</h2>
-    </div>*@
+            <h2>Create a new event</h2>
+        </div>*@
     <div class="row">
         <div asp-validation-summary="All" class="text-danger"></div>
         <form id="frmCreateEvent" asp-controller="Events" asp-action="Create" method="post" class="contact-form">
@@ -31,7 +31,7 @@
             <h4 id="create-step-title">Name &amp; Description</h4>
             <h5 id="create-step-description" style="text-align:center; font-family:'Source Sans Pro'">Give your even a name and brief description of what it's about</h5>
             @*start 1*@
-            <div data-create-step="1">
+            <div data-create-step="1" style="margin-top:40px;">
 
 
                 <div class="row">
@@ -45,17 +45,18 @@
             </div>
             @*end 1
                 start 2*@
-            <div data-create-step="2" style="display:none;">
+            <div data-create-step="2" style="display:none;margin-top:40px;">
 
 
 
 
 
                 <div class="row centered">
-                    <label>Start Time</label>
+                    <label>Event Time</label>
                 </div>
                 <div class="row centered">
-                    <div class="col span-3-of-6">
+                    <div class="col span-1-of-6"><label>Start:</label></div>
+                    <div class="col span-2-of-6">
                         <input asp-for="StartDate" type="text" class="width-100" placeholder="Enter Event Start Date...">
                     </div>
                     <div class="col span-1-of-6">
@@ -93,38 +94,36 @@
                     </div>
                 </div>
                 <div class="row centered">
-                    <label>End Time</label>
-                </div>
-                <div class="row centered">
-                    <div class="col span-3-of-6">
+                    <div class="col span-1-of-6"><label>End:</label></div>
+                    <div class="col span-2-of-6">
                         <input asp-for="EndDate" type="text" class="width-100" placeholder="Enter Event End Date...">
                     </div>
                     <div class="col span-1-of-6">
                         <select asp-for="EndHour">
                             <option value="12" selected>12</option>
                             @for (int hour = 1; hour <= 11; hour++)
-                            {
-                                <option value="@hour">@hour.ToString() </option>
-                            }
+            {
+                <option value="@hour">@hour.ToString() </option>
+}
                         </select>
                     </div>
                     <div class="col span-1-of-6">
                         <select asp-for="EndMinute">
                             @for (var min = 0; min < 60; min++)
-                            {
-                                @if (min < 10)
-                                {
-                                    <option value="@min">@("0" + min.ToString())</option>
+            {
+                @if (min < 10)
+{
+                <option value="@min">@("0" + min.ToString())</option>
 
-                                }
-                                else
-                                {
-                                    <option value="@min">@min.ToString()</option>
+}
+else
+{
+                <option value="@min">@min.ToString()</option>
 
-                                }
+}
 
 
-                            }
+}
                         </select>
                     </div>
                     <div class="col span-1-of-6">
@@ -134,9 +133,11 @@
                         </select>
                     </div>
                 </div>
+                <div class="row" style="margin-top:10px;">
+                    <div class="width-100" style="width:88%; height:1px; background-color:#eee"></div>
+                </div>
 
-
-                <div class="row">
+                <div class="row" style="margin-top:40px;">
                     <label>Event is Recurring?</label>
                 </div>
                 <div data-replace-element="IsRecurring" class="radio-list row is-recurring">
@@ -151,30 +152,23 @@
                     </div>
                 </div>
 
-                <div id="divRecurrence" style="display:none">
-                    @Html.Partial("_EditEventRecurrence", Model)
-                </div>
+                
 
 
-                <div class="row">
-                    <label>RSVP Required?</label>
-                </div>
-                <div class="row">
 
-                    <div class="col span-1-of-2">
-                        <input id="idRSVPYes" type="radio" asp-for="RSVPRequired" value="true" />
-                        <label for="idRSVPYes">Yes</label>
-                    </div>
-                    <div class="col span-1-of-2">
-                        <input id="idRSVPNo" type="radio" asp-for="RSVPRequired" value="false" checked />
-                        <label for="idRSVPNo">No</label>
-                    </div>
-                </div>
 
             </div>
             @*end 2
                 start 3*@
-            <div data-create-step="3" style="display:none;">
+
+
+            <div data-create-step="3" style="display:none;margin-top:40px">
+                <div id="divRecurrence">
+                    @Html.Partial("_EditEventRecurrence", Model)
+                </div>
+            </div>
+
+            <div data-create-step="4" style="display:none;margin-top:40px;">
 
                 <div class="row">
                     <label asp-for="LocationName">Location Description:</label>
@@ -281,7 +275,7 @@
             </div>
             @*end 3
                 start 4*@
-            <div data-create-step="4" style="display:none;">
+            <div data-create-step="5" style="display:none;margin-top:40px;">
 
 
                 @*<div class="row">
@@ -379,8 +373,8 @@
 
             <div class="row" id="divMoveSteps">
                 <div class="col span-3-of-3 centered">
-                    <a class="btn btn-primary" style="padding-left:15px; padding-right:15px; display:none;" id="btnPreviousStep"><< Back</a>
-                    <a class="btn btn-primary" style="padding-left:15px; padding-right:15px;" id="btnNextStep">Next >></a>
+                    <a class="btn btn-primary" style="padding-left:15px; padding-right:15px; display:none; margin-right:15px;" id="btnPreviousStep"><< Back</a>
+                    <a class="btn btn-primary" style="margin-left:15px; padding-left:15px; padding-right:15px;" id="btnNextStep">Next >></a>
                 </div>
             </div>
         </form>

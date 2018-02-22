@@ -32,6 +32,7 @@ namespace ElGroupo.Web.Controllers
         private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
         {
             if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessful;
+            if (e.EndTime < DateTime.Now.ToUniversalTime()) return CheckInStatuses.CheckInExpired;
             if (e.StartTime.AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now.ToUniversalTime()) return CheckInStatuses.AvailableForCheckIn;
             return CheckInStatuses.NotAvailableForCheckIn;
         }
@@ -64,6 +65,7 @@ namespace ElGroupo.Web.Controllers
                     CheckInStatus = GetCheckInStatus(ev.ev, ev.ea),
                     OrganizedByUser = true,
                     IsNew = false,
+                    RSVPStatus = ev.ea.ResponseStatus,
                     Name = ev.ev.Name,
                     Status = ev.ev.Status,
                     IsRecurring = ev.rec != null

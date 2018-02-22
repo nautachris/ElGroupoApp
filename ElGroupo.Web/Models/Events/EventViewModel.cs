@@ -38,7 +38,7 @@ namespace ElGroupo.Web.Models.Events
 
 
         public EventNotificationModelContainer Notifications { get; set; }
-        public List<EventMessageModel> Messages { get; set; }
+        public EventMessageContainerModel Messages { get; set; }
 
 
 

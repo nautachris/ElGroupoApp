@@ -129,7 +129,8 @@ namespace ElGroupo.Web.Services
             {
                 model.Attendees.Add(new EventAttendeeModel
                 {
-                    Name = att.User.Name,
+                    FirstName = att.User.FirstName,
+                    LastName = att.User.LastName,
                     Id = att.Id,
                     RSVPStatus = att.ResponseStatus,
                     UserId = att.User.Id,
@@ -151,7 +152,7 @@ namespace ElGroupo.Web.Services
                 var toDelete = await _dbContext.Events.
                     Include(x => x.Recurrence).
                     Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).
-                    Include(x => x.MessageBoardItems).
+                    Include(x => x.MessageBoardTopics).ThenInclude(x => x.Messages).
                     Include(x => x.Notifications).
                     Include(x => x.UnregisteredAttendees).Where(x => allids.Contains(x.Id)).ToListAsync();
                 foreach (var del in toDelete) _dbContext.Remove(del);
@@ -174,7 +175,7 @@ namespace ElGroupo.Web.Services
             var toDelete = _dbContext.Events.
                     Include(x => x.Recurrence).
                     Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).
-                    Include(x => x.MessageBoardItems).
+                    Include(x => x.MessageBoardTopics).
                     Include(x => x.Notifications).
                     Include(x => x.UnregisteredAttendees).FirstOrDefault(x => x.Id == eventId);
             if (toDelete == null) return SaveDataResponse.FromErrorMessage("Event Id " + eventId + " not found");
@@ -293,7 +294,7 @@ namespace ElGroupo.Web.Services
 
         public async Task<Event> GetEvent(long id)
         {
-            return await _dbContext.Events.FirstOrDefaultAsync(x => x.Id == id);
+            return await _dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         private async Task AddEventAttendee(Event e, PendingEventAttendeeModel model)
@@ -509,7 +510,7 @@ namespace ElGroupo.Web.Services
                 if (model.LocationTolerance.HasValue) e.CheckInLocationTolerance = model.LocationTolerance.Value;
                 e.VerificationCode = model.VerificationCode;
                 e.VerificationMethod = model.AttendanceVerificationMethod;
-                e.MustRSVP = model.RSVPRequired;
+                //e.MustRSVP = model.RSVPRequired;
                 e.Zip = model.ZipCode;
 
 
@@ -1133,7 +1134,7 @@ namespace ElGroupo.Web.Services
                     if (model.LocationTolerance.HasValue) e.CheckInLocationTolerance = model.LocationTolerance.Value;
                     e.VerificationCode = model.VerificationCode;
                     e.VerificationMethod = model.AttendanceVerificationMethod;
-                    e.MustRSVP = model.RSVPRequired;
+                    //e.MustRSVP = model.RSVPRequired;
                     e.Zip = model.ZipCode;
 
                     e.StartTime = eventDate.start;
@@ -1219,14 +1220,14 @@ namespace ElGroupo.Web.Services
         public async Task<EditEventDateModel> EditEventDates(long eventId, long userId)
         {
             var u = await _dbContext.Users.FirstAsync(x => x.Id == userId);
-            var e = await _dbContext.Events.Include(x=>x.Recurrence).ThenInclude(x=>x.Events).FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == eventId);
             var model = new EditEventDateModel(e, u.TimeZoneId);
             return model;
         }
-                public async Task<ViewEventDatesModel> ViewEventDates(long eventId, long userId)
+        public async Task<ViewEventDatesModel> ViewEventDates(long eventId, long userId)
         {
             var u = await _dbContext.Users.FirstAsync(x => x.Id == userId);
-            var e = await _dbContext.Events.Include(x=>x.Recurrence).ThenInclude(x=>x.Events).FirstOrDefaultAsync(x => x.Id == eventId);
+            var e = await _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == eventId);
             var model = new ViewEventDatesModel(e, u.TimeZoneId);
             return model;
         }
@@ -1244,7 +1245,7 @@ namespace ElGroupo.Web.Services
             if (e.Name != model.Name) changes.Add("Name");
             if (model.AttendanceVerificationMethod != e.VerificationMethod) changes.Add("Verification Method");
             if (model.Description != e.Description) changes.Add("Description");
-            if (model.RSVPRequired != e.MustRSVP) changes.Add("RSVP Required");
+            //if (model.RSVPRequired != e.MustRSVP) changes.Add("RSVP Required");
 
             int startHour, endHour;
             if (model.StartHour == 12) startHour = model.StartAMPM == Models.Enums.AMPM.AM ? 0 : 12;
@@ -1409,7 +1410,7 @@ namespace ElGroupo.Web.Services
                 e.Description = model.Description;
                 e.StartTime = model.GetEventStartTimeUTC(user.TimeZoneId);
                 e.EndTime = model.GetEventEndTimeUTC(user.TimeZoneId);
-                e.MustRSVP = model.RSVPRequired;
+                //e.MustRSVP = model.RSVPRequired;
                 e.CheckInLocationTolerance = model.LocationTolerance;
                 e.VerificationMethod = model.AttendanceVerificationMethod;
                 e.VerificationCode = model.VerificationCode;
@@ -1509,32 +1510,91 @@ namespace ElGroupo.Web.Services
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             return model;
         }
-        public async Task<List<EventMessageModel>> GetEventMessages(long eventId, long userId)
+        public async Task<EventMessageContainerModel> GetEventMessages(long eventId, long userId)
         {
             //        var e = await _dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).
             //Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).ThenInclude(x => x.PostedBy).
             //FirstOrDefaultAsync(x => x.Id == eventId);
-            var ea = await _dbContext.EventAttendees.Include(x => x.User).Include(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
+            var ea = await _dbContext.EventAttendees.FirstOrDefaultAsync(x => x.Event.Id == eventId && x.User.Id == userId);
 
             if (ea == null) return null;
-            var model = new List<EventMessageModel>();
-
-            foreach (var mba in ea.MessageBoardItems)
+            var model = new EventMessageContainerModel();
+            var topics = await _dbContext.MessageBoardTopics.Include(x => x.StartedBy).Include(x => x.Messages).ThenInclude(x => x.Attendees).Where(x => x.Event.Id == eventId).ToListAsync();
+            foreach (var topic in topics)
             {
-                var localPostedDate = mba.MessageBoardItem.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(ea.User.TimeZoneId));
-                model.Add(new EventMessageModel
+
+                var topicModel = new EventMessageBoardTopicModel { Subject = topic.Subject, StartedBy = topic.StartedBy.Name, Id = topic.Id };
+                foreach (var msg in topic.Messages)
                 {
-                    PostedBy = mba.MessageBoardItem.PostedBy.Name,
-                    PostedById = mba.MessageBoardItem.PostedBy.Id,
-                    PostedDate = localPostedDate,
-                    DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
-                    Subject = mba.MessageBoardItem.Subject,
-                    MessageText = mba.MessageBoardItem.MessageText,
-                    CanEdit = mba.MessageBoardItem.PostedBy.Id == userId,
-                    IsNew = !mba.Viewed,
-                    Id = mba.Id
-                });
+                    var localPostedDate = msg.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(ea.User.TimeZoneId));
+                    topicModel.Messages.Add(new EventMessageModel
+                    {
+                        MessageText = msg.MessageText,
+                        CanEdit = msg.PostedBy.Id == userId,
+                        PostedBy = msg.PostedBy.Name,
+                        PostedById = msg.PostedBy.Id,
+                        DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
+                        IsNew = msg.Attendees.Any(x => x.Attendee.Id == ea.Id && !x.Viewed)
+                    });
+                }
+
+
+                model.Topics.Add(topicModel);
             }
+            //foreach (var mba in ea.Messa.GroupBy(x=>x,)
+            //{
+
+            //    var localPostedDate = mba.MessageBoardItem.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(ea.User.TimeZoneId));
+            //    model.Add(new EventMessageContainerModel
+            //    {
+            //        PostedBy = mba.MessageBoardItem.PostedBy.Name,
+            //        PostedById = mba.MessageBoardItem.PostedBy.Id,
+            //        PostedDate = localPostedDate,
+            //        DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
+            //        Subject = mba.MessageBoardItem.Topic.Subject,
+            //        MessageText = mba.MessageBoardItem.MessageText,
+            //        CanEdit = mba.MessageBoardItem.PostedBy.Id == userId,
+            //        IsNew = !mba.Viewed,
+            //        Id = mba.Id
+            //    });
+            //}
+            return model;
+        }
+
+
+        public async Task<EventMessageContainerModel> GetEventMessages(long eventId, User user, bool canEdit)
+        {
+            
+            var attendee = await _dbContext.EventAttendees.FirstOrDefaultAsync(x => x.EventId == eventId && x.User.Id == user.Id);
+
+            var model = new EventMessageContainerModel();
+            
+            foreach (var topic in _dbContext.MessageBoardTopics.Include(x => x.StartedBy).Include(x => x.Messages).ThenInclude(x=>x.PostedBy).Include(x => x.Messages).ThenInclude(x => x.Attendees).ThenInclude(x => x.Attendee).Where(x => x.Event.Id == eventId).OrderByDescending(x => x.StartedDate))
+            {
+                var topicModel = new EventMessageBoardTopicModel
+                {
+                    Subject = topic.Subject,
+                    StartedBy = topic.StartedBy.Name,
+                    Id = topic.Id
+                };
+                foreach (var msg in topic.Messages)
+                {
+                    var localPostedDate = msg.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(attendee.User.TimeZoneId));
+                    topicModel.Messages.Add(new EventMessageModel
+                    {
+                        MessageText = msg.MessageText,
+                        CanEdit = canEdit? true : msg.PostedBy.Id == user.Id,
+                        PostedBy = msg.PostedBy.Name,
+                        PostedById = msg.PostedBy.Id,
+                        Id = msg.Attendees.First(x => x.Attendee.Id == attendee.Id).Id,
+                        DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
+                        PostedDate = localPostedDate,
+                        IsNew = msg.Attendees.Any(x => x.Attendee.Id == attendee.Id && !x.Viewed)
+                    });
+                }
+                model.Topics.Add(topicModel);
+            }
+
             return model;
         }
         public async Task<EventViewModel> GetEventViewModel(long eventId, long userId, EditAccessTypes accessLevel)
@@ -1543,8 +1603,7 @@ namespace ElGroupo.Web.Services
             var user = this.GetActiveUser(userId);
 
             var e = await _dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).
-                Include(x => x.Attendees).ThenInclude(x => x.MessageBoardItems).ThenInclude(x => x.MessageBoardItem).ThenInclude(x => x.PostedBy).
-                FirstOrDefaultAsync(x => x.Id == eventId);
+                Include(x => x.Attendees).FirstOrDefaultAsync(x => x.Id == eventId);
             var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == userId);
             if (thisAttendee.Viewed == false)
             {
@@ -1557,20 +1616,21 @@ namespace ElGroupo.Web.Services
             model.GoogleApiKey = this.googleOptions.GoogleMapsApiKey;
 
             if (thisAttendee.CheckedIn) model.CheckInStatus = CheckInStatuses.CheckInSuccessful;
-            else if (e.MustRSVP && e.StartTime.AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.UtcNow) model.CheckInStatus = CheckInStatuses.AvailableForCheckIn;
+            else if (e.StartTime.AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.UtcNow) model.CheckInStatus = CheckInStatuses.AvailableForCheckIn;
             else model.CheckInStatus = CheckInStatuses.NotAvailableForCheckIn;
 
             model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             model.Attendees = new ViewEventAttendeesModel();
-            foreach (var att in e.Attendees.Where(x => x.User.Id != userId).OrderBy(x => x.User.Name))
+            foreach (var att in e.Attendees.Where(x => x.User.Id != userId).OrderBy(x => x.IsOrganizer).ThenBy(x => x.User.Name))
             {
                 model.Attendees.Attendees.Add(new EventAttendeeModel
                 {
                     Id = att.Id,
                     UserId = att.User.Id,
                     RSVPStatus = att.ResponseStatus,
-                    Name = att.User.Name,
+                    FirstName = att.User.FirstName,
+                    LastName = att.User.LastName,
                     IsOrganizer = att.IsOrganizer
                 });
             }
@@ -1579,25 +1639,36 @@ namespace ElGroupo.Web.Services
             model.Organizers = e.Attendees.Where(x => x.IsOrganizer).Select(y => new EventOrganizerModel { Name = y.User.Name, Id = y.User.Id }).ToList();
             //model.OrganizerName = e.Attendees.First(x => x.IsOrganizer).User.Name;
 
-            model.Messages = new List<EventMessageModel>();
+            model.Messages = new EventMessageContainerModel();
 
-            foreach (var mba in thisAttendee.MessageBoardItems)
+            foreach (var topic in _dbContext.MessageBoardTopics.Include(x => x.Messages).ThenInclude(x => x.Attendees).ThenInclude(x => x.Attendee).Where(x => x.Event.Id == eventId).OrderBy(x => x.StartedDate))
             {
-                var localPostedDate = mba.MessageBoardItem.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId));
-                model.Messages.Add(new EventMessageModel
+                var topicModel = new EventMessageBoardTopicModel
                 {
-                    PostedBy = mba.MessageBoardItem.PostedBy.FirstName,
-                    PostedById = mba.MessageBoardItem.PostedBy.Id,
-                    PostedDate = localPostedDate,
-                    DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
-                    Subject = mba.MessageBoardItem.Subject,
-                    MessageText = mba.MessageBoardItem.MessageText,
-                    CanEdit = mba.MessageBoardItem.PostedBy.Id == userId,
-                    IsNew = !mba.Viewed,
-                    Id = mba.Id
-                });
+                    Subject = topic.Subject,
+                    StartedBy = topic.StartedBy.Name,
+                    Id = topic.Id
+                };
+                foreach (var msg in topic.Messages)
+                {
+                    var localPostedDate = msg.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(thisAttendee.User.TimeZoneId));
+                    topicModel.Messages.Add(new EventMessageModel
+                    {
+                        MessageText = msg.MessageText,
+                        CanEdit = msg.PostedBy.Id == userId,
+                        PostedBy = msg.PostedBy.Name,
+                        PostedById = msg.PostedBy.Id,
+                        Id = msg.Attendees.First(x => x.Attendee.Id == thisAttendee.Id).Id,
+                        DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
+                        IsNew = msg.Attendees.Any(x => x.Attendee.Id == thisAttendee.Id && !x.Viewed),
+                        PostedDate = localPostedDate
+                    });
+                }
+                model.Messages.Topics.Add(topicModel);
             }
-            model.Messages = model.Messages.OrderByDescending(x => x.PostedBy).ToList();
+
+
+
 
 
             model.Notifications = new EventNotificationModelContainer();
@@ -1678,8 +1749,11 @@ namespace ElGroupo.Web.Services
             var atts = await _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.UnregisteredAttendees).FirstOrDefaultAsync(x => x.Id == eventId);
             if (atts == null) throw new Exception("Event Not Found");
             var model = new ViewEventAttendeesModel();
-            atts.Attendees.ToList().Where(x => x.User.Id != activeId).ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { Id = x.Id, Name = x.User.Name, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id, RSVPStatus = x.ResponseStatus }));
-            atts.UnregisteredAttendees.ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { Name = x.Name, Email = x.Email, RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration }));
+            atts.Attendees.ToList().Where(x => x.User.Id != activeId).ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { Id = x.Id, FirstName = x.User.Name, LastName = x.User.LastName, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id, RSVPStatus = x.ResponseStatus }));
+            model.Attendees = model.Attendees.OrderBy(x => x.IsOrganizer).ThenBy(x => x.FirstName).ToList();
+
+
+            atts.UnregisteredAttendees.ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { FirstName = x.Name, LastName = x.Name, Email = x.Email, RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration }));
 
             return model;
 
@@ -1786,7 +1860,34 @@ namespace ElGroupo.Web.Services
             }
 
         }
-
+        private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
+        {
+            if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessful;
+            if (e.StartTime.AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now.ToUniversalTime()) return CheckInStatuses.AvailableForCheckIn;
+            return CheckInStatuses.NotAvailableForCheckIn;
+        }
+        public async Task<EventInformationModel> GetDashboardEventItem(long eventId, long userId)
+        {
+            var e = _dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == eventId);
+            var ea = e.Attendees.FirstOrDefault(x => x.User.Id == userId);
+            var eim = new EventInformationModel
+            {
+                EndDate = e.EndTime,
+                StartDate = e.StartTime,
+                DateText = e.GetSimpleDateText(ea.User.TimeZoneId),
+                Id = e.Id,
+                OrganizedByUser = ea.IsOrganizer,
+                CheckInStatus = GetCheckInStatus(e, ea),
+                IsNew = !ea.Viewed,
+                Name = e.Name,
+                OrganizerName = e.Attendees.First(x => x.IsOrganizer).User.Name,
+                Status = e.Status,
+                RSVPStatus = ea.ResponseStatus,
+                IsRecurring = e.Recurrence != null,
+                RSVPRequested = ea.ShowRSVPReminder == true
+            };
+            return eim;
+        }
         public async Task<List<EventInformationModel>> SearchEvents(string search, long userId)
         {
 

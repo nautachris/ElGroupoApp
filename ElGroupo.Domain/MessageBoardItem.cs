@@ -7,20 +7,23 @@ namespace ElGroupo.Domain
 {
     public class MessageBoardItem:ClassBase
     {
-        public int UserId { get; set; }
-        public long EventId { get; set; }
+        //public int UserId { get; set; }
+        //public long EventId { get; set; }
 
         [Required]
         public virtual User PostedBy { get; set; }
 
         [Required]
-        public virtual Event Event { get; set; }
+        public virtual MessageBoardTopic Topic { get; set; }
+
+        //[Required]
+        //public virtual Event Event { get; set; }
         public DateTime PostedDate { get; set; }
 
         [Required]
         public string MessageText { get; set; }
 
-        public string Subject { get; set; }
+        //public string Subject { get; set; }
 
         public virtual ICollection<MessageBoardItemAttendee> Attendees { get; set; }
 

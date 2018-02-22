@@ -21,7 +21,7 @@
 
 }
 
-<div class="row">
+<div class="row" style="margin-top:20px;">
     <label>Recurrence Pattern</label>
 </div>
 <div class="row recurrence-pattern">
@@ -45,31 +45,31 @@
 
     <div class="col span-1-of-7">
         <input id="chkDay0" type="checkbox" asp-for="Recurrence.Days[0]" />
-        <label for="chkDay0">Monday</label>
+        <label for="chkDay0">M</label>
     </div>
     <div class="col span-1-of-7">
         <input id="chkDay1" type="checkbox" asp-for="Recurrence.Days[1]" />
-        <label for="chkDay1">Tuesday</label>
+        <label for="chkDay1">Tu</label>
     </div>
     <div class="col span-1-of-7">
         <input id="chkDay2" type="checkbox" asp-for="Recurrence.Days[2]" />
-        <label for="chkDay2">Wednesday</label>
+        <label for="chkDay2">W</label>
     </div>
     <div class="col span-1-of-7">
         <input id="chkDay3" type="checkbox" asp-for="Recurrence.Days[3]" />
-        <label for="chkDay3">Thursday</label>
+        <label for="chkDay3">Th</label>
     </div>
     <div class="col span-1-of-7">
         <input id="chkDay4" type="checkbox" asp-for="Recurrence.Days[4]" />
-        <label for="chkDay4">Friday</label>
+        <label for="chkDay4">F</label>
     </div>
     <div class="col span-1-of-7">
         <input id="chkDay5" type="checkbox" asp-for="Recurrence.Days[5]" />
-        <label for="chkDay5">Saturday</label>
+        <label for="chkDay5">Sa</label>
     </div>
     <div class="col span-1-of-7">
         <input id="chkDay6" type="checkbox" asp-for="Recurrence.Days[6]" />
-        <label for="chkDay6">Sunday</label>
+        <label for="chkDay6">Su</label>
     </div>
 
 </div>
@@ -97,22 +97,25 @@
     </div>
 </div>
 <div class="row">
-    <div class="col span-1-of-6">
+    <div class="col span-2-of-6" style="text-align:left;">
         <label asp-for="Recurrence.RecurrenceInterval">Recur Every:</label>
     </div>
-    <div class="col span-1-of-6">
+    <div class="col span-2-of-6">
         <input class="width-100" asp-for="Recurrence.RecurrenceInterval" />
     </div>
-    <div class="col span-1-of-6">
+    <div class="col span-2-of-6" style="text-align:left;">
         <label id="lblInterval">Days</label>
     </div>
-    <div class="col span-1-of-6">
+
+</div>
+<div class="row">
+    <div class="col span-2-of-6" style="text-align:left;">
         <label asp-for="Recurrence.RecurrenceLimit">End After:</label>
     </div>
-    <div class="col span-1-of-6">
+    <div class="col span-2-of-6">
         <input class="width-100" asp-for="Recurrence.RecurrenceLimit" />
     </div>
-    <div class="col span-1-of-6">
+    <div class="col span-2-of-6" style="text-align:left;">
         <label>Occurrences</label>
     </div>
 </div>

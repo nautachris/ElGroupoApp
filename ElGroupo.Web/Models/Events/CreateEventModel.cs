@@ -49,6 +49,6 @@ namespace ElGroupo.Web.Models.Events
         public string VerificationCode { get; set; }
         public int? LocationTolerance { get; set; }
 
-        public bool RSVPRequired { get; set; } = false;
+        //public bool RSVPRequired { get; set; } = false;
     }
 }

@@ -71,7 +71,7 @@
             @foreach (var org in Model.Organizers)
             {
                 <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a> @:&nbsp;
-        }
+            }
         </h3>
 
     }
@@ -85,20 +85,36 @@
 
     }
 
+
 </div>
+@*@if (!Model.IsOrganizer)
+{
+    <div class="row centered" style="height:150px;">
+        <a class="no-decoration"><img src="~/content/images/rsvp-yes.png" style="max-height:100%; max-width:100%; transform:scale(1.3,1.3);" /></a>
+        <a class="no-decoration"><img src="~/content/images/rsvp-maybe.png" style="max-height:100%; max-width:100%; transform:scale(1.3,1.3);" /></a>
+        <a class="no-decoration"><img src="~/content/images/rsvp-no.png" style="max-height:100%; max-width:100%; transform:scale(1.3,1.3);" /></a>
+    </div>
+
+}*@
 
 
 <div class="row view-event-dashboard">
     <div class="border-right">
         <h3>Date &amp; Time</h3>
         <div>Starts: @Model.Details.StartTime</div>
-        <div>Ends: @Model.Details.EndTime</div>
+
         @if (Model.IsOrganizer)
-            {
+        {
+            <div>Ends: @Model.Details.EndTime</div>
             <div>
 
                 <span class="edit-links" data-edit-type="time">Edit</span>
             </div>
+        }
+        else
+        {
+            <div style="margin-top:unset;">Ends: @Model.Details.EndTime</div>
+
         }
 
     </div>
@@ -136,10 +152,10 @@
 
         <h3>News</h3>
         @if (Model.Notifications.Notifications.Any())
-                {
-                    var newest = Model.Notifications.Notifications.OrderByDescending(x => x.PostedDate).First();
+        {
+            var newest = Model.Notifications.Notifications.OrderByDescending(x => x.PostedDate).First();
             <div class="smaller-text">@newest.DateText</div>
-                    <div>@newest.OrganizerName: @newest.NotificationText</div>
+            <div>@newest.OrganizerName: @newest.NotificationText</div>
         }
         else
         {
@@ -148,7 +164,8 @@
         }
 
         <div>
-            <span class="edit-links" data-edit-type="news">View</span>
+            <span class="edit-links" data-edit-type="news">Notifications</span>
+            <a asp-controller="Events" asp-action="ViewMessages" asp-route-eid="@Model.EventId">Messages</a>
         </div>
 
     </div>
@@ -172,12 +189,12 @@
 
 
     @*shit we're missing
-    recurrence info - ADD TO A VIEW TIME DETAILS VIEW
-        LOCATION - LINK TO GOOGLE MAPS URL
-    send reminders to non-rsvpd attendees - add to button panel!!
-    edit rsvp
-    check in (if applicable)
-    notifications vs messages*@
+        recurrence info - ADD TO A VIEW TIME DETAILS VIEW
+            LOCATION - LINK TO GOOGLE MAPS URL
+        send reminders to non-rsvpd attendees - add to button panel!!
+        edit rsvp
+        check in (if applicable)
+        notifications vs messages*@
 
     <div class="row centered">
         @if (Model.IsOrganizer)
@@ -231,7 +248,7 @@
 
 @section Scripts{
     <script type="text/javascript" src="~/content/scripts/events/view-event-new.js"></script>
-    <script type="text/javascript" src="~/content/scripts/events/message-board-new.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
     <script type="text/javascript" src="~/content/scripts/events/view-event-notifications.js"></script>
     <script type="text/javascript" src="~/content/scripts/events/edit-event-attendees-new.js"></script>
     @if (Model.IsOrganizer)
@@ -244,11 +261,11 @@
     <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>
     <script type="text/javascript">
 
-            Maps.Init({
-                mapDiv: 'divMap',
-                initOnLoad: false,
-                mapLoadedCallback: ViewEvent.MapLoaded
-            });
+        Maps.Init({
+            mapDiv: 'divMap',
+            initOnLoad: false,
+            mapLoadedCallback: ViewEvent.MapLoaded
+        });
 
 
     </script>

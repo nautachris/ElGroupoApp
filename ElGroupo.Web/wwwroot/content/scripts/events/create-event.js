@@ -11,7 +11,13 @@ CreateEvent = {
 
         switch (CreateEvent.ActiveStep) {
             case 1:
-                $('#create-step').text('Step 1 of 4');
+                if ($("#idRecurringYes").is(":checked")) {
+                    $('#create-step').text('Step 1 of 5');
+                }
+                else {
+                    $('#create-step').text('Step 1 of 4');
+                }
+                
                 $('#create-step-title').text('Name & Description');
                 $('#create-step-description').text("Give your event a name and a brief description about what it's about.");
                 $("#btnPreviousStep").hide();
@@ -19,9 +25,14 @@ CreateEvent = {
                 $("#divSubmit").hide();
                 break;
             case 2:
-                $('#create-step').text('Step 2 of 4');
+                if ($("#idRecurringYes").is(":checked")) {
+                    $('#create-step').text('Step 2 of 5');
+                }
+                else {
+                    $('#create-step').text('Step 2 of 4');
+                }
                 $('#create-step-title').text('Date & Time');
-                $('#create-step-description').text('Let your invitees when to attend and whether a RSVP is required.');
+                $('#create-step-description').text('Let your invitees know when to attend.');
                 $("#btnPreviousStep").show();
                 $("#btnNextStep").show();
                 $("#divSubmit").hide();
@@ -29,7 +40,21 @@ CreateEvent = {
                 $("#EndDate").datepicker();
                 break;
             case 3:
-                $('#create-step').text('Step 3 of 4');
+                $('#create-step').text('Step 3 of 5');
+                $('#create-step-title').text('Recurrence');
+                $('#create-step-description').text('When and how often is the event occurring?');
+                $("#btnPreviousStep").show();
+                $("#btnNextStep").show();
+                $("#divSubmit").hide();
+                break;
+            case 4:
+                if ($("#idRecurringYes").is(":checked")) {
+                    $('#create-step').text('Step 4 of 5');
+                }
+                else {
+                    $('#create-step').text('Step 3 of 4');
+                }
+
                 $('#create-step-title').text('Location');
                 $('#create-step-description').text('Tell your invitees where they need to be.');
                 $("#btnPreviousStep").show();
@@ -38,22 +63,17 @@ CreateEvent = {
                 if (!CreateEvent.MapLoaded) {
                     Maps.InitMapManual();
                     CreateEvent.MapLoaded = true;
-                    //setTimeout(function () {
-                    //    Maps.Init({
-                    //        mapDiv: 'divMap',
-                    //        txtAutocomplete: 'txtAutocompleteSearch',
-                    //        placeChangeCallback: CreateEvent.PlaceChange,
-                    //        createDrawTools: true,
-                    //        showDrawTools: false
-                    //    });
-                    //}, 400);
-
-                    //CreateEvent.MapLoaded = true;
                 }
 
 
                 break;
-            case 4:
+            case 5:
+                if ($("#idRecurringYes").is(":checked")) {
+                    $('#create-step').text('Step 5 of 5');
+                }
+                else {
+                    $('#create-step').text('Step 4 of 4');
+                }
                 $('#create-step').text('Step 4 of 4');
                 $('#create-step-title').text('Check-In');
                 $('#create-step-description').text('Tell your invitees how they can check in.');
@@ -85,14 +105,42 @@ CreateEvent = {
         $("#btnSearchAddress").on("click", CreateEvent.EventHandlers.AddressSearchClicked);
 
         $("#btnNextStep").on("click", function () {
-            if (CreateEvent.ActiveStep === 4) return;
-            CreateEvent.ActiveStep++;
+            if (CreateEvent.ActiveStep === 5) return;
+            if (CreateEvent.ActiveStep === 2) {
+                //if recur, set to 3
+                //if not, set to 2
+                if ($("#idRecurringYes").is(":checked")) {
+                    console.log('recur yes');
+                    CreateEvent.ActiveStep = 3;
+                }
+                else {
+                    console.log('recur no');
+                    CreateEvent.ActiveStep = 4;
+                }
+            }
+            else {
+                CreateEvent.ActiveStep++;
+            }
+            
             CreateEvent.LoadStep();
 
         });
         $("#btnPreviousStep").on("click", function () {
             if (CreateEvent.ActiveStep === 1) return;
-            CreateEvent.ActiveStep--;
+            if (CreateEvent.ActiveStep === 4) {
+                //if recur, set to 3
+                //if not, set to 2
+                if ($("#idRecurringYes").is(":checked")) {
+                    CreateEvent.ActiveStep = 3;
+                }
+                else {
+                    CreateEvent.ActiveStep = 2;
+                }
+            }
+            else {
+                CreateEvent.ActiveStep--;
+            }
+            
             CreateEvent.LoadStep();
         });
     },

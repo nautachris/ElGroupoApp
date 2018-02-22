@@ -12,6 +12,8 @@ using ElGroupo.Domain.Data;
 using ElGroupo.Web.Services;
 using System.IO;
 using Amazon.SimpleEmail;
+using ElGroupo.Web.Classes;
+
 namespace ElGroupo.Web.Controllers
 {
     [Authorize]
@@ -42,14 +44,28 @@ namespace ElGroupo.Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = await this.userManager.GetUserAsync(HttpContext.User);
-                var e = await this.dbContext.Events.Include("Attendees.User").FirstAsync(x => x.Id == model.EventId);
+                var e = await this.dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).FirstAsync(x => x.Id == model.EventId);
+
+                MessageBoardTopic topic = null;
+                if (model.ThreadId == -1)
+                {
+                    topic = new MessageBoardTopic();
+                    topic.Event = e;
+                    topic.Subject = model.Subject;
+                    topic.StartedDate = DateTime.Now.ToUniversalTime();
+                    topic.StartedBy = user;
+                    this.dbContext.MessageBoardTopics.Add(topic);
+                }
+                else
+                {
+                    topic = this.dbContext.MessageBoardTopics.First(x => x.Id == model.ThreadId);
+                }
                 var msg = new MessageBoardItem
                 {
                     PostedBy = user,
-                    Event = e,
+                    Topic = topic,
                     PostedDate = DateTime.Now.ToUniversalTime(),
-                    MessageText = model.Text,
-                    Subject = model.Subject
+                    MessageText = model.Text
                 };
 
                 dbContext.MessageBoardItems.Add(msg);
@@ -95,22 +111,33 @@ namespace ElGroupo.Web.Controllers
                 var attendee = await this.dbContext.EventAttendees.FirstOrDefaultAsync(x => x.EventId == eventId && x.User.Id == user.Id);
                 var canEdit = HttpContext.User.IsInRole("admin") || this.dbContext.EventAttendees.Any(x => x.EventId == eventId && x.User.Id == user.Id && x.IsOrganizer);
                 if (attendee == null) return BadRequest();
-                var model = new List<EventMessageModel>();
-                foreach (var mba in this.dbContext.MessageBoardItemAttendees.Include("MessageBoardItem").Where(x => x.AttendeeId == attendee.Id))
+                var model = new EventMessageContainerModel();
+                foreach (var topic in dbContext.MessageBoardTopics.Include(x=>x.StartedBy).Include(x => x.Messages).ThenInclude(x => x.Attendees).ThenInclude(x => x.Attendee).Where(x => x.Event.Id == eventId).OrderByDescending(x => x.StartedDate))
                 {
-                    model.Add(new EventMessageModel
+                    var topicModel = new EventMessageBoardTopicModel
                     {
-                        PostedBy = mba.MessageBoardItem.PostedBy.Name,
-                        PostedById = mba.MessageBoardItem.PostedBy.Id,
-                        CanEdit = mba.MessageBoardItem.PostedBy.Id == user.Id || canEdit,
-                        PostedDate = mba.MessageBoardItem.PostedDate,
-                        Subject = mba.MessageBoardItem.Subject,
-                        MessageText = mba.MessageBoardItem.MessageText,
-                        IsNew = !mba.Viewed,
-                        Id = mba.Id
-                    });
+                        Subject = topic.Subject,
+                        StartedBy = topic.StartedBy.Name,
+                        Id = topic.Id
+                    };
+                    foreach (var msg in topic.Messages)
+                    {
+                        var localPostedDate = msg.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(attendee.User.TimeZoneId));
+                        topicModel.Messages.Add(new EventMessageModel
+                        {
+                            MessageText = msg.MessageText,
+                            CanEdit = msg.PostedBy.Id == user.Id,
+                            PostedBy = msg.PostedBy.Name,
+                            PostedById = msg.PostedBy.Id,
+                            Id = msg.Attendees.First(x=>x.Attendee.Id == attendee.Id).Id,
+                            DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
+                            PostedDate = localPostedDate,
+                            IsNew = msg.Attendees.Any(x => x.Attendee.Id == attendee.Id && !x.Viewed)
+                        });
+                    }
+                    model.Topics.Add(topicModel);
                 }
-                return View("../Events/_ViewEventMessages", model.OrderByDescending(x => x.PostedDate));
+                return View("../Events/_ViewEventMessages", model);
             }
             catch (Exception ex)
             {
@@ -145,7 +172,7 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> DeleteMessageForAttendee([FromRoute]long messageId)
         {
             var user = await this.userManager.GetUserAsync(HttpContext.User);
-            var msg = await this.dbContext.MessageBoardItemAttendees.FirstOrDefaultAsync(x => x.Id == messageId);
+            var msg = await this.dbContext.MessageBoardItemAttendees.Include(x => x.MessageBoardItem).ThenInclude(x => x.Topic).FirstOrDefaultAsync(x => x.Id == messageId);
 
             if (msg.Attendee.User.Id != user.Id && !HttpContext.User.IsInRole("admin"))
             {
@@ -159,7 +186,7 @@ namespace ElGroupo.Web.Controllers
             //dbContext.EventOrganizers.Remove(eo);
             //await dbContext.SaveChangesAsync();
             //return RedirectToAction("OrganizersList", new { id = eid });
-            return RedirectToRoute("GetMessagesByEventId", new { eid = msg.MessageBoardItem.EventId });
+            return RedirectToRoute("GetMessagesByEventId", new { eid = msg.MessageBoardItem.Topic.Event.Id });
         }
 
 
@@ -188,7 +215,7 @@ namespace ElGroupo.Web.Controllers
             //dbContext.EventOrganizers.Remove(eo);
             //await dbContext.SaveChangesAsync();
             //return RedirectToAction("OrganizersList", new { id = eid });
-            return RedirectToRoute("GetMessagesByEventId", new { eid = msg.MessageBoardItem.EventId });
+            return RedirectToRoute("GetMessagesByEventId", new { eid = msg.MessageBoardItem.Topic.Event.Id });
         }
 
 

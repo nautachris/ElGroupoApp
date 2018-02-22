@@ -107,8 +107,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("LocationName");
 
-                    b.Property<bool>("MustRSVP");
-
                     b.Property<string>("Name");
 
                     b.Property<long?>("RecurrenceId");
@@ -280,8 +278,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<DateTime>("DateUpdated");
 
-                    b.Property<long>("EventId");
-
                     b.Property<string>("MessageText")
                         .IsRequired();
 
@@ -289,19 +285,17 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<DateTime>("PostedDate");
 
-                    b.Property<string>("Subject");
+                    b.Property<long>("TopicId");
 
                     b.Property<string>("UserCreated");
-
-                    b.Property<int>("UserId");
 
                     b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
-
                     b.HasIndex("PostedById");
+
+                    b.HasIndex("TopicId");
 
                     b.ToTable("MessageBoardItems");
                 });
@@ -332,6 +326,36 @@ namespace ElGroupo.Domain.Migrations
                     b.HasIndex("MessageBoardItemId");
 
                     b.ToTable("MessageBoardItemAttendees");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.MessageBoardTopic", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateCreated");
+
+                    b.Property<DateTime>("DateUpdated");
+
+                    b.Property<long>("EventId");
+
+                    b.Property<long>("StartedById");
+
+                    b.Property<DateTime>("StartedDate");
+
+                    b.Property<string>("Subject");
+
+                    b.Property<string>("UserCreated");
+
+                    b.Property<string>("UserUpdated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("StartedById");
+
+                    b.ToTable("MessageBoardTopics");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.RecurringEvent", b =>
@@ -771,15 +795,14 @@ namespace ElGroupo.Domain.Migrations
 
             modelBuilder.Entity("ElGroupo.Domain.MessageBoardItem", b =>
                 {
-                    b.HasOne("ElGroupo.Domain.Event", "Event")
-                        .WithMany("MessageBoardItems")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("ElGroupo.Domain.User", "PostedBy")
                         .WithMany()
                         .HasForeignKey("PostedById")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ElGroupo.Domain.MessageBoardTopic", "Topic")
+                        .WithMany("Messages")
+                        .HasForeignKey("TopicId");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.MessageBoardItemAttendee", b =>
@@ -791,6 +814,19 @@ namespace ElGroupo.Domain.Migrations
                     b.HasOne("ElGroupo.Domain.MessageBoardItem", "MessageBoardItem")
                         .WithMany("Attendees")
                         .HasForeignKey("MessageBoardItemId");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.MessageBoardTopic", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Event", "Event")
+                        .WithMany("MessageBoardTopics")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ElGroupo.Domain.User", "StartedBy")
+                        .WithMany()
+                        .HasForeignKey("StartedById")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.UnregisteredEventAttendee", b =>

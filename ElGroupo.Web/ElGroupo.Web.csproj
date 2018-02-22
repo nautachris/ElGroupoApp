@@ -118,5 +118,13 @@
       <TypeScriptCompile Include="wwwroot\content\scripts\tstest\file.ts" />
       <TypeScriptCompile Include="wwwroot\content\scripts\tstest\file1.ts" />
     </ItemGroup>
+    <ItemGroup>
+      <Content Update="wwwroot\content\images\add-128.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Update="wwwroot\content\images\btn_google_signin_light_focus_web.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
 
 </Project>

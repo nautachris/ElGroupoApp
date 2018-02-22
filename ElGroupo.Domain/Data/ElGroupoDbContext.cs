@@ -33,6 +33,7 @@ namespace ElGroupo.Domain.Data
 
 
         public DbSet<MessageBoardItem> MessageBoardItems { get; set; }
+        public DbSet<MessageBoardTopic> MessageBoardTopics { get; set; }
         public DbSet<EventAttendeeNotification> EventAttendeeNotifications { get; set; }
         public DbSet<EventNotification> EventNotifications { get; set; }
 
@@ -102,11 +103,15 @@ namespace ElGroupo.Domain.Data
             builder.Entity<Event>().Property(x => x.Status).HasDefaultValue(EventStatus.Draft);
             builder.Entity<Event>().HasMany(x => x.Attendees).WithOne(x => x.Event);
             builder.Entity<Event>().HasMany(x => x.UnregisteredAttendees).WithOne(x => x.Event);
-            builder.Entity<Event>().HasMany(x => x.MessageBoardItems).WithOne(x => x.Event);
+            builder.Entity<Event>().HasMany(x => x.MessageBoardTopics).WithOne(x => x.Event);
             builder.Entity<Event>().HasMany(x => x.Notifications).WithOne(x => x.Event);
 
             builder.Entity<EventNotification>().HasOne(x => x.PostedBy).WithMany(x => x.PostedNotifications).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
 
+            builder.Entity<MessageBoardTopic>().ToTable("MessageBoardTopics");
+            builder.Entity<MessageBoardTopic>().HasKey(x => x.Id);
+            builder.Entity<MessageBoardTopic>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<MessageBoardTopic>().HasMany(x => x.Messages).WithOne(x => x.Topic).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
             builder.Entity<MessageBoardItem>().HasMany(x => x.Attendees).WithOne(x => x.MessageBoardItem).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
             builder.Entity<EventAttendee>().HasMany(x => x.MessageBoardItems).WithOne(x => x.Attendee).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
             builder.Entity<EventAttendee>().HasMany(x => x.Notifications).WithOne(x => x.Attendee).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);

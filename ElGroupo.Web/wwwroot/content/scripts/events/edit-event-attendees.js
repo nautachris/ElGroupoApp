@@ -14,6 +14,7 @@ EditEventAttendees = {
             async: true,
             cache: false,
             success: function success(results) {
+                MessageDialog("Reminders have been sent to all attendees who have not yet RSVP'd");
                 console.log('remidners sent');
             },
             error: function error(err) {
@@ -79,6 +80,7 @@ EditEventAttendees = {
             });
         },
         AttendeeInfoDivClicked: function () {
+            if ($(this).attr('id') === 'divAddNewAttendee') return false;
             console.log('attendee info click');
             var $links = $(this).closest("div[data-user-id]").find("div.attendee-links");
             if ($(this).css('opacity') == 0.3) {
@@ -255,6 +257,12 @@ EditEventAttendees = {
     },
     Init: function () {
         EditEventAttendees.EventId = Number($("#EventId").val());
+
+        $("#divAddNewAttendee").on("click", function (evt) {
+            console.log('add att clicked');
+            evt.stopPropagation();
+            $("a.links[data-link-type=add-attendees]").click();
+        });
 
         $("#btnSendRSVPReminders").on("click", EditEventAttendees.EventHandlers.SendRSVPClicked);
         $("#btnSaveAttendeeChanges").on("click", EditEventAttendees.EventHandlers.SaveAttendeeChangesClicked);

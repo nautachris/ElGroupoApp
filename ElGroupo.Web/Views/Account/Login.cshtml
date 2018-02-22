@@ -27,7 +27,7 @@
             <input type="hidden" asp-for="UtcOffset" id="UtcOffset" />
             <input type="hidden" name="returnUrl" value="@ViewBag.returnUrl" />
             <div class="row sans-pro uppercase left">
-                <div class="col span-1-of-3">
+                <div class="col span-1-of-3" style="font-size:16px;">
                     @*<label style="font-family:'Source Sans Pro'; text-transform:uppercase;" asp-for="Email">Email:</label>*@
                     Email:
                 </div>
@@ -38,7 +38,7 @@
             </div>
             <div class="row" style="height:1px; margin-left:10%; margin-right:10%; margin-top:5px; margin-bottom: 5px; background-color:lightgray;"></div>
             <div class="row sans-pro uppercase left">
-                <div class="col span-1-of-3">
+                <div class="col span-1-of-3" style="font-size:16px;">
                     @*<label style="font-family:'Source Sans Pro';text-transform:uppercase;" asp-for="Password">Password:</label>*@
                     Password:
                 </div>
@@ -57,12 +57,12 @@
                 </div>
             </div>*@
             <div class="row" >
-                <div class="col" style="text-align:center; font-size:0.7em; border-right: 1px solid gray; padding-right:10px;">
+                <div class="col" style="text-align:center; font-size:0.7em; padding-right:10px;">
                     <a asp-controller="Account" asp-action="ForgotPassword">Forgot Password?</a>
                 </div>
-                <div class="col" style="text-align:center; font-size:0.7em;">
+                @*<div class="col" style="text-align:center; font-size:0.7em;">
                     <a  asp-controller="Account" asp-action="ForgotUsername">Forgot Username?</a>
-                </div>
+                </div>*@
             </div>
             <hr />
             <div class="row" style="margin-top:30px;">

@@ -6,27 +6,27 @@ $(document).ready(function () {
     var p = 5;
     var g = 5;
 });
-var Login = (function () {
+var Login = /** @class */ (function () {
     function Login() {
     }
     Login.Init = function () {
         $('.log-in').on('click', Login.EventHandlers.LoginClicked);
     };
+    Login.EventHandlers = {
+        LoginClicked: function () {
+            $(".sign-up").removeClass("bold");
+            $(".log-in").addClass("bold");
+            $("#divSignUp").hide();
+            $("#divLogin").show();
+        },
+        SignUpClicked: function () {
+            $(".sign-up").addClass("bold");
+            $(".log-in").removeClass("bold");
+            $("#divSignUp").show();
+            $("#divLogin").hide();
+        }
+    };
     return Login;
 }());
-Login.EventHandlers = {
-    LoginClicked: function () {
-        $(".sign-up").removeClass("bold");
-        $(".log-in").addClass("bold");
-        $("#divSignUp").hide();
-        $("#divLogin").show();
-    },
-    SignUpClicked: function () {
-        $(".sign-up").addClass("bold");
-        $(".log-in").removeClass("bold");
-        $("#divSignUp").show();
-        $("#divLogin").hide();
-    }
-};
 exports.Login = Login;
 //# sourceMappingURL=file.js.map

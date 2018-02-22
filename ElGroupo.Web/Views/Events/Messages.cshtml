@@ -1,0 +1,41 @@
+﻿@using ElGroupo.Web.Models.Messages
+@model EventMessagePageModel
+<div class="row">
+    <input type="hidden" asp-for="EventId" />
+    <h3 id="lblEventName" class="centered bold"><a asp-controller="Events" asp-action="ViewNew" asp-route-eid="@Model.EventId">@Model.EventName</a></h3>
+    @if (Model.Organizers.Count == 1)
+    {
+        <h3 class="centered">Organizer:&nbsp;<a href="@Url.Action("View", "Account", new { userId = Model.Organizers[0].Id })">@Model.Organizers[0].Name</a></h3>
+
+    }
+    else
+    {
+        <h3 class="centered">
+            <span>Organizers: </span>
+            @foreach (var org in Model.Organizers)
+            {
+                <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a> @:&nbsp;
+            }
+        </h3>
+
+    }
+</div>
+<div class="row centered">
+    <h3>@Model.Description</h3>
+
+</div>
+<div class="row centered">
+    <h3>Message Board</h3>
+</div>
+
+<div id="divMessages">
+    @Html.Partial("_ViewEventMessages", Model.Messages)
+</div>
+@Html.Partial("_AddEventTopic")
+
+
+@section Scripts{
+
+    <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
+
+}

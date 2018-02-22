@@ -50,39 +50,76 @@
 
 @if (Model.Attendees.Count > 0)
 {
-    @foreach (var attGroup in SplitList<EventAttendeeModel>(Model.Attendees, 4))
-    {
-        <div class="row">
-            @foreach (var att in attGroup)
-            {
-                <div data-user-id="@att.UserId" class="col span-1-of-4 centered rounded-border attendee-container" style="text-align:center; position:relative; cursor:pointer">
-                    <div class="attendee-info" style="z-index:2;">
-                        <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
-                        @*style="background-color:@GetBackgroundFromRSVPStatus(att.RSVPStatus); color:@GetForegroundFromRSVPStatus(att.RSVPStatus)"*@
+    <div style="display:flex; justify-content:center;">
+        @if (Model.IsOrganizer)
+        {
+            <div id="divAddNewAttendee" data-user-id="-1" class="centered rounded-border" style="text-align:center; position:relative; display:flex; cursor:pointer; ">
+                <div class="attendee-info" style="z-index:2;">
 
-                        @if (att.IsOrganizer)
-                        {
-                            <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.Name*</span>
+                    <img class="image-circle-200" style="background-image:url('/content/images/add-128.png'); border-radius:0px; background-size:initial; transform:scale(0.7);" />
 
-                        }
-                        else
-                        {
-                            <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.Name</span>
+                    <span class="attendee-name">Add New</span>
 
-                        }
-                    </div>
-                    @*<div class="attendee-links centered" style="z-index:3; display:none; position:absolute; top: 40%; left:5%; width:90%; opacity:0.5;"></div>*@
-                    <div class="attendee-links centered" style="z-index:4; display:none; position:absolute; top: 40%; left:5%; ">
-                        <a data-action="profile" data-profile-link="@GetUserViewLink(att.UserId)">View Profile</a>
-                        @if (Model.IsOrganizer)
-                        {
-                            <a data-action="remove" style="display:inline-block;">Remove Attendee</a>
-                        }
-                    </div>
+
                 </div>
-            }
-        </div>
-    }
+
+            </div>
+
+        }
+        @foreach (var att in Model.Attendees)
+        {
+            <div data-user-id="@att.UserId" class="centered rounded-border attendee-container" style="text-align:center; position:relative; display:flex; cursor:pointer">
+                <div class="attendee-info add-attendee-link" style="z-index:2;">
+                    <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
+                    @if (att.IsOrganizer)
+                    {
+                        <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.FirstName*</span>
+                    }
+                    else
+                    {
+                        <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.FirstName</span>
+
+                    }
+                </div>
+                <div class="attendee-links centered" style="z-index:4; display:none; position:absolute; top: 30%; left:5%; right:5%;">
+                    <a style="width:100%;" data-action="profile" data-profile-link="@GetUserViewLink(att.UserId)">View</a>
+                    @if (Model.IsOrganizer)
+                    {
+                        <a data-action="remove" style="display:inline-block;width:100%;">Remove</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    @*@foreach (var attGroup in SplitList<EventAttendeeModel>(Model.Attendees, 4))
+        {
+            <div class="row">
+                @foreach (var att in attGroup)
+                {
+                    <div data-user-id="@att.UserId" class="col span-1-of-4 centered rounded-border attendee-container" style="text-align:center; position:relative; cursor:pointer">
+                        <div class="attendee-info" style="z-index:2;">
+                            <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
+                            @if (att.IsOrganizer)
+                            {
+                                <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.FirstName*</span>
+                            }
+                            else
+                            {
+                                <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.FirstName</span>
+
+                            }
+                        </div>
+                        <div class="attendee-links centered" style="z-index:4; display:none; position:absolute; top: 40%; left:5%; right:5%;">
+                            <a data-action="profile" data-profile-link="@GetUserViewLink(att.UserId)">View Profile</a>
+                            @if (Model.IsOrganizer)
+                            {
+                                <a data-action="remove" style="display:inline-block;">Remove Attendee</a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }*@
 
     @if (Model.IsOrganizer && Model.Attendees.Any(x => x.RSVPStatus == RSVPTypes.None))
     {

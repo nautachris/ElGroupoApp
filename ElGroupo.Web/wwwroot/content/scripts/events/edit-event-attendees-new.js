@@ -14,7 +14,7 @@ EditEventAttendees = {
             async: true,
             cache: false,
             success: function success(results) {
-                console.log('remidners sent');
+                MessageDialog("Reminders have been sent to all attendees who have not yet RSVP'd");
             },
             error: function error(err) {
                 alert('error');

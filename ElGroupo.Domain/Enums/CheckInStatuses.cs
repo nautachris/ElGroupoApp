@@ -11,6 +11,7 @@ namespace ElGroupo.Domain.Enums
         NotAvailableForCheckIn,
         AvailableForCheckIn,
         CheckInSuccessful,
-        CheckInFailed
+        CheckInFailed,
+        CheckInExpired
     }
 }
