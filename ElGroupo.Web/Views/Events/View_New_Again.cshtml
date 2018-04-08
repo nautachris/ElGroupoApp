@@ -1,0 +1,358 @@
+﻿@using ElGroupo.Web.Models.Events
+@using System.Collections.Generic
+@using ElGroupo.Web.Models.Enums
+@model EventViewModel
+
+
+@functions{
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+    public string GetImageUrl(int id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+
+    public string GetUserViewLink(int id)
+    {
+        var url = Url.Action("View", "Account", new { id = id });
+        return url;
+
+    }
+    private string GetCheckInUrl(long eid)
+    {
+
+        var url = Url.Action("CheckIn", "Events", new { eid = eid });
+        return url;
+
+    }
+}
+
+
+
+<input type="hidden" asp-for="EventId" />
+<input type="hidden" asp-for="IsRecurring" />
+<div class="row">
+
+
+    <div class="col span-3-of-9 summary-container">
+        <div class="row centered">
+            <h3 id="lblEventName" class="centered" style="font-size:24px; margin-bottom:10px; word-spacing:2px; letter-spacing:4px;">@Model.Details.Name</h3>
+            @if (Model.Organizers.Count == 1)
+            {
+            <h3 class="centered" style="text-transform:none; font-size:110%; margin-top:4px;">
+                by&nbsp;<a href="@Url.Action("View", "Account", new { userId = Model.Organizers[0].Id })">@Model.Organizers[0].Name</a>
+                @if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
+    {
+            <img src="~/content/images/dot-maybe.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+            <span style="vertical-align:middle; letter-spacing:normal;">I'm a maybe</span>
+
+}
+else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.None)
+{
+            <img src="~/content/images/dot-unknown.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+            <span style="vertical-align:middle; letter-spacing:normal;">Undecided</span>
+
+}
+else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.No)
+{
+            <img src="~/content/images/dot-no.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+            <span style="vertical-align:middle; letter-spacing:normal;">No way</span>
+
+}
+else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Yes)
+{
+            <img src="~/content/images/dot-yes.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+            <span style="vertical-align:middle; letter-spacing:normal;">I'm in</span>
+
+}
+
+            </h3>
+
+            }
+            else
+            {
+                <h3 class="centered" style="text-transform:none; font-size:110%; margin-top:4px;">
+                    <span>by </span>
+                    @foreach (var org in Model.Organizers)
+                    {
+                        <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a> @:&nbsp;
+                    }
+                </h3>
+
+            }
+
+        </div>
+        <div class="row centered" style="margin-top:5px;" data-summary-type="notifications">
+
+            <img sc style="width:50px; height:50px;" src="~/content/images/news-icon.jpg" />
+            <h3 style="font-size:13px; font-weight:600;">News</h3>
+            @if (Model.Notifications.Notifications.Any())
+            {
+                var newest = Model.Notifications.Notifications.OrderByDescending(x => x.PostedDate).First();
+                <div class="smaller-text" style="font-size:10px;">@newest.DateText</div>
+                <div>@newest.OrganizerName: @newest.NotificationText</div>
+            }
+            else
+            {
+                <h3 style="text-transform:none;">Nothing new to report!</h3>
+
+            }
+
+
+            <div>
+                @if (Model.IsOrganizer)
+                {
+                    <div>
+
+                        <span class="edit-links" data-edit-type="notifications">Add</span>
+                    </div>
+
+                }
+                else
+                {
+                    <div>
+
+                        <span class="edit-links" data-edit-type="notifications">View</span>
+                    </div>
+
+                }
+
+            </div>
+
+            <div style="margin-left:40%; margin-right:40%; margin-top:30px; height:1px; background-color:lightgray;"></div>
+        </div>
+        <div class="row centered" data-summary-type="messages" style="margin-top:30px;">
+            <h3 style="font-size:13px; font-weight:600; margin-top:5px;">Messages</h3>
+            @if (Model.Messages.Topics.Any())
+            {
+                var newest = Model.Messages.Topics.SelectMany(x => x.Messages).OrderByDescending(x => x.PostedDate).First();
+                <div class="smaller-text" style="font-size:10px;">@newest.DateText</div>
+                <div style="margin-bottom:15px;">@newest.PostedBy: @newest.MessageText</div>
+            }
+            else
+            {
+                <h3 style="text-transform:none;">...</h3>
+
+            }
+
+            <div>
+
+                <span class="edit-links" data-edit-type="messages">View</span>
+            </div>
+            <div style="margin-left:40%; margin-right:40%; margin-top:30px; height:1px; background-color:lightgray;"></div>
+        </div>
+
+
+        <div class="row centered" data-summary-type="time" style="margin-top:30px;">
+            <h3 style="font-size:13px; font-weight:600; margin-top:5px;">Date &amp; Time</h3>
+            <div>Starts: @Model.Details.StartTime</div>
+
+            @if (Model.IsOrganizer)
+            {
+                <div style="margin-bottom:15px;">Ends: @Model.Details.EndTime</div>
+                <div>
+
+                    <span class="edit-links" data-edit-type="time">Edit</span>
+                </div>
+            }
+            else
+            {
+                <div style="margin-top:unset;margin-bottom:15px;">Ends: @Model.Details.EndTime</div>
+
+            }
+            <div style="margin-left:40%; margin-right:40%; height:1px; margin-top:30px; background-color:lightgray;"></div>
+
+        </div>
+        <div class="row centered" data-summary-type="location" style="margin-top:30px;">
+
+            <h3 style="font-size:13px; font-weight:600; margin-top:5px;">Location</h3>
+            @if (!string.IsNullOrEmpty(Model.Location.LocationName))
+            {
+                <div>@Model.Location.LocationName</div>
+
+            }
+            <div>@Model.Location.Address1</div>
+            @if (!string.IsNullOrEmpty(Model.Location.Address2))
+            {
+                <div>@Model.Location.Address2</div>
+
+            }
+            <div style="margin-bottom:15px;">@Model.Location.City, @Model.Location.State @Model.Location.ZipCode</div>
+            <div>
+                @if (Model.IsOrganizer)
+                {
+                    <span class="edit-links" data-edit-type="location">Edit</span>
+
+                }
+                else
+                {
+                    <a>View</a>
+
+                }
+            </div>
+            <div style="margin-left:40%; margin-right:40%; height:1px; margin-top:30px; background-color:lightgray;"></div>
+
+        </div>
+        <div class="row centered" data-summary-type="description" style="margin-top:30px;">
+            @*description now goes here*@
+            <h3 style="font-size:13px; font-weight:600; margin-top:5px;">Description</h3>
+            <div style="margin-bottom:15px;">@Model.Details.Description</div>
+            @if (Model.IsOrganizer)
+            {
+                <div>
+
+                    <span class="edit-links" data-edit-type="details">Edit</span>
+                </div>
+
+
+            }
+            <div style="margin-left:40%; margin-right:40%; height:1px; margin-top:30px; background-color:lightgray;"></div>
+
+        </div>
+
+        @if (Model.IsOrganizer)
+        {
+            <div class="row centered" data-summary-type="settings" style="margin-top:30px;">
+                <h3 style="font-size:13px; font-weight:600; margin-top:5px;">Settings</h3>
+                <div style="margin-bottom:15px;">Check-In Type: @Model.CheckInType</div>
+                <div><span class="edit-links" data-edit-type="settings">Edit</span></div>
+
+
+            </div>
+
+        }
+    </div>
+
+    <div class="col span-1-of-9"></div>
+    <div class="col span-5-of-9">
+        <div id="details-view-container" style="display:none; margin-top:40px;" data-view-type="none">
+            <div class="row" id="details-view"></div>
+            <div class="row centered" style="margin-top:40px;">
+                @if (Model.IsOrganizer)
+                {
+                    <span class="save-links" style="border-right: 1px solid black; padding-right:20px;">Save</span>
+                    <span class="close-links" style="padding-left:20px;">Close</span>
+                }
+                else
+                {
+                    <span class="close-links">Close</span>
+
+                }
+
+            </div>
+
+        </div>
+        <div id="divAttendees">
+            <div class="row centered">
+                <h3 style="font-weight:600;">Group</h3>
+            </div>
+            <div class="row centered" style="margin-top:40px;">
+                @Html.Partial("_ViewEventAttendees", Model.Attendees)
+            </div>
+        </div>
+        @if (Model.IsOrganizer)
+        {
+            <div id="divEditEventAttendees" class="row" style="display:none;">
+                @Html.Partial("_EditEventAttendees", Model.Details)
+
+            </div>
+
+
+        }
+    </div>
+</div>
+
+
+
+
+@if (Model.IsOrganizer && Model.Details.Status != ElGroupo.Domain.Enums.EventStatus.Active)
+{
+    <div class="row">
+        <span style="display:none;" id="spanStatus">@Model.Details.Status</span>
+        <div class="row centered">
+            <h3>Event Status</h3>
+
+        </div>
+        <div class="row centered event-status">
+            <div class="col span-1-of-3">
+                <input asp-for="Details.Status" value="Cancelled" id="rbStatusCancelled" type="radio" />
+                <label for="rbStatusCancelled">Cancelled</label>
+            </div>
+            <div class="col span-1-of-3">
+                <input asp-for="Details.Status" value="Draft" id="rbStatusDraft" type="radio" />
+                <label for="rbStatusDraft">Draft</label>
+            </div>
+            <div class="col span-1-of-3">
+                <input asp-for="Details.Status" value="Active" id="rbStatusActive" type="radio" />
+                <label for="rbStatusActive">Active</label>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+@if (Model.IsOrganizer)
+{
+    <div class="row centered" style="margin-top:20px; margin-bottom:40px;">
+        <button id="btnDeleteEvent" class="btn-primary">Delete Event</button>
+    </div>
+
+
+}
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/events/view-event-new-again.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/view-event-notifications.js"></script>
+    <script type="text/javascript" src="~/content/scripts/events/edit-event-attendees-new.js"></script>
+    @if (Model.IsOrganizer)
+    {
+        <script type="text/javascript" src="~/content/scripts/events/edit-event-notifications-new.js"></script>
+        <script type="text/javascript" src="~/content/scripts/events/edit-event-new-again.js"></script>
+
+
+    }
+    <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>
+    <script type="text/javascript">
+        $("#divSidebar").show();
+        Maps.Init({
+            mapDiv: 'divMap',
+            initOnLoad: false,
+            mapLoadedCallback: ViewEvent.MapLoaded
+        });
+
+
+    </script>
+
+    @*AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk*@
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=@Model.GoogleApiKey&libraries=places,drawing&callback=Maps.InitMap">
+    </script>
+
+}

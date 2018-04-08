@@ -18,7 +18,10 @@ namespace ElGroupo.Domain.Data.Configurations
             Property(x => x.TimeZoneId).HasColumnName("TimeZoneId");
             HasMany(x => x.ConnectedUsers).WithOne(x => x.User);
             HasMany(x => x.UnregisteredConnections).WithOne(x => x.User);
-           
+            HasMany(x => x.CMEActivities).WithOne(x => x.User);
+            HasMany(x => x.NonCMEActivities).WithOne(x => x.User);
+            HasOne(x => x.Organization).WithMany(x => x.Users);
+
         }
     }
 }

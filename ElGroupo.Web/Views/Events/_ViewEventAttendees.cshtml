@@ -50,25 +50,26 @@
 
 @if (Model.Attendees.Count > 0)
 {
-    <div style="display:flex; justify-content:center;">
+    @*justify-content:center;*@
+    <div style="display:flex; flex-wrap:wrap; ">
         @if (Model.IsOrganizer)
         {
-            <div id="divAddNewAttendee" data-user-id="-1" class="centered rounded-border" style="text-align:center; position:relative; display:flex; cursor:pointer; ">
-                <div class="attendee-info" style="z-index:2;">
+            @*<div id="divAddNewAttendee" data-user-id="-1" class="centered rounded-border" style="text-align:center; position:relative; display:flex; cursor:pointer; ">
+                    <div class="show-edit-attendees" style="z-index:2; width:100px;">
 
-                    <img class="image-circle-200" style="background-image:url('/content/images/add-128.png'); border-radius:0px; background-size:initial; transform:scale(0.7);" />
+                        <img class="image-circle-200" style="background-image:url('/content/images/add-attendee.png'); border-radius:0px; transform:scale(0.7);" />
 
-                    <span class="attendee-name">Add New</span>
+                        <span class="attendee-name">Add New</span>
 
 
-                </div>
+                    </div>
 
-            </div>
+                </div>*@
 
         }
         @foreach (var att in Model.Attendees)
         {
-            <div data-user-id="@att.UserId" class="centered rounded-border attendee-container" style="text-align:center; position:relative; display:flex; cursor:pointer">
+            <div data-user-id="@att.UserId" class="centered rounded-border attendee-container" style="text-align:center; position:relative; display:flex; cursor:pointer; margin-left:50px; margin-bottom:30px;">
                 <div class="attendee-info add-attendee-link" style="z-index:2;">
                     <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
                     @if (att.IsOrganizer)
@@ -81,7 +82,7 @@
 
                     }
                 </div>
-                <div class="attendee-links centered" style="z-index:4; display:none; position:absolute; top: 30%; left:5%; right:5%;">
+                <div class="attendee-links centered" style="z-index:4; display:none; position:absolute; top: 25%; left:5%; right:5%;">
                     <a style="width:100%;" data-action="profile" data-profile-link="@GetUserViewLink(att.UserId)">View</a>
                     @if (Model.IsOrganizer)
                     {
@@ -123,11 +124,11 @@
 
     @if (Model.IsOrganizer && Model.Attendees.Any(x => x.RSVPStatus == RSVPTypes.None))
     {
-        <div class="row centered">
-            <div class="col span-2-of-2">
-                <a id="btnSendRSVPReminders" class="btn btn-primary">Send RSVP Reminders</a>
-            </div>
-        </div>
+        @*<div class="row centered">
+                <div class="col span-2-of-2">
+                    <a id="btnSendRSVPReminders" class="btn btn-primary">Send RSVP Reminders</a>
+                </div>
+            </div>*@
 
     }
 

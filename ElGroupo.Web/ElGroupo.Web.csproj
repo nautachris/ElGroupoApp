@@ -8,9 +8,13 @@
 
   <ItemGroup>
     <Compile Remove="wwwroot\content\fonts\BebasNeue\TTF%2527s\**" />
+    <Compile Remove="wwwroot\content\images\news.png\**" />
     <Content Remove="wwwroot\content\fonts\BebasNeue\TTF%2527s\**" />
+    <Content Remove="wwwroot\content\images\news.png\**" />
     <EmbeddedResource Remove="wwwroot\content\fonts\BebasNeue\TTF%2527s\**" />
+    <EmbeddedResource Remove="wwwroot\content\images\news.png\**" />
     <None Remove="wwwroot\content\fonts\BebasNeue\TTF%2527s\**" />
+    <None Remove="wwwroot\content\images\news.png\**" />
   </ItemGroup>
 
   <ItemGroup>

@@ -63,7 +63,19 @@ namespace ElGroupo.Web.Services
             if (await this._dbContext.EventAttendees.AnyAsync(x => x.User.Id == userId && x.EventId == eventId)) return EditAccessTypes.View;
             return EditAccessTypes.None;
         }
-
+        public async Task<SaveDataResponse> SetEventAttendeesInactive(long[] id)
+        {
+            var ea = _dbContext.EventAttendees.Where(x=> id.Contains(x.Id));
+            if (ea.Count() == 0) return SaveDataResponse.FromErrorMessage("Event Attendee Id Not found");
+            foreach (var e in ea)
+            {
+                e.Active = false;
+                 _dbContext.Update(e);
+            }
+           
+            await _dbContext.SaveChangesAsync();
+            return SaveDataResponse.Ok();
+        }
         public async Task<SaveDataResponse> AddUnregisteredAttendee(User u, Event e, UnregisteredEventAttendeeModel model)
         {
             try
@@ -1619,6 +1631,11 @@ namespace ElGroupo.Web.Services
             else if (e.StartTime.AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.UtcNow) model.CheckInStatus = CheckInStatuses.AvailableForCheckIn;
             else model.CheckInStatus = CheckInStatuses.NotAvailableForCheckIn;
 
+
+
+            if (e.VerificationMethod == AttendanceVerificationMethods.None) model.CheckInType = "None";
+            else if (e.VerificationMethod == AttendanceVerificationMethods.PasswordOnly) model.CheckInType = "Password";
+            else model.CheckInType = "Password/Location";
             model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
             model.Attendees = new ViewEventAttendeesModel();
@@ -1654,6 +1671,7 @@ namespace ElGroupo.Web.Services
                     var localPostedDate = msg.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(thisAttendee.User.TimeZoneId));
                     topicModel.Messages.Add(new EventMessageModel
                     {
+                        TopicName = topic.Subject,
                         MessageText = msg.MessageText,
                         CanEdit = msg.PostedBy.Id == userId,
                         PostedBy = msg.PostedBy.Name,

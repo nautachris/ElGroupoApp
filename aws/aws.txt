@@ -78,3 +78,7 @@ Port:	25, 465 or 587
 Use Transport Layer Security (TLS):	Yes
 Authentication:	Your SMTP credentials - see below.
 
+
+godaddy
+scatterbrain.pro
+pw: R2d2c3po!

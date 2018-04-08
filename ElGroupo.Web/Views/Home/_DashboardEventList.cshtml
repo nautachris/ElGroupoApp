@@ -11,7 +11,7 @@
     private string GetEventViewUrl(long eid)
     {
 
-        var url = Url.Action("View", "Events", new { eid = eid });
+        var url = Url.Action("ViewNewAgain", "Events", new { eid = eid });
         return url;
 
     }
@@ -34,15 +34,20 @@
 }
 
 <ul style="list-style:none;">
-    @for(int x = 0; x < Model.Count; x++)
-            {
+    @for (int x = 0; x < Model.Count; x++)
+    {
 
         <li>
-            <div class="row @GetEventRowClass(Model[x].IsNew)" data-event-link="@GetEventViewUrl(Model[x].Id)" data-event-id="@Model[x].Id" style="margin:5px 5px 5px 0px; display:flex; width:100%; cursor:pointer;">
+            <div class="row @GetEventRowClass(Model[x].IsNew)" data-event-link="@GetEventViewUrl(Model[x].Id)" data-event-attendee-id="@Model[x].EventAttendeeId" data-event-id="@Model[x].Id" style="margin:5px 5px 5px 0px; display:flex; width:100%; cursor:pointer;">
                 @Html.Partial("_DashboardEventListItem", Model[x])
-
             </div>
+            @foreach (var rec in Model[x].Recurrences)
+            {
+                <div class="row @GetEventRowClass(Model[x].IsNew)" data-recurrence-item-id="@Model[x].RecurrenceId.Value" data-event-attendee-id="@rec.EventAttendeeId" data-event-link="@GetEventViewUrl(Model[x].Id)" data-event-id="@rec.Id" style="margin:5px 5px 5px 100px; display:none; width:100%; cursor:pointer;">
+                    @Html.Partial("_DashboardEventListItem", rec)
+                </div>
 
+            }
             @if (x < Model.Count - 1)
             {
                 <div class="row" style="margin-top:10px;">
@@ -50,8 +55,12 @@
                 </div>
 
             }
-            
+
 
         </li>
     }
 </ul>
+
+<div class="row centered" style="margin-top:20px; margin-bottom:40px;">
+    <button style="display:none;" id="btnDeleteEvent" class="btn-primary">Delete Selected Events</button>
+</div>

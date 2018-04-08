@@ -58,15 +58,15 @@
 <input type="hidden" asp-for="EventId" />
 <input type="hidden" asp-for="IsRecurring" />
 <div class="row">
-    <h3 id="lblEventName" class="centered bold">@Model.Details.Name</h3>
+    <h3 id="lblEventName" class="centered" style="font-size:24px; text-transform:none;">@Model.Details.Name</h3>
     @if (Model.Organizers.Count == 1)
     {
-        <h3 class="centered">Organizer:&nbsp;<a href="@Url.Action("View", "Account", new { userId = Model.Organizers[0].Id })">@Model.Organizers[0].Name</a></h3>
+        <h3 class="centered" style="text-transform:none; font-size:16px; margin-top:10px;">Organizer:&nbsp;<a href="@Url.Action("View", "Account", new { userId = Model.Organizers[0].Id })">@Model.Organizers[0].Name</a></h3>
 
     }
     else
     {
-        <h3 class="centered">
+        <h3 class="centered" style="text-transform:none; font-size:16px; margin-top:10px;">
             <span>Organizers: </span>
             @foreach (var org in Model.Organizers)
             {
@@ -76,31 +76,76 @@
 
     }
 </div>
-<div class="row centered">
-    <h3>@Model.Details.Description</h3>
+<div class="row view-event-dashboard" style="margin-top:40px;">
+
+    <div>
+        <h3 style="font-size:13px;">News</h3>
+        @if (Model.Notifications.Notifications.Any())
+        {
+            var newest = Model.Notifications.Notifications.OrderByDescending(x => x.PostedDate).First();
+            <div class="smaller-text" style="font-size:10px;">@newest.DateText</div>
+            <div>@newest.OrganizerName: @newest.NotificationText</div>
+        }
+        else
+        {
+            <h3 style="text-transform:none;">...</h3>
+
+        }
+
+        <div>
+            @if (Model.IsOrganizer)
+            {
+                <a asp-controller="Events" asp-action="ViewMessages" asp-route-eid="@Model.EventId">Add</a>
+
+            }
+            else
+            {
+                <a asp-controller="Events" asp-action="ViewMessages" asp-route-eid="@Model.EventId">View</a>
+
+            }
+
+        </div>
+    </div>
+    <div>
+        <h3 style="font-size:13px;">Messages</h3>
+        @if (Model.Messages.Topics.Any())
+        {
+            var newest = Model.Messages.Topics.SelectMany(x => x.Messages).OrderByDescending(x => x.PostedDate).First();
+            <div class="smaller-text" style="font-size:10px;">@newest.DateText</div>
+            <div>@newest.PostedBy: @newest.MessageText</div>
+        }
+        else
+        {
+            <h3 style="text-transform:none;">...</h3>
+
+        }
+
+        <div>
+            <a asp-controller="Events" asp-action="ViewMessages" asp-route-eid="@Model.EventId">View</a>
+        </div>
+    </div>
     @if (Model.IsOrganizer)
     {
-        <span class="smaller-text edit-links" data-edit-type="details">Edit</span>
-        @*<span class="smaller-text delete-links">Delete</span>*@
+        <div>
+            <h3 style="font-size:13px;">Settings</h3>
+            <div>Check-In Type: @Model.CheckInType</div>
+            <div><span class="edit-links" data-edit-type="settings">Edit</span></div>
+            
+
+        </div>
 
     }
 
 
+
+
 </div>
-@*@if (!Model.IsOrganizer)
-{
-    <div class="row centered" style="height:150px;">
-        <a class="no-decoration"><img src="~/content/images/rsvp-yes.png" style="max-height:100%; max-width:100%; transform:scale(1.3,1.3);" /></a>
-        <a class="no-decoration"><img src="~/content/images/rsvp-maybe.png" style="max-height:100%; max-width:100%; transform:scale(1.3,1.3);" /></a>
-        <a class="no-decoration"><img src="~/content/images/rsvp-no.png" style="max-height:100%; max-width:100%; transform:scale(1.3,1.3);" /></a>
-    </div>
-
-}*@
 
 
-<div class="row view-event-dashboard">
+
+<div class="row view-event-dashboard" style="margin-top:70px;">
     <div class="border-right">
-        <h3>Date &amp; Time</h3>
+        <h3 style="font-size:13px;">Date &amp; Time</h3>
         <div>Starts: @Model.Details.StartTime</div>
 
         @if (Model.IsOrganizer)
@@ -121,7 +166,7 @@
 
     <div class="border-right">
 
-        <h3>Location</h3>
+        <h3 style="font-size:13px;">Location</h3>
         @if (!string.IsNullOrEmpty(Model.Location.LocationName))
         {
             <div>@Model.Location.LocationName</div>
@@ -149,29 +194,24 @@
 
     </div>
     <div>
-
-        <h3>News</h3>
-        @if (Model.Notifications.Notifications.Any())
+        @*description now goes here*@
+        <h3 style="font-size:13px;">Description</h3>
+        <div>@Model.Details.Description</div>
+        @if (Model.IsOrganizer)
         {
-            var newest = Model.Notifications.Notifications.OrderByDescending(x => x.PostedDate).First();
-            <div class="smaller-text">@newest.DateText</div>
-            <div>@newest.OrganizerName: @newest.NotificationText</div>
-        }
-        else
-        {
-            <h3>Slow News Day!</h3>
+            <div>
+
+                <span class="edit-links" data-edit-type="details">Edit</span>
+            </div>
+
 
         }
 
-        <div>
-            <span class="edit-links" data-edit-type="news">Notifications</span>
-            <a asp-controller="Events" asp-action="ViewMessages" asp-route-eid="@Model.EventId">Messages</a>
-        </div>
 
     </div>
 </div>
 
-<div id="details-view-container" style="display:none;" data-view-type="none">
+<div id="details-view-container" style="display:none; margin-top:40px;" data-view-type="none">
     <div class="row" id="details-view"></div>
 
     @*look at an article on WAPO and their social bar on the left*@
@@ -196,20 +236,26 @@
         check in (if applicable)
         notifications vs messages*@
 
-    <div class="row centered">
+    <div class="row centered" style="margin-top:40px;">
         @if (Model.IsOrganizer)
         {
-            <span class="save-links">Save</span>
+            <span class="save-links" style="border-right: 1px solid black; padding-right:20px;">Save</span>
+            <span class="close-links" style="padding-left:20px;">Close</span>
         }
-        <span class="close-links">Close</span>
+        else
+        {
+            <span class="close-links">Close</span>
+
+        }
+
     </div>
 
 </div>
 
-<div class="row centered">
+<div class="row centered" style="margin-top:70px;">
     <h3>Group</h3>
 </div>
-<div class="row centered">
+<div class="row centered" style="margin-top:40px;">
     @Html.Partial("_ViewEventAttendees", Model.Attendees)
 </div>
 

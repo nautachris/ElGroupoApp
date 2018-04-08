@@ -8,7 +8,7 @@ namespace ElGroupo.Domain
 {
     public class User : IdentityUser<long>
     {
-
+        public virtual ICollection<Activity> Activities { get; set; }
         public User()
         {
             this.ContactMethods = new HashSet<UserContactMethod>();
@@ -25,6 +25,10 @@ namespace ElGroupo.Domain
             this.ContactMethods.Add(uc);
         }
 
+
+        public ICollection<UserActivity> CMEActivities { get; set; }
+        public ICollection<UserActivity> NonCMEActivities { get; set; }
+        public virtual Organization Organization { get; set; }
         public virtual ICollection<UnregisteredUserConnection> UnregisteredConnections { get; set; }
         public virtual ICollection<UserContactMethod> ContactMethods { get; set; }
 

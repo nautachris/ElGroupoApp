@@ -20,6 +20,8 @@ namespace ElGroupo.Web.Models.Events
         }
 
         public string GoogleApiKey { get; set; }
+
+        public string CheckInType { get; set; }
                 public CheckInStatuses CheckInStatus { get; set; }
         public RecurrenceListModel[] EventRecurrence { get; set; }
         public bool IsRecurring { get; set; }

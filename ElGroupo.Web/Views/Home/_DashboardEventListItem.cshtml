@@ -28,14 +28,41 @@
     private string GetDateRowText(EventInformationModel model)
     {
         string str = null;
-        if (model.IsRecurring) str = model.DateText + " | recurring";
-        else str = model.DateText;
+        //if (model.IsRecurring && !model.IsRecurrenceItem) str = model.DateText + " | View Recurrences";
+        //else str = model.DateText;
+        str = model.DateText;
         if (model.RSVPRequested) str += "*";
         return str;
 
     }
 }
+@if (!Model.OrganizedByUser)
+{
+    <div style="margin-right:15px;">
+        @if (Model.IsRecurrenceItem)
+        {
+            <input class="delete-recurrence-checkbox" data-recurrence-id="@Model.RecurrenceId.Value" type="checkbox" />
 
+        }
+        else
+        {
+            @if (Model.RecurrenceId.HasValue)
+            {
+                <input class="delete-event-checkbox" data-recurrence-id="@Model.RecurrenceId.Value" type="checkbox" />
+
+            }
+            else
+            {
+
+                <input class="delete-event-checkbox" type="checkbox" />
+            }
+
+        }
+
+
+    </div>
+
+}
 
 <div style="display:flex; flex-direction:column; flex:6;">
     <span id="spanEventName" style="font-weight:bold; font-size:16px; ">@Model.Name</span>
@@ -45,7 +72,16 @@
     {
         <span>@Model.OrganizerName</span>
     }
-    <span>@GetDateRowText(Model)</span>
+    @if (Model.RecurrenceId.HasValue && !Model.IsRecurrenceItem)
+    {
+        <span>@GetDateRowText(Model) | <a data-children-visible="false" data-recurrence-parent-item-id="@Model.RecurrenceId.Value" class="recurrence-link">View Recurrences</a></span>
+        @*<span data-children-visible="false" data-recurrence-parent-item-id="@Model.RecurrenceId.Value" class="recurrence-link">@GetDateRowText(Model)</span>*@
+
+    }
+    else
+    {
+        <span>@GetDateRowText(Model)</span>
+    }
     @*if the event does not require a rsvp, say "rsvp not required"*@
     @if (Model.CheckInStatus == ElGroupo.Domain.Enums.CheckInStatuses.AvailableForCheckIn && Model.RSVPStatus != ElGroupo.Domain.Enums.RSVPTypes.None)
     {
@@ -111,7 +147,7 @@
     }
     else if (Model.RSVPStatus == ElGroupo.Domain.Enums.RSVPTypes.No)
     {
-        <div style="display:table;font-size:14px;">          
+        <div style="display:table;font-size:14px;">
             <div style="width:20px; display:table-cell; height:20px;"><img src="~/content/images/dot-no.png" style="transform:scale(3,3); max-height:100%; max-width:100%;" /></div>
             <div style="margin-left:10px; vertical-align:middle; letter-spacing:normal;">Can't make it!</div>
         </div>
@@ -127,30 +163,13 @@
     }
 
 </div>
+@if (!Model.IsRecurrenceItem)
+{
+    <div class="open-event-arrow" style="height:25px; display:flex; flex:1; align-self:center;"><img id="imgEventArrow" data-recurrence-id="@Model.RecurrenceId" src="~/content/images/open-event.png" style="max-height:100%; max-width:100%" /></div>
+    <div class="close-event-arrow" style="height:25px; display:none; flex:1; align-self:center;"><img id="imgEventArrow" data-recurrence-id="@Model.RecurrenceId" src="~/content/images/close-event.png" style="max-height:100%; max-width:100%" /></div>
+
+}
 
 
 
-
-
-
-
-
-
-
-
-
-
-<div style="height:25px; display:flex; flex:1; align-self:center;"><img src="~/content/images/open-event.png" style="max-height:100%; max-width:100%" /></div>
-
-@*@if (Model.IsNew)
-    {
-        <div style="display:flex; flex:1; flex-direction:column; align-self:center; margin-right:30px; font-size:16px; font-weight:bold; background:darkgreen; padding:5px; border-radius:10px; color:white;">New</div>
-        <div style="display:flex; flex:1; flex-direction:column; align-self:center;"></div>
-
-    }
-    else
-    {
-        <div style="display:flex; flex-direction:column; align-self:center; margin-right:30px; font-size:20px; font-weight:bold;">></div>
-
-    }*@
 

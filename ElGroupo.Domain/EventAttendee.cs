@@ -8,6 +8,8 @@ namespace ElGroupo.Domain
     public class EventAttendee:ClassBase
     {
         //public int UserId { get; set; }
+
+        public bool Active { get; set; } = true;
         public long EventId { get; set; }
 
         [Required]

@@ -125,6 +125,7 @@ namespace ElGroupo.Web.Controllers
                         var localPostedDate = msg.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(attendee.User.TimeZoneId));
                         topicModel.Messages.Add(new EventMessageModel
                         {
+                            TopicName = topic.Subject,
                             MessageText = msg.MessageText,
                             CanEdit = msg.PostedBy.Id == user.Id,
                             PostedBy = msg.PostedBy.Name,

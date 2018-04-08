@@ -233,117 +233,121 @@
 @if (Model.IsOrganizer)
 {
 
-    <div class="row tab add-attendees contact-form" style="display:none;">
-        @*<h2>Invite more people to your event</h2>*@
+<div class="row tab add-attendees contact-form" style="display:none;">
+    @*<h2>Invite more people to your event</h2>*@
+    <div id="divEditEventAttendees" class="row">
         @Html.Partial("_EditEventAttendees", Model.Details)
 
     </div>
+       
 
-}
-
-<div class="row tab attendees contact-form">
-
-
-    <div id="divViewAttendees">
-        @Html.Partial("_ViewEventAttendees", Model.Attendees)
     </div>
 
-</div>
-<div class="row tab notifications contact-form">
-    @*<h2>Notifications</h2>*@
-    <div id="divNotifications">
-        @Html.Partial("_ViewEventNotifications", Model.Notifications)
+    }
+
+    <div class="row tab attendees contact-form">
+
+
+        <div id="divViewAttendees">
+            @Html.Partial("_ViewEventAttendees", Model.Attendees)
+        </div>
+
+    </div>
+    <div class="row tab notifications contact-form">
+        @*<h2>Notifications</h2>*@
+        <div id="divNotifications">
+            @Html.Partial("_ViewEventNotifications", Model.Notifications)
+        </div>
+
+        @*@if (Model.IsOrganizer)
+            {
+                @Html.Partial("_EditEventNotifications")
+
+            }*@
     </div>
 
-    @*@if (Model.IsOrganizer)
+    <div class="row tab messages contact-form">
+        @*<h2>Message Board</h2>*@
+        <div id="divMessages">
+            @Html.Partial("_ViewEventMessages", Model.Messages)
+        </div>
+
+        @Html.Partial("_AddEventTopic")
+    </div>
+
+
+    @if (Model.IsRecurring)
     {
-        @Html.Partial("_EditEventNotifications")
+        <div class="row tab recurrence contact-form" style="display:none;">
+            @if (Model.EventRecurrence?.Length > 0)
+            {
+                <h3>Other Related Events</h3>
 
-    }*@
-</div>
-
-<div class="row tab messages contact-form">
-    @*<h2>Message Board</h2>*@
-    <div id="divMessages">
-        @Html.Partial("_ViewEventMessages", Model.Messages)
-    </div>
-    
-    @Html.Partial("_AddEventTopic")
-</div>
-
-
-@if (Model.IsRecurring)
-{
-    <div class="row tab recurrence contact-form" style="display:none;">
-        @if (Model.EventRecurrence?.Length > 0)
-        {
-            <h3>Other Related Events</h3>
-
-            <ul style="list-style:none;">
-                @foreach (var e in Model.EventRecurrence)
-                {
-                    <li data-event-id="@e.Id">
-                        <div class="row">
-                            <div class="col">
-                                <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="no-decoration">
-                                    <span id="spanEventName" style="font-weight:bold; ">
-                                        @e.Name
-                                    </span>
-                                    <span>@e.DateText</span>
-                                </a>
+                <ul style="list-style:none;">
+                    @foreach (var e in Model.EventRecurrence)
+                    {
+                        <li data-event-id="@e.Id">
+                            <div class="row">
+                                <div class="col">
+                                    <a asp-controller="Events" asp-action="View" asp-route-eid="@e.Id" class="no-decoration">
+                                        <span id="spanEventName" style="font-weight:bold; ">
+                                            @e.Name
+                                        </span>
+                                        <span>@e.DateText</span>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
 
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <h2>There should be recurring events here...</h2>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <h2>There should be recurring events here...</h2>
 
-        }
+            }
 
-    </div>
+        </div>
 
-}
-
-
-@if (Model.IsOrganizer)
-{
-    <div class="row centered" style="margin-top:20px; margin-bottom:40px;">
-        <button id="btnDeleteEvent" class="btn-primary">Delete Event</button>
-    </div>
+    }
 
 
-}
-
-@section Scripts{
-    <script type="text/javascript" src="~/content/scripts/events/view-event.js"></script>
-    <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
-    <script type="text/javascript" src="~/content/scripts/events/view-event-notifications.js"></script>
-    <script type="text/javascript" src="~/content/scripts/events/edit-event-attendees.js"></script>
     @if (Model.IsOrganizer)
     {
-        <script type="text/javascript" src="~/content/scripts/events/edit-event-notifications.js"></script>
-        <script type="text/javascript" src="~/content/scripts/events/edit-event.js"></script>
+        <div class="row centered" style="margin-top:20px; margin-bottom:40px;">
+            <button id="btnDeleteEvent" class="btn-primary">Delete Event</button>
+        </div>
 
 
     }
-    <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            Maps.Init({
-                mapDiv: 'divMap',
-                mapLoadedCallback: ViewEvent.MapLoaded
+
+    @section Scripts{
+        <script type="text/javascript" src="~/content/scripts/events/view-event.js"></script>
+        <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
+        <script type="text/javascript" src="~/content/scripts/events/view-event-notifications.js"></script>
+        <script type="text/javascript" src="~/content/scripts/events/edit-event-attendees.js"></script>
+        @if (Model.IsOrganizer)
+        {
+            <script type="text/javascript" src="~/content/scripts/events/edit-event-notifications.js"></script>
+            <script type="text/javascript" src="~/content/scripts/events/edit-event.js"></script>
+
+
+        }
+        <script type="text/javascript" src="~/content/scripts/shared/maps.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                Maps.Init({
+                    mapDiv: 'divMap',
+                    mapLoadedCallback: ViewEvent.MapLoaded
+                });
+
             });
-
-        });
-    </script>
-@*AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk*@
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=@Model.GoogleApiKey&libraries=places,drawing&callback=Maps.InitMap">
-</script>
+        </script>
+        @*AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk*@
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=@Model.GoogleApiKey&libraries=places,drawing&callback=Maps.InitMap">
+        </script>
 
 
 
-}
+    }

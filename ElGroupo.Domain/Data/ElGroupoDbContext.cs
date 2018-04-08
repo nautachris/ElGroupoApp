@@ -22,6 +22,9 @@ namespace ElGroupo.Domain.Data
 
     public class ElGroupoDbContext : IdentityDbContext<User, IdentityRole<long>, long>
     {
+
+        public DbSet<CMEActivity> CMEActivities { get; set; }
+        public DbSet<NonCMEActivity> NonCMEActivities { get; set; }
         public DbSet<Lookups.ContactMethod> ContactTypes { get; set; }
 
         public DbSet<UnregisteredEventAttendee> UnregisteredEventAttendees { get; set; }
@@ -114,6 +117,8 @@ namespace ElGroupo.Domain.Data
             builder.Entity<MessageBoardTopic>().HasMany(x => x.Messages).WithOne(x => x.Topic).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
             builder.Entity<MessageBoardItem>().HasMany(x => x.Attendees).WithOne(x => x.MessageBoardItem).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
             builder.Entity<EventAttendee>().HasMany(x => x.MessageBoardItems).WithOne(x => x.Attendee).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+
+            builder.Entity<EventAttendee>().Property(x => x.Active).ForSqlServerHasDefaultValue(true);
             builder.Entity<EventAttendee>().HasMany(x => x.Notifications).WithOne(x => x.Attendee).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
 
 
@@ -124,6 +129,55 @@ namespace ElGroupo.Domain.Data
             //builder.Entity<EventOrganizer>().HasOne(x => x.User).WithMany(y => y.OrganizedEvents).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Cascade);
             builder.Entity<MessageBoardItemAttendee>().HasOne(x => x.MessageBoardItem).WithMany(x => x.Attendees);
 
+
+            //accreditationdocument
+
+            //accreditedorganization
+            //organization
+            //cmeactivity
+            //activity
+            //cmeactivitytype
+            //organization
+            //useractivity
+
+
+            //this works if an activity would only have a sinlge document, but if multiple we need a junction table
+            builder.Entity<AccreditationDocument>().ToTable("AccreditationDocument");
+            builder.Entity<AccreditationDocument>().HasKey(x => x.Id);
+            builder.Entity<AccreditationDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<AccreditationDocument>().HasMany(x => x.Activities).WithOne(x => x.Document).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+
+            builder.Entity<Organization>().ToTable("Organization");
+            builder.Entity<Organization>().HasKey(x => x.Id);
+            builder.Entity<Organization>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<Organization>().HasMany(x => x.Users).WithOne(x => x.Organization);
+            builder.Entity<Organization>().HasMany(x => x.Conferences).WithOne(x => x.Organization);
+
+            builder.Entity<Activity>().ToTable("Activity").HasDiscriminator<int>("ActivityType").HasValue<CMEActivity>(1).HasValue<NonCMEActivity>(2);
+            builder.Entity<Activity>().HasKey(x => x.Id);
+            builder.Entity<Activity>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<Activity>().HasOne(x => x.Organization).WithMany(x=>x.CMEActivities).HasForeignKey(x=>x.OrganizationId);
+            builder.Entity<Activity>().HasMany(x => x.Users).WithOne(x=>x.Activity);
+            builder.Entity<CMEActivity>().HasOne(x => x.CMEType);
+            builder.Entity<CMEActivity>().HasOne(x => x.Conference);
+
+            builder.Entity<CMEActivityType>().ToTable("CMEActivityType");
+            builder.Entity<CMEActivityType>().HasKey(x => x.Id);
+            builder.Entity<CMEActivityType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+
+            builder.Entity<UserActivityDocument>().ToTable("UserActivity");
+            builder.Entity<UserActivityDocument>().HasKey(x => x.Id);
+            builder.Entity<UserActivityDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<UserActivityDocument>().HasOne(x => x.Document).WithMany(x=>x.Activities).HasForeignKey(x=>x.AccreditationDocumentId);
+            builder.Entity<UserActivityDocument>().HasOne(x => x.UserActivity).WithMany(x=>x.Documents).HasForeignKey(x=>x.UserActivityId);
+
+            builder.Entity<Conference>().ToTable("Conference");
+            builder.Entity<Conference>().HasKey(x => x.Id);
+            builder.Entity<Conference>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<Conference>().HasMany(x => x.CMEActivities).WithOne(x=>x.Conference);
+            builder.Entity<Conference>().HasMany(x => x.NonCMEActivities).WithOne(x=>x.Conference);
+            
+            //builder.Entity<CMEActivity>().HasOne(x => x.Conference).WithMany(x=>x.cm;
         }
 
 
@@ -150,7 +204,7 @@ namespace ElGroupo.Domain.Data
             var ctx = provider.GetRequiredService<ElGroupoDbContext>();
             try
             {
-                
+
                 var cnt = 0;
                 foreach (var u in ctx.Users.ToList())
                 {

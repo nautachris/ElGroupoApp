@@ -6,7 +6,7 @@
 
     Layout = null;
 }
-<form id="frmEditEventDetails" class="contact-form centered">
+<form id="frmEditEventDetails" class="centered">
     @*<input type="hidden" id="OriginalStatus" value="@Model.Status" />*@
     <input asp-for="EventId" type="hidden" />
     <div class="row">
@@ -17,7 +17,7 @@
             <input class="width-100" asp-for="Name" placeholder="Enter Event Name...">
         </div>
     </div>
-    <div class="row">
+    <div class="row" style="margin-top:40px;">
         <div class="row">
             <label asp-for="Description">Description:</label>
         </div>
@@ -25,20 +25,7 @@
             <textarea class="width-100" asp-for="Description" placeholder="Enter Event Description..."></textarea>
         </div>
     </div>
-    <div class="row">
-        <label>RSVP Required?</label>
-    </div>
-    <div class="row">
 
-        <div class="col span-1-of-2">
-            <input id="idRSVPYes" type="radio" asp-for="RSVPRequired" value="true" />
-            <label for="idRSVPYes">Yes</label>
-        </div>
-        <div class="col span-1-of-2">
-            <input id="idRSVPNo" type="radio" asp-for="RSVPRequired" value="false" />
-            <label for="idRSVPNo">No</label>
-        </div>
-    </div>
     <div class="row verification-method">
         <label>Check-In Verification:</label>
     </div>

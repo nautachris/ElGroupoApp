@@ -8,6 +8,10 @@ namespace ElGroupo.Web.Models.Events
 {
     public class EventInformationModel
     {
+        public long EventAttendeeId { get; set; } = 0;
+        public long? RecurrenceId { get; set; }        public List<EventInformationModel> Recurrences { get; set; } = new List<EventInformationModel>();
+
+        public bool IsRecurrenceItem { get; set; }
         public CheckInStatuses CheckInStatus { get; set; }
 
 

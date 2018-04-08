@@ -332,7 +332,15 @@ namespace ElGroupo.Web.Controllers
             var model = await this.eventService.GetEventViewModel(eid, accessLevel.userId, accessLevel.accessType);
             return View("View_New", model);
         }
-
+                [Authorize]
+        [HttpGet, HttpPost]
+        [Route("{eid}/ViewNewAgain", Name = "ViewNewAgain")]
+        public async Task<IActionResult> ViewNewAgain([FromRoute]long eid)
+        {
+            var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
+            var model = await this.eventService.GetEventViewModel(eid, accessLevel.userId, accessLevel.accessType);
+            return View("View_New_Again", model);
+        }
         [Authorize]
         [HttpGet]
         [Route("{eid}/CheckIn", Name = "CheckIn")]
@@ -388,7 +396,15 @@ namespace ElGroupo.Web.Controllers
             }
         }
 
-
+                [Authorize]
+        [HttpPost]
+        [Route("SetEventInactive")]
+        public async Task<IActionResult> SetEventAttendeeInactive([FromBody]SetEventInactiveModel model)
+        {
+            var res = await this.eventService.SetEventAttendeesInactive(model.Ids);
+            if (res.Success) return Ok(model.Ids);
+            return Json(res);
+        }
 
 
         /// <summary>

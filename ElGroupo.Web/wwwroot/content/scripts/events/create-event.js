@@ -22,9 +22,12 @@ CreateEvent = {
                 $('#create-step-description').text("Give your event a name and a brief description about what it's about.");
                 $("#btnPreviousStep").hide();
                 $("#btnNextStep").show();
+                $("#btnNextStep").css('margin-left', '0px');
                 $("#divSubmit").hide();
                 break;
             case 2:
+                $("#btnNextStep").css('margin-left', '45px');
+                $("#btnPreviousStep").css('margin-right', '45px');
                 if ($("#idRecurringYes").is(":checked")) {
                     $('#create-step').text('Step 2 of 5');
                 }
@@ -40,6 +43,8 @@ CreateEvent = {
                 $("#EndDate").datepicker();
                 break;
             case 3:
+                $("#btnNextStep").css('margin-left', '45px');
+                $("#btnPreviousStep").css('margin-right', '45px');
                 $('#create-step').text('Step 3 of 5');
                 $('#create-step-title').text('Recurrence');
                 $('#create-step-description').text('When and how often is the event occurring?');
@@ -48,6 +53,8 @@ CreateEvent = {
                 $("#divSubmit").hide();
                 break;
             case 4:
+                $("#btnNextStep").css('margin-left', '45px');
+                $("#btnPreviousStep").css('margin-right', '45px');
                 if ($("#idRecurringYes").is(":checked")) {
                     $('#create-step').text('Step 4 of 5');
                 }
@@ -78,10 +85,169 @@ CreateEvent = {
                 $('#create-step-title').text('Check-In');
                 $('#create-step-description').text('Tell your invitees how they can check in.');
                 $("#btnPreviousStep").show();
+                $("#btnPreviousStep").css('margin-right', '0px');
                 $("#btnNextStep").hide();
                 $("#divSubmit").show();
                 break;
         }
+    },
+    GetStartDate: function () {
+        var startDate = new Date($("#StartDate").val());
+        var startHour = Number($("#StartHour").val());
+        var startMinute = Number($("#StartMinute").val());
+        var startAMPM = $("#StartAMPM").val();
+        var isPM = startAMPM === 'PM';
+        var hour = 0;
+        if (isPM) {
+            
+            if (startHour === 12) {
+                hour = 12;
+            }
+            else {
+                hour = startHour + 12;
+            }
+
+        }
+        else {
+            if (startHour === 12) {
+                hour = 0;
+            }
+            else {
+                hour = startHour;
+            }
+        }
+
+        startDate.setHours(hour);
+        startDate.setMinutes(startMinute);
+        console.log('startdate');
+        console.log(startDate);
+        return startDate;
+    },
+    GetEndDate: function () {
+        var startDate = new Date($("#EndDate").val());
+        var startHour = Number($("#EndHour").val());
+        console.log(startHour);
+        var startMinute = Number($("#EndMinute").val());
+        console.log(startMinute);
+        var startAMPM = $("#EndAMPM").val();
+        var isPM = startAMPM === 'PM';
+        var hour = 0;
+        if (isPM) {
+
+            if (startHour === 12) {
+                hour = 12;
+            }
+            else {
+                hour = startHour + 12;
+            }
+
+        }
+        else {
+            if (startHour === 12) {
+                hour = 0;
+            }
+            else {
+                hour = startHour;
+            }
+        }
+
+        startDate.setHours(hour);
+        startDate.setMinutes(startMinute);
+        console.log('enddate');
+        console.log(startDate);
+        return startDate;
+
+    },
+    ValidateStep: function (step) {
+        console.log('validate step: ' + step);
+        var errors = [];
+        if (step === 1) {
+            if ($("#Name").val() === '') {
+                errors.push('Event Name is Required');
+            }
+            else if ($("#Name").val().toString().trimLeft().trimRight() === '') {
+                errors.push('Event Name is Required');
+            }
+
+        }
+        else if (step === 2) {
+            var sd = CreateEvent.GetStartDate();
+            var ed = CreateEvent.GetEndDate();
+            if (ed <= sd) errors.push('The event end date must be after the start date');
+        }
+        else if (step === 3) {
+            //recurrance
+            if ($("#rbRecurrenceDaily").is(":checked")) {
+                if ($("#Recurrence_RecurrenceInterval").val() === '') errors.push('Daily recurrence interval is required');
+                if ($("#Recurrence_RecurrenceLimit").val() === '') errors.push('Recurrence limit is required');
+                else if (Number($("#Recurrence_RecurrenceLimit").val()) > 25) errors.push('The maximum number of event recurrences is 25');
+
+
+            }
+            else if ($("#rbRecurrenceWeekly").is(":checked")) {
+                if ($("#Recurrence_RecurrenceInterval").val() === '') errors.push('Weekly recurrence interval is required');
+                if ($("#Recurrence_RecurrenceLimit").val() === '') errors.push('Recurrence limit is required');
+                else if (Number($("#Recurrence_RecurrenceLimit").val()) > 25) errors.push('The maximum number of event recurrences is 25');
+                console.log('days selected');
+                console.log($(".days-of-week :checkbox:checked").length);
+                if ($(".days-of-week :checkbox:checked").length === 0) {
+                    errors.push('At least one day of the week must be selected for weekly recurring events');
+
+                }
+            }
+            else {
+                if ($("#Recurrence_RecurrenceInterval").val() === '') errors.push('Monthly recurrence interval is required');
+                if ($("#Recurrence_RecurrenceLimit").val() === '') errors.push('Recurrence limit is required');
+                else if (Number($("#Recurrence_RecurrenceLimit").val()) > 25) errors.push('The maximum number of event recurrences is 25');
+
+                if ($("#Recurrence_DaysOfMonth").val() === '') errors.push('There must be at least one day of the month selected for a monthly recurring event');
+                var daysOfMonth = $("#Recurrence_DaysOfMonth").val();
+                console.log(daysOfMonth);
+                var splt = daysOfMonth.toString().split(',');
+                console.log(splt);
+
+                for (var x = 0; x < splt.length; x++) {
+                    console.log(splt[x]);
+                    var testInt = Number(splt[x]);
+                    if (isNaN(testInt)) errors.push('There are invalid days of the month entered: ' + splt[x]);
+                    else if (testInt > 31) errors.push('An invalid day of the month has been entered: ' + splt[x]);
+                }
+
+            }
+        }
+        else if (step === 4) {
+            if ($("#GooglePlaceId").val() === '') errors.push('A Google Place reference is required');
+
+        }
+        else if (step === 5) {
+            if ($("#rbVerifyPasswordOrLocation").is(":checked")) {
+                if ($("#VerificationCode").val() === '') errors.push('Password is required');
+            }
+            else if ($("#rbVerifyPassword").is(":checked")) {
+                if ($("#VerificationCode").val() === '') errors.push('Password is required');
+
+                //loc-tolerance-custom
+                if ($("#loc-tolerance-custom").is(":checked")) {
+                    if ($("#LocationTolerance").val() === '') errors.push('Custom location tolerance is required');
+                }
+            }
+
+        }
+        console.log(errors);
+        if (errors.length > 0) {
+            $("#divValidationSummary ul li").remove();
+            for (var x = 0; x < errors.length; x++) {
+                $("#divValidationSummary ul").append('<li>' + errors[x] +'</li>');
+            }
+            $("#divValidationSummary").show();
+            return false;
+        }
+        else {
+            $("#divValidationSummary").hide();
+            return true;
+        }
+
+        
     },
     Init: function () {
 
@@ -103,8 +269,9 @@ CreateEvent = {
         $("div.is-recurring input[type=radio]").on("change", CreateEvent.EventHandlers.RecurrenceChanged);
         $("#btnSubmit").on("click", CreateEvent.EventHandlers.SubmitClicked);
         $("#btnSearchAddress").on("click", CreateEvent.EventHandlers.AddressSearchClicked);
-
+        $("#btnNextStep").css('margin-left', '0px');
         $("#btnNextStep").on("click", function () {
+            if (!CreateEvent.ValidateStep(CreateEvent.ActiveStep)) return;
             if (CreateEvent.ActiveStep === 5) return;
             if (CreateEvent.ActiveStep === 2) {
                 //if recur, set to 3
@@ -182,6 +349,7 @@ CreateEvent = {
             //console.log(frm);
             //var frm2 = $("#frmCreateEvent").serialize();
             //console.log(frm2);
+            if (!CreateEvent.ValidateStep(5)) return;
 
 
             console.log($("#frmCreateEvent").serialize());

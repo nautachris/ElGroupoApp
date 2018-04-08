@@ -256,6 +256,13 @@ EditEventAttendees = {
     Init: function () {
         EditEventAttendees.EventId = Number($("#EventId").val());
 
+        //$("#divAddNewAttendee").on("click", function (evt) {
+        //    console.log('add att clicked');
+        //    evt.stopPropagation();
+        //    $("a.links[data-link-type=add-attendees]").click();
+        //});
+
+
         $("#btnSendRSVPReminders").on("click", EditEventAttendees.EventHandlers.SendRSVPClicked);
         $("#btnSaveAttendeeChanges").on("click", EditEventAttendees.EventHandlers.SaveAttendeeChangesClicked);
         $("html").on("click", ".pending-attendee-links a", EditEventAttendees.EventHandlers.PendingAttendeeLinkClicked);

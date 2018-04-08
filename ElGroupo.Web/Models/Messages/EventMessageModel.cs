@@ -31,6 +31,7 @@ namespace ElGroupo.Web.Models.Messages
 
     public class EventMessageModel
     {
+        public string TopicName { get; set; }
         public bool CanEdit { get; set; }
         public string PostedBy { get; set; }
         public long PostedById { get; set; }

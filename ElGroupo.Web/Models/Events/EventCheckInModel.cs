@@ -32,4 +32,9 @@ namespace ElGroupo.Web.Models.Events
         public string Password { get; set; }
 
     }
+
+    public class SetEventInactiveModel
+    {
+        public long[] Ids { get; set; }
+    }
 }

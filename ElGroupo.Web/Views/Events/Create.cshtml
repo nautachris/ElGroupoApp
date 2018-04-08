@@ -25,7 +25,10 @@
             <h2>Create a new event</h2>
         </div>*@
     <div class="row">
-        <div asp-validation-summary="All" class="text-danger"></div>
+        <div id="divValidationSummary" style="display:none;" class="text-danger">
+            <ul></ul>
+        </div>
+        @*<div asp-validation-summary="All" class="text-danger"></div>*@
         <form id="frmCreateEvent" asp-controller="Events" asp-action="Create" method="post" class="contact-form">
             <h3 id="create-step" style="text-align:center;">Step 1 of 4</h3>
             <h4 id="create-step-title">Name &amp; Description</h4>
@@ -170,12 +173,7 @@ else
 
             <div data-create-step="4" style="display:none;margin-top:40px;">
 
-                <div class="row">
-                    <label asp-for="LocationName">Location Description:</label>
-                    <div class="row">
-                        <input class="width-100" asp-for="LocationName">
-                    </div>
-                </div>
+
 
                 <div class="row">
                     <label>Location Search Method:</label>
@@ -200,16 +198,8 @@ else
                 </div>
 
 
-                @*<div class="row">
-                        <label>Location Search Method:</label>
-                        <div class="switch-container map-select row">
-                            <span data-map-select="address" class="switch-selected col span-1-of-4">Address</span>
-                            <span data-map-select="business" class="col span-1-of-4">Business</span>
-                            <span data-map-select="draw" class="col span-1-of-4">Drop a Pin</span>
-                            <span data-map-select="manual" class="col span-1-of-4">Manual Entry</span>
-                        </div>
-                    </div>*@
-                <div class="row location-search">
+
+                <div class="row location-search" style="margin-top:40px;">
                     <label id="lblSearchType">Search Address:</label>
                     <div class="row">
                         <input style="width:100%;" id="txtAutocompleteSearch" type="text" />
@@ -229,14 +219,14 @@ else
                 </div>
 
                 <div class="row manual-search">
-                    <div class="col span-1-of-4">
+                    <div class="col span-1-of-4" style="text-align:left;">
                         <label asp-for="Address1">Address 1:</label>
                     </div>
                     <div class="col span-3-of-4">
                         <input class="width-100" asp-for="Address1">
                     </div>
                 </div>
-                <div class="row manual-search">
+                <div class="row manual-search" style="text-align:left;">
                     <div class="col span-1-of-4">
                         <label asp-for="Address2">Address 2:</label>
                     </div>
@@ -245,7 +235,7 @@ else
                     </div>
                 </div>
                 <div class="row manual-search">
-                    <div class="col span-1-of-4">
+                    <div class="col span-1-of-4" style="text-align:left;">
                         <label asp-for="City">City:</label>
                     </div>
                     <div class="col span-3-of-4">
@@ -253,7 +243,7 @@ else
                     </div>
                 </div>
                 <div class="row manual-search">
-                    <div class="col span-1-of-8">
+                    <div class="col span-1-of-8" style="text-align:left;">
                         <label asp-for="State">State:</label>
                     </div>
                     <div class="col span-3-of-8">
@@ -269,6 +259,13 @@ else
                 <div class="row manual-search-button centered" style="display:none;">
                     <input type="button" class="btn btn-primary" id="btnSearchAddress" value="Search Address" />
                 </div>
+                <div class="row" style="margin-top:40px;">
+                    <label asp-for="LocationName">Location Description:</label>
+                    <div class="row">
+                        <input class="width-100" asp-for="LocationName">
+                    </div>
+                </div>
+
                 <input type="hidden" asp-for="XCoord" />
                 <input type="hidden" asp-for="YCoord" />
                 <input type="hidden" asp-for="GooglePlaceId" />
@@ -316,7 +313,7 @@ else
                             <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Password...">
                         </div>
                     </div>*@
-                <div class="row verification-code" style="display:none;">
+                <div class="row verification-code" style="display:none; margin-top:40px;">
                     <div class="row">
                         <label asp-for="VerificationCode">Password:</label>
                     </div>
@@ -324,57 +321,67 @@ else
                         <input type="text" asp-for="VerificationCode" class="width-100" placeholder="Enter Event Password...">
                     </div>
                 </div>
-                <div class="row location-tolerance" style="display:none;">
+                <div class="row location-tolerance" style="display:none; margin-top:40px;">
                     <div class="row">
                         <label>Required Location Accuracy</label>
                         <h5>User must be within this distance of the event location to successfully check in</h5>
                         <h5>Location accuracy is based on users device and requires the user to allow Footprint to view their location</h5>
                     </div>
-                    <div class="col span-1-of-4">
+                    <div class="col span-1-of-6"></div>
+                    <div class="col span-1-of-6">
                         <input type="radio" value="high" id="loc-tolerance-high" name="loc-tolerance" />
                         <label for="loc-tolerance-high">High</label>
                     </div>
-                    <div class="col span-1-of-4">
+                    <div class="col span-1-of-6">
                         <input type="radio" value="medium" id="loc-tolerance-medium" name="loc-tolerance" />
                         <label for="loc-tolerance-medium">Medium</label>
                     </div>
-                    <div class="col span-1-of-4">
+                    <div class="col span-1-of-6">
                         <input type="radio" value="low" id="loc-tolerance-low" name="loc-tolerance" checked />
                         <label for="loc-tolerance-low">Low</label>
                     </div>
-                    <div class="col span-1-of-4">
+                    <div class="col span-1-of-6">
                         <input type="radio" value="custom" id="loc-tolerance-custom" name="loc-tolerance" />
                         <label for="loc-tolerance-custom">Custom</label>
                     </div>
-
+                    <div class="col span-1-of-6"></div>
 
                 </div>
-                <div class="row location-tolerance-custom" style="display:none;">
-                    <div class="row">
-                        <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
+                    <div class="row location-tolerance-custom" style="display:none;">
+                        <div class="row">
+                            <label asp-for="LocationTolerance">Location Tolerance (ft):</label>
+                        </div>
+                    </div>
+                    <div class="row location-tolerance-custom" style="display:none;">
+                        <div class="row">
+                            <input asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
+                        </div>
                     </div>
                 </div>
-                <div class="row location-tolerance-custom" style="display:none;">
-                    <div class="row">
-                        <input id="l" asp-for="LocationTolerance" class="width-100" placeholder="Enter Location Tolerance...">
-                    </div>
-                </div>
-            </div>
             @*end 4*@
 
 
 
 
-            <div class="row" id="divSubmit" style="display:none;">
+            <div class="row" id="divSubmit" style="display:none; margin-top:40px;">
                 <div class="col span-3-of-3 centered">
                     <a class="btn btn-primary width-100" id="btnSubmit">Save and Invite!</a>
                 </div>
             </div>
-
-            <div class="row" id="divMoveSteps">
-                <div class="col span-3-of-3 centered">
+            @*<div class="row">
+                <div class="col span-1-of-2" style="text-align:left;">
                     <a class="btn btn-primary" style="padding-left:15px; padding-right:15px; display:none; margin-right:15px;" id="btnPreviousStep"><< Back</a>
+                </div>
+                <div class="col span-1-of-2" style="text-align:left;">
                     <a class="btn btn-primary" style="margin-left:15px; padding-left:15px; padding-right:15px;" id="btnNextStep">Next >></a>
+                </div>
+            </div>*@
+            <div class="row" id="divMoveSteps" style="margin-top:40px;">
+                
+                <div class="col span-3-of-3 centered">
+
+                    <a class="btn btn-primary" style="padding-left:15px; padding-right:15px; display:none; margin-right:45px;" id="btnPreviousStep"><< Back</a>
+                    <a class="btn btn-primary" style="margin-left:45px; padding-left:15px; padding-right:15px;" id="btnNextStep">Next >></a>
                 </div>
             </div>
         </form>
