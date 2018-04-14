@@ -4,11 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElGroupo.Domain
+namespace ElGroupo.Domain.Activities
 {
     public class Organization:ClassBase
     {
-                public string AccreditationId { get; set; }
+        public Organization()
+        {
+            this.Departments = new HashSet<Department>();
+            this.Accreditations = new HashSet<OrganizationAccreditation>();
+        }
+            
         public string Name { get; set; }
         public string Address1 { get; set; }
         public string Address2 { get; set; }
@@ -17,10 +22,8 @@ namespace ElGroupo.Domain
         public string State { get; set; }
         public string Zip { get; set; }
 
+        public ICollection<Department> Departments { get; set; }
+        public ICollection<OrganizationAccreditation> Accreditations { get; set; }
 
-                public virtual ICollection<Conference> Conferences { get; set; }
-        public virtual ICollection<CMEActivity> CMEActivities { get; set; }
-        public virtual ICollection<NonCMEActivity> NonCMEActivities { get; set; }
-        public virtual ICollection<User> Users { get; set; }
     }
 }

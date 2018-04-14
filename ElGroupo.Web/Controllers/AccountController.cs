@@ -489,6 +489,78 @@ namespace ElGroupo.Web.Controllers
             return View("_ConnectionList", await _accountService.GetUserConnections(user.Id));
         }
 
+        [HttpGet]
+        [Route("Departments")]
+        public async Task<IActionResult> Departments()
+        {
+            var user = await CurrentUser();
+            var model = _accountService.GetUserDepartments(user.Id);
+            //model.clientId = this.googleOptions.GoogleClientId;
+            //model.apiKey = this.googleOptions.GoogleApiKey;
+            //model.ShowSaveConfirmation = showConfirm;
+            return View(model);
+        }
+
+        [HttpPost]
+        [Route("SaveUserDepartments")]
+        public async Task<IActionResult> SaveUserDepartments([FromBody]EditUserDepartmentsModel[] model)
+        {
+            var user = await CurrentUser();
+            var response = await _accountService.UpdateUserDepartments(user.Id, model);
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("AddOrganizationDepartment")]
+        public async Task<IActionResult> AddOrganizationDepartment([FromBody]AddDepartmentModel model)
+        {
+            var user = await CurrentUser();
+            var response = await _accountService.AddOrganizationDepartment(user.Id, model);
+            if (response.Success)
+            {
+                var deptId = Convert.ToInt64(response.ResponseData);
+                var newModel = new SelectDepartmentModel { Id = deptId, Name = model.DepartmentName, IsSelected = false, Groups = new List<SelectDepartmentUserGroupModel>() };
+                return View("_OrganizationDepartment", newModel);
+            }
+            else
+            {
+                return BadRequest(new { Message = response.ErrorMessage });
+            }
+        }
+
+        [HttpPost]
+        [Route("DeleteDepartment")]
+        public async Task<IActionResult> DeleteDepartment([FromBody]DeleteDepartmentModel model)
+        {
+            var user = await CurrentUser();
+            var response = await _accountService.DeleteDepartment(model.DepartmentId);
+            if (response.Success)
+            {
+                var deptId = Convert.ToInt64(response.ResponseData);
+                return Ok(new { id = deptId });
+            }
+            else
+            {
+                return BadRequest(new { Message = response.ErrorMessage });
+            }
+        }
+
+        [HttpPost]
+        [Route("DeleteDepartmentGroup")]
+        public async Task<IActionResult> DeleteDepartmentGroup([FromBody]DeleteDepartmentGroupModel model)
+        {
+            var user = await CurrentUser();
+            var response = await _accountService.DeleteDepartmentGroup(model.GroupId);
+            if (response.Success)
+            {
+                var deptId = Convert.ToInt64(response.ResponseData);
+                return Ok(new { id = deptId });
+            }
+            else
+            {
+                return BadRequest(new { Message = response.ErrorMessage });
+            }
+        }
 
         [HttpGet]
         [Route("Edit")]

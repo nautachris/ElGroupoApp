@@ -63,7 +63,7 @@ namespace ElGroupo.Web.Controllers
             var allEvents = new List<EventInformationModel>();
             //do we want a third "tab" for events I'm organizing?
             var user = await this.CurrentUser();
-            var organizedEvents = dbContext.EventAttendees.Include(x => x.User).Where(x => x.User.Id == user.Id && x.Active && x.IsOrganizer).Select(x =>
+            var organizedEvents = dbContext.EventAttendees.Include(x => x.User).Where(x => x.User.Id == user.Id && x.Active == true && x.IsOrganizer).Select(x =>
             new
             {
                 ea = x,
@@ -71,7 +71,7 @@ namespace ElGroupo.Web.Controllers
                 rec = x.Event.Recurrence
             }).ToList();
             //e.StartTime.ToLocalTime().DayOfWeek.ToString() + " " + e.StartTime.ToLocalTime().ToString("d") + " " + e.StartTime.ToLocalTime().ToString("t")
-            var invitedEvents = dbContext.EventAttendees.Include(x => x.User).Include(x => x.Event).ThenInclude(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Event).ThenInclude(x => x.Recurrence).Where(x => x.User.Id == user.Id && x.Active && !x.IsOrganizer).ToList();
+            var invitedEvents = dbContext.EventAttendees.Include(x => x.User).Include(x => x.Event).ThenInclude(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Event).ThenInclude(x => x.Recurrence).Where(x => x.User.Id == user.Id && x.Active == true && !x.IsOrganizer).ToList();
             foreach (var ev in organizedEvents)
             {
                 allEvents.Add(new EventInformationModel

@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElGroupo.Domain
+namespace ElGroupo.Domain.Activities
 {
-    public class CMEActivityType : ClassBase
+    public class CreditType: ClassBase
     {
         public string Description { get; set; }
+        public virtual ICollection<CreditTypeCategory> Categories { get; set; }
     }
 }

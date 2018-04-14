@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElGroupo.Domain
+namespace ElGroupo.Domain.Activities
 {
     public class UserActivityDocument:ClassBase
     {
-        public UserActivity UserActivity { get; set; }
         public long UserActivityId { get; set; }
+        public UserActivity UserActivity { get; set; }
         public AccreditationDocument Document { get; set; }
-        public long AccreditationDocumentId { get; set; }
+        public long DocumentId { get; set; }
+
     }
 }

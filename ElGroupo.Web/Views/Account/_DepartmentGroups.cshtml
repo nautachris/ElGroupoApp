@@ -1,0 +1,54 @@
+﻿@using ElGroupo.Web.Models.Account
+@model SelectDepartmentModel
+@{
+    Layout = null;
+}
+@functions{
+    private string GetDisplayBySelected(bool selected)
+    {
+        if (selected) return "";
+        else return "none";
+
+    }
+}
+<div data-department-id="@Model.Id" class="row department-group-container" style="display:@GetDisplayBySelected(Model.IsSelected)">
+    <div class="col span-1-of-4"></div>
+    <div class="col span-3-of-4">
+        <div class="width-100">User Groups</div>
+        @foreach (var group in Model.Groups)
+        {
+            @if (group.IsSelected)
+            {
+                <div class="width-100 group-container" data-group-id="@group.Id">
+                    @*<input type="checkbox" data-group-id="@group.Id" checked />
+                        <span style="margin-left:10px">@group.Name</span>*@
+
+
+                    <label class="check-container">
+                        @group.Name
+                        <input data-group-id="@group.Id" type="checkbox" checked>
+                        <span class="checkmark"></span>
+                        <a style="float:right;" data-group-name="@group.Name" data-group-id="@group.Id" class="delete-group-button">Delete</a>
+                    </label>
+                </div>
+
+            }
+            else
+            {
+                <div class="width-100 group-container"  data-group-id="@group.Id">
+                    @*<input type="checkbox" data-group-id="@group.Id" />
+                        <span style="margin-left:10px">@group.Name</span>*@
+
+                    <label class="check-container">
+                        @group.Name
+                        <input data-group-id="@group.Id" type="checkbox">
+                        <span class="checkmark"></span>
+                        <a style="float:right;" data-group-id="@group.Id" class="delete-group-button">Delete</a>
+                    </label>
+                </div>
+            }
+
+        }
+    </div>
+</div>
+

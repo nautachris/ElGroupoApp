@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180412220536_activityworkflow")]
+    partial class activityworkflow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")

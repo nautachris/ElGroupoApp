@@ -1,0 +1,62 @@
+questions
+categories explained.pdf
+
+user categories - is this managed by the user registration or an admin?
+user must request access to group
+one or many users will "own" a group - can accept and deny admission requests
+
+is this the same as an organization the user belongs to?
+or does an organization have multiple "user groups"?
+can categories be viewed by members of multiple user groups? yes
+
+
+are categories/items in the search page linked by user group?  i.e. does the faculty group have a defined list of itmes that appears? YES
+i see that some of the items on the search page are definite things like conferences, however something like a "resident noon conference" sounds more like a generic activity "template" - WE'RE GOING TO REMOVE MEETING/LECTURE/CONFERENCE AND TAKE TO A SEARCH PAGE THAT WILL SHOW ALL ACTIVITIES THAT ARE NOT RESTRICTED TO GROUP(S)
+
+RESIDENT NOON CONFERENCE (IE) TREAT AS ACTIVITY RECURRENCE - CLICKING ON AN ACTIVITY WITH A RECURRENCE WILL TAKE YOU TO A PAGE SHOWING ALL INDIVIDUAL ACTIVITIES WITHIN SAID PATTERN - ALL ACTIVITIES IN PATTERN MUST HAVE SAME GROUP OF INVITED USER GROUPS
+
+ACTIVITY RECURRENCE WON'T NECESSARILY HAVE A PATTERN PER SE - MORE OF AN AD HOC THING
+TO ADD AN ACTIVITY TO A GROUP, YOU CAN DO IT FROM A DROPDOWN IN THE ADD ACTIVITY PAGE
+IF YOU CLICK "MANUAL ENTRY" FROM THE ACTIVITY GROUP SEARCH PAGE, THE GROUP WILL DEFAULT TO THE GROUP YOU LINKED TO THE CREATE ACTIVITY PAGE FROM 
+
+THINK ABOUT ACTIVITY GROUP SECURITY - CAN SOMEONE WHO DIDNT CREATE THE GROUP ADD THEIR NEW AD HOC ACTIVITY TO AN EXISTING GROUP (I.E. CAN YOU ADD A HAPPY HOUR EVENT TO THE TUMOR BOARD GROUP)
+
+EVERY ACTIVITY WILL IMPLICTLY CREATE AN EVENT GROUP
+
+CONFERENCES ARE BASICALLY ACTIVITY GROUPS
+
+details explained.pdf
+im guessing this saves the information for a user->activity linkage
+may an activity hand out multiple types of credits?  (CME and AMEP)
+YES - MAKE CREDIT TYPE A JUNCTION TABLE
+if so, does the "accrediting authority" need to specfically be given the permission to hand out the credit type in question?
+A SINGLE ACTIVITY CAN HAND OUT MULTIPLE TYPES OF CREDITS AND POTENTIALLY DIFFERENT NUMBER OF EACH CREDIT
+
+will CME and AMEP be shown always, or does the "activity" organizer (if prepopulated) need to specifically say "this event hands out CME credits, this event hands out AMEP credits"? YES - THE USER SHOULDNT BE ABLE TO CLAIM CREDITS FOR HAPPY HOUR
+
+unless we're only showing the current week, having a day of week slider is useless from a data storage perspective
+
+WE NEED TO SPECIFY WHETHER YOU "ATTENDED" OR "PRESENTED"
+
+faculty workflow.pdf
+is tumor board, amep workshop, aur conference associated with the "user group" that the faculty is part of?
+if a user is not a faculty, they shouldnt be seeing the faculty section
+if a user clicks "skip for now", the database is going to create a "one off" activity that is only associated with that user
+
+generic workflow.pdf
+"Meeting", "Lecture", "Conference" - these all sound like generic activity categories that will each create a per-user activity.  What different information is saved when the user clicks any of these? (i.e. is there a field that stores "Meeting", "Lecture" or "Conference" - or is it simply the default name of the activity
+ - WE'RE GETTING RID OF THIS
+
+
+home explained.pdf
+is "quick log" different than any of the above workflows? - simply a link to start the activity workflow
+
+resident workflow.pdf
+are "resident noon conference", "resident case conference" "journal club" and "brandt helms" simply activity templates that will only be visible to members of the residents group
+
+search explained.pdf
+this is only accessible when viewing "conference details" or something?
+
+
+
+

@@ -1,0 +1,63 @@
+﻿@using ElGroupo.Web.Models.Account
+@model SelectDepartmentModel
+
+@{
+    Layout = null;
+}
+@functions{
+    private string GetDisplayBySelected(bool selected)
+    {
+        if (selected) return "";
+        else return "none";
+
+    }
+}
+<div class="row department-container" data-department-id="@Model.Id">
+    <div class="row">
+        @*<div class="col span-1-of-4">*@
+        @if (Model.IsSelected)
+        {
+            @*<input type="checkbox" checked data-department-id="@Model.Id" />*@
+            <div>
+                <label class="check-container">
+                    <span>@Model.Name</span>
+                    <input data-department-id="@Model.Id" type="checkbox" checked>
+                    <span class="checkmark"></span>
+                    <a style="float:right;" data-department-id="@Model.Id" data-department-name="@Model.Name" class="delete-department-button">Delete</a>
+                </label>
+                @*<div style="float:right; display:inline-block;">
+                        <a data-department-id="@Model.Id" class="delete-department-button">Delete</a>
+                    </div>*@
+            </div>
+        }
+        else
+        {
+            @*<input type="checkbox" data-department-id="@Model.Id" />*@
+            <div>
+                <label class="check-container">
+                    <span>@Model.Name</span>
+                    <input data-department-id="@Model.Id" type="checkbox">
+                    <span class="checkmark"></span>
+                    <a style="float:right;" data-department-id="@Model.Id" data-department-name="@Model.Name" class="delete-department-button">Delete</a>
+                </label>
+                @*<div style="float:right; display:inline-block;">
+                        <a data-department-id="@Model.Id" class="delete-department-button">Delete</a>
+                    </div>*@
+            </div>
+        }
+
+        @*<div class="department-name" data-department-id="@Model.Id" style="float:left; margin-left:40px; font-weight:bold; font-size:18px;">@Model.Name</div>*@
+        @*<div  style="float:right; display:inline-block;">
+                <a data-department-id="@Model.Id" class="delete-department-button">Delete</a>
+            </div>*@
+
+    </div>
+    @Html.Partial("_DepartmentGroups", @Model)
+    <div class="row centered">
+        <a style="text-align:center;" data-department-id="@Model.Id" class="add-group-button">Add New Group</a>
+    </div>
+    
+    @*<div class="row centered">
+            <button data-department-id="@Model.Id" class="btn btn-primary delete-department-button">Delete Department</button>
+        </div>*@
+</div>

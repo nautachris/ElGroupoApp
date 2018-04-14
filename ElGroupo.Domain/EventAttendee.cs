@@ -9,7 +9,7 @@ namespace ElGroupo.Domain
     {
         //public int UserId { get; set; }
 
-        public bool Active { get; set; } = true;
+        public bool? Active { get; set; } = true;
         public long EventId { get; set; }
 
         [Required]

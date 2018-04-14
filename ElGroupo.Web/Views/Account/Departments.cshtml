@@ -1,0 +1,70 @@
+﻿@using ElGroupo.Web.Models.Account
+@model SelectUserDepartmentsModel
+@functions{
+    private string GetDisplayBySelected(bool selected)
+    {
+        if (selected) return "";
+        else return "none";
+
+    }
+}
+
+<section>
+    <div class="row">
+        <div class="col span-1-of-4">Organization:</div>
+        <div class="col span-3-of-4">
+            <select id="cmbOrganizations">
+                <option value="-1">Select an Organization...</option>
+                @foreach (var org in Model.Organizations)
+                {
+                    @if (org.IsSelected)
+                    {
+
+                        <option value="@org.Id" selected>@org.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@org.Id">@org.Name</option>
+
+                    }
+
+                }
+            </select>
+        </div>
+    </div>
+    @foreach (var org in Model.Organizations)
+    {
+        <div data-organization-id="@org.Id" class="row organization-container" style="display:@GetDisplayBySelected(org.IsSelected)">
+            <div class="col span-1-of-4">
+                <div class="centered">Select Department(s) and Group(s)</div>
+                <div data-organization-id="@org.Id" style="margin-top:20px;" class="centered"><a class="add-department-button">Add New Department</a></div>
+            </div>
+            <div class="col span-3-of-4 organization-group-container">
+                @foreach (var dept in org.Departments)
+                {
+                    @Html.Partial("_OrganizationDepartment", dept)
+                }
+
+
+            </div>
+            <div style="display:none;" class="row add-department-container" data-organization-id="@org.Id">
+                <span>Department Name:</span>
+                <input type="text" style="width:250px;" />
+            </div>
+            @*<button data-organization-id="@org.Id" class="btn btn-primary add-department-button">Add New Department</button>*@
+            <div style="display:none;" data-organization-id="@org.Id" class="centered save-department-buttons">
+                <button data-organization-id="@org.Id" class="btn btn-primary save-department-button">Save</button>
+                <button data-organization-id="@org.Id" class="btn btn-primary cancel-add-department-button">Cancel</button>
+            </div>
+
+        </div>
+
+    }
+
+    <div class="row centered">
+        <button class="btn btn-primary" id="btnSave">Save Department Changes</button>
+    </div>
+</section>
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/account/edit-user-departments.js"></script>
+}

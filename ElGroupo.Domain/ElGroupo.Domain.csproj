@@ -7,6 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20180412211713_activityworkflow.cs" />
+    <Compile Remove="Migrations\20180412212117_madeactivenullable.cs" />
+    <Compile Remove="Migrations\20180412212339_cascadeissues.cs" />
+    <Compile Remove="Migrations\20180412212533_cascadeissues2.cs" />
+    <Compile Remove="Migrations\20180412212613_cascadeissues3.cs" />
+    <Compile Remove="Migrations\20180412213046_dddd.cs" />
+    <Compile Remove="Migrations\20180412214310_wtfidunno.cs" />
+    <Compile Remove="Migrations\20180412215230_activityworkflow.cs" />
+    <Compile Remove="Migrations\20180412220352_activityworkflow.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.1.2" />

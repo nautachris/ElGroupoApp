@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElGroupo.Domain
+namespace ElGroupo.Domain.Activities
 {
-    public class NonCMEActivity:Activity
+    public class ActivityAttendanceType:ClassBase
     {
+        public string Description { get; set; }
     }
 }

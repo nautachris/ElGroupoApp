@@ -15,7 +15,7 @@ using ElGroupo.Domain.Data.Configurations;
 using System.Drawing;
 using System.Drawing.Imaging;
 using ElGroupo.Domain.Enums;
-
+using ElGroupo.Domain.Activities;
 namespace ElGroupo.Domain.Data
 {
 
@@ -23,8 +23,24 @@ namespace ElGroupo.Domain.Data
     public class ElGroupoDbContext : IdentityDbContext<User, IdentityRole<long>, long>
     {
 
-        public DbSet<CMEActivity> CMEActivities { get; set; }
-        public DbSet<NonCMEActivity> NonCMEActivities { get; set; }
+        public DbSet<AccreditationDocument> AccreditationDocuments { get; set; }
+        public DbSet<Activity> Activities { get; set; }
+        public DbSet<ActivityAttendanceType> ActivityAttendanceTypes { get; set; }
+        public DbSet<ActivityCredit> ActivityCredits { get; set; }
+        public DbSet<ActivityGroup> ActivityGroups { get; set; }
+        public DbSet<ActivityGroupOrganizer> ActivityGroupOrganizers { get; set; }
+        public DbSet<CreditType> CreditTypes { get; set; }
+        public DbSet<CreditTypeCategory> CreditTypeCategories { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<DepartmentUser> DepartmentUsers { get; set; }
+        public DbSet<DepartmentUserGroup> DepartmentUserGroups { get; set; }
+        public DbSet<DepartmentUserGroupActivityGroup> DepartmentUserGroupActivityGroups { get; set; }
+        public DbSet<DepartmentUserGroupUser> DepartmentUserGroupUsers { get; set; }
+        public DbSet<Organization> Organizations { get; set; }
+        public DbSet<OrganizationAccreditation> OrganizationAccreditations { get; set; }
+        public DbSet<UserActivity> UserActivities { get; set; }
+        public DbSet<UserActivityCredit> UserActivityCredits { get; set; }
+        public DbSet<UserActivityDocument> UserActivityDocuments { get; set; }
         public DbSet<Lookups.ContactMethod> ContactTypes { get; set; }
 
         public DbSet<UnregisteredEventAttendee> UnregisteredEventAttendees { get; set; }
@@ -142,44 +158,257 @@ namespace ElGroupo.Domain.Data
 
 
             //this works if an activity would only have a sinlge document, but if multiple we need a junction table
-            builder.Entity<AccreditationDocument>().ToTable("AccreditationDocument");
+            builder.Entity<AccreditationDocument>().ToTable("AccreditationDocuments");
             builder.Entity<AccreditationDocument>().HasKey(x => x.Id);
             builder.Entity<AccreditationDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<AccreditationDocument>().HasMany(x => x.Activities).WithOne(x => x.Document).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+            builder.Entity<AccreditationDocument>().HasMany(x => x.Activities).WithOne(x => x.Document).HasForeignKey(x => x.DocumentId);
 
-            builder.Entity<Organization>().ToTable("Organization");
-            builder.Entity<Organization>().HasKey(x => x.Id);
-            builder.Entity<Organization>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<Organization>().HasMany(x => x.Users).WithOne(x => x.Organization);
-            builder.Entity<Organization>().HasMany(x => x.Conferences).WithOne(x => x.Organization);
-
-            builder.Entity<Activity>().ToTable("Activity").HasDiscriminator<int>("ActivityType").HasValue<CMEActivity>(1).HasValue<NonCMEActivity>(2);
+            builder.Entity<Activity>().ToTable("Activities");
             builder.Entity<Activity>().HasKey(x => x.Id);
             builder.Entity<Activity>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<Activity>().HasOne(x => x.Organization).WithMany(x=>x.CMEActivities).HasForeignKey(x=>x.OrganizationId);
-            builder.Entity<Activity>().HasMany(x => x.Users).WithOne(x=>x.Activity);
-            builder.Entity<CMEActivity>().HasOne(x => x.CMEType);
-            builder.Entity<CMEActivity>().HasOne(x => x.Conference);
+            builder.Entity<Activity>().HasMany(x => x.Credits).WithOne(x => x.Activity).HasForeignKey(x => x.ActivityId);
+            builder.Entity<Activity>().HasMany(x => x.Users).WithOne(x => x.Activity).HasForeignKey(x => x.ActivityId);
+            builder.Entity<Activity>().HasOne(x => x.ActivityGroup).WithMany(x => x.Activities).HasForeignKey(x => x.ActivityGroupId);
 
-            builder.Entity<CMEActivityType>().ToTable("CMEActivityType");
-            builder.Entity<CMEActivityType>().HasKey(x => x.Id);
-            builder.Entity<CMEActivityType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<ActivityAttendanceType>().ToTable("ActivityAttendanceTypes");
+            builder.Entity<ActivityAttendanceType>().HasKey(x => x.Id);
+            builder.Entity<ActivityAttendanceType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<ActivityAttendanceType>().Property(x => x.Description).HasMaxLength(255).IsRequired();
 
-            builder.Entity<UserActivityDocument>().ToTable("UserActivity");
+            builder.Entity<ActivityCredit>().ToTable("ActivityCredits");
+            builder.Entity<ActivityCredit>().HasKey(x => x.Id);
+            builder.Entity<ActivityCredit>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<ActivityCredit>().HasOne(x => x.CreditTypeCategory).WithMany().HasForeignKey(x => x.CreditTypeCategoryId);
+            builder.Entity<ActivityCredit>().HasOne(x => x.Activity).WithMany(x => x.Credits).HasForeignKey(x => x.ActivityId);
+
+            builder.Entity<ActivityGroup>().ToTable("ActivityGroups");
+            builder.Entity<ActivityGroup>().HasKey(x => x.Id);
+            builder.Entity<ActivityGroup>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<ActivityGroup>().HasOne(x => x.Department).WithMany(x => x.ActivityGroups).HasForeignKey(x => x.DepartmentId);
+            builder.Entity<ActivityGroup>().Property(x => x.DateCreated).HasMaxLength(255).IsRequired();
+            builder.Entity<ActivityGroup>().HasMany(x => x.Activities).WithOne(x => x.ActivityGroup).HasForeignKey(x => x.ActivityGroupId);
+            builder.Entity<ActivityGroup>().HasMany(x => x.UserGroups).WithOne(x => x.ActivityGroup).HasForeignKey(x => x.ActivityGroupId);
+            builder.Entity<ActivityGroup>().HasMany(x => x.Organizers).WithOne(x => x.ActivityGroup).HasForeignKey(x => x.ActivityGroupId);
+
+            builder.Entity<ActivityGroupOrganizer>().ToTable("ActivityGroupOrganizers");
+            builder.Entity<ActivityGroupOrganizer>().HasKey(x => x.Id);
+            builder.Entity<ActivityGroupOrganizer>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<ActivityGroupOrganizer>().HasOne(x => x.ActivityGroup).WithMany(x => x.Organizers).HasForeignKey(x => x.ActivityGroupId);
+            builder.Entity<ActivityGroupOrganizer>().HasOne(x => x.User).WithMany(x => x.OrganizedActivities).HasForeignKey(x => x.UserId);
+
+            builder.Entity<CreditType>().ToTable("CreditTypes");
+            builder.Entity<CreditType>().HasKey(x => x.Id);
+            builder.Entity<CreditType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<CreditType>().Property(x => x.Description).HasMaxLength(255).IsRequired();
+            builder.Entity<CreditType>().HasMany(x => x.Categories).WithOne(x => x.CreditType).HasForeignKey(x => x.CreditTypeId);
+
+            builder.Entity<CreditTypeCategory>().ToTable("CreditTypeCategories");
+            builder.Entity<CreditTypeCategory>().HasKey(x => x.Id);
+            builder.Entity<CreditTypeCategory>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<CreditTypeCategory>().Property(x => x.Description).HasMaxLength(255).IsRequired();
+            builder.Entity<CreditTypeCategory>().HasOne(x => x.CreditType).WithMany(x => x.Categories).HasForeignKey(x => x.CreditTypeId);
+
+            builder.Entity<Department>().ToTable("Departments");
+            builder.Entity<Department>().HasKey(x => x.Id);
+            builder.Entity<Department>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<Department>().Property(x => x.Name).IsRequired().HasMaxLength(255);
+            builder.Entity<Department>().HasOne(x => x.Organization).WithMany(x => x.Departments).HasForeignKey(x => x.OrganizationId);
+            builder.Entity<Department>().HasMany(x => x.Users).WithOne(x => x.Department).HasForeignKey(x => x.DepartmentId);
+            builder.Entity<Department>().HasMany(x => x.UserGroups).WithOne(x => x.Department).HasForeignKey(x => x.DepartmentId);
+            builder.Entity<Department>().HasMany(x => x.ActivityGroups).WithOne(x => x.Department).HasForeignKey(x => x.DepartmentId);
+
+            builder.Entity<DepartmentUser>().ToTable("DepartmentUsers");
+            builder.Entity<DepartmentUser>().HasKey(x => x.Id);
+            builder.Entity<DepartmentUser>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<DepartmentUser>().HasOne(x => x.User).WithMany(x => x.Departments).HasForeignKey(x => x.UserId);
+            builder.Entity<DepartmentUser>().HasOne(x => x.Department).WithMany(x => x.Users).HasForeignKey(x => x.DepartmentId);
+            builder.Entity<DepartmentUser>().HasMany(x => x.UserGroupUsers).WithOne(x => x.User).HasForeignKey(x => x.UserId);
+
+            builder.Entity<DepartmentUserGroup>().ToTable("DepartmentUserGroups");
+            builder.Entity<DepartmentUserGroup>().HasKey(x => x.Id);
+            builder.Entity<DepartmentUserGroup>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<DepartmentUserGroup>().Property(x => x.Name).HasMaxLength(255).IsRequired();
+            builder.Entity<DepartmentUserGroup>().HasOne(x => x.Department).WithMany(x => x.UserGroups).HasForeignKey(x => x.DepartmentId);
+            builder.Entity<DepartmentUserGroup>().HasMany(x => x.Users).WithOne(x => x.UserGroup).HasForeignKey(x => x.UserGroupId);
+            builder.Entity<DepartmentUserGroup>().HasMany(x => x.ActivityGroups).WithOne(x => x.UserGroup).HasForeignKey(x => x.UserGroupId);
+
+            builder.Entity<DepartmentUserGroupActivityGroup>().ToTable("DepartmentUserGroupActivityGroups");
+            builder.Entity<DepartmentUserGroupActivityGroup>().HasKey(x => x.Id);
+            builder.Entity<DepartmentUserGroupActivityGroup>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<DepartmentUserGroupActivityGroup>().HasOne(x => x.UserGroup).WithMany(x => x.ActivityGroups).HasForeignKey(x => x.UserGroupId).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+            builder.Entity<DepartmentUserGroupActivityGroup>().HasOne(x => x.ActivityGroup).WithMany(x => x.UserGroups).HasForeignKey(x => x.ActivityGroupId).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+
+            builder.Entity<DepartmentUserGroupUser>().ToTable("DepartmentUserGroupUsers");
+            builder.Entity<DepartmentUserGroupUser>().HasKey(x => x.Id);
+            builder.Entity<DepartmentUserGroupUser>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<DepartmentUserGroupUser>().Property(x => x.IsOwner).IsRequired();
+            builder.Entity<DepartmentUserGroupUser>().HasOne(x => x.UserGroup).WithMany(x => x.Users).HasForeignKey(x => x.UserGroupId);
+            builder.Entity<DepartmentUserGroupUser>().HasOne(x => x.User).WithMany(x => x.UserGroupUsers).HasForeignKey(x => x.UserId).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+
+            builder.Entity<Organization>().ToTable("Organizations");
+            builder.Entity<Organization>().HasKey(x => x.Id);
+            builder.Entity<Organization>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<Organization>().Property(x => x.Name).IsRequired();
+            builder.Entity<Organization>().HasMany(x => x.Accreditations).WithOne(x => x.Organization).HasForeignKey(x => x.OrganizationId);
+            builder.Entity<Organization>().HasMany(x => x.Departments).WithOne(x => x.Organization).HasForeignKey(x => x.OrganizationId);
+
+            builder.Entity<OrganizationAccreditation>().ToTable("OrganizationAccreditations");
+            builder.Entity<OrganizationAccreditation>().HasKey(x => x.Id);
+            builder.Entity<OrganizationAccreditation>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<OrganizationAccreditation>().HasOne(x => x.Organization).WithMany(x => x.Accreditations).HasForeignKey(x => x.OrganizationId);
+            builder.Entity<OrganizationAccreditation>().HasOne(x => x.CreditType).WithMany().HasForeignKey(x => x.CreditTypeId);
+
+            builder.Entity<UserActivity>().ToTable("UserActivities");
+            builder.Entity<UserActivity>().HasKey(x => x.Id);
+            builder.Entity<UserActivity>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<UserActivity>().HasOne(x => x.AttendanceType).WithMany().HasForeignKey(x => x.AttendanceTypeId);
+            builder.Entity<UserActivity>().HasOne(x => x.Activity).WithMany(x => x.Users).HasForeignKey(x => x.ActivityId);
+            builder.Entity<UserActivity>().HasOne(x => x.User).WithMany(x => x.Activities).HasForeignKey(x => x.UserId);
+            builder.Entity<UserActivity>().HasMany(x => x.Documents).WithOne(x => x.UserActivity).HasForeignKey(x => x.UserActivityId);
+            builder.Entity<UserActivity>().HasMany(x => x.Credits).WithOne(x => x.UserActivity).HasForeignKey(x => x.UserActivityId);
+
+            builder.Entity<UserActivityCredit>().ToTable("UserActivityCredits");
+            builder.Entity<UserActivityCredit>().HasKey(x => x.Id);
+            builder.Entity<UserActivityCredit>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<UserActivityCredit>().HasOne(x => x.UserActivity).WithMany(x => x.Credits).HasForeignKey(x => x.UserActivityId);
+            builder.Entity<UserActivityCredit>().HasOne(x => x.CreditTypeCategory).WithMany().HasForeignKey(x => x.CreditTypeCategoryId);
+            builder.Entity<UserActivityCredit>().Property(x => x.CreditHours).IsRequired().HasDefaultValue(0);
+
+            builder.Entity<UserActivityDocument>().ToTable("UserActivityDocuments");
             builder.Entity<UserActivityDocument>().HasKey(x => x.Id);
             builder.Entity<UserActivityDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<UserActivityDocument>().HasOne(x => x.Document).WithMany(x=>x.Activities).HasForeignKey(x=>x.AccreditationDocumentId);
-            builder.Entity<UserActivityDocument>().HasOne(x => x.UserActivity).WithMany(x=>x.Documents).HasForeignKey(x=>x.UserActivityId);
-
-            builder.Entity<Conference>().ToTable("Conference");
-            builder.Entity<Conference>().HasKey(x => x.Id);
-            builder.Entity<Conference>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<Conference>().HasMany(x => x.CMEActivities).WithOne(x=>x.Conference);
-            builder.Entity<Conference>().HasMany(x => x.NonCMEActivities).WithOne(x=>x.Conference);
-            
-            //builder.Entity<CMEActivity>().HasOne(x => x.Conference).WithMany(x=>x.cm;
+            builder.Entity<UserActivityDocument>().HasOne(x => x.UserActivity).WithMany(x => x.Documents).HasForeignKey(x => x.UserActivityId);
+            builder.Entity<UserActivityDocument>().HasOne(x => x.Document).WithMany(x => x.Activities).HasForeignKey(x => x.DocumentId);
         }
+        public static async Task SeedActivityTables2(IServiceProvider provider)
+        {
+            try
+            {
 
+
+                var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+                var dept = ctx.Departments.First();
+                foreach(var u in ctx.Users.Take(100))
+                {
+                    var du = new DepartmentUser { Department = dept, User = u };
+                    ctx.Add(du);
+                }
+                
+
+                dept = ctx.Departments.Skip(1).First();
+                foreach(var u in ctx.Users.Skip(100).Take(100))
+                {
+                    var du = new DepartmentUser { Department = dept, User = u };
+                    ctx.Add(du);
+                }
+
+                await ctx.SaveChangesAsync();
+                var dug = new DepartmentUserGroup { Department = ctx.Departments.First(), Name = "Group 1" };
+                ctx.Add(dug);
+                foreach(var du in ctx.Departments.Include(x => x.Users).First().Users.Take(15))
+                {
+                    var dugu = new DepartmentUserGroupUser { UserGroup = dug, User = du };
+                    ctx.Add(dugu);
+                }
+
+                dug = new DepartmentUserGroup { Department = ctx.Departments.First(), Name = "Group 2" };
+                ctx.Add(dug);
+                foreach(var du in ctx.Departments.Include(x => x.Users).First().Users.Skip(15).Take(15))
+                {
+                    var dugu = new DepartmentUserGroupUser { UserGroup = dug, User = du };
+                    ctx.Add(dugu);
+                }
+
+
+                dug = new DepartmentUserGroup { Department = ctx.Departments.Skip(1).First(), Name = "Group 1" };
+                ctx.Add(dug);
+                foreach(var du in ctx.Departments.Include(x => x.Users).Skip(1).First().Users.Take(15))
+                {
+                    var dugu = new DepartmentUserGroupUser { UserGroup = dug, User = du };
+                    ctx.Add(dugu);
+                }
+
+                dug = new DepartmentUserGroup { Department = ctx.Departments.Skip(1).First(), Name = "Group 2" };
+                ctx.Add(dug);
+                foreach(var du in ctx.Departments.Include(x => x.Users).Skip(1).First().Users.Skip(15).Take(15))
+                {
+                    var dugu = new DepartmentUserGroupUser { UserGroup = dug, User = du };
+                    ctx.Add(dugu);
+                }
+                await ctx.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                var ddd = 3;
+            }
+        }
+        public static async Task SeedActivityTables(IServiceProvider provider)
+        {
+            try
+            {
+
+
+                var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+                var creditType = new CreditType { Description = "CME" };
+                ctx.Add(creditType);
+                var ctc = new CreditTypeCategory { CreditType = creditType, Description = "AMA Category 1" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "AMA Category 1" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "NM Category 1" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "Specialty Certification" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "Post Graduate Education" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "Advanced Degrees" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "Self-Assessment Tests" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "Teaching" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "Physician Preceptors" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "Papers and Publications" };
+                ctx.Add(ctc);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "CPR" };
+                ctx.Add(ctc);
+
+
+                creditType = new CreditType { Description = "AMEP" };
+                ctx.Add(creditType);
+                ctc = new CreditTypeCategory { CreditType = creditType, Description = "General" };
+                ctx.Add(ctc);
+                await ctx.SaveChangesAsync();
+                var org = new Organization
+                {
+                    Name = "University of New Mexico Health Sciences Center",
+                    Address1 = "2425 Camino de Salud",
+                    City = "Albuquerque",
+                    State = "NM",
+                    Zip = "87106",
+                };
+                foreach (var cats in ctx.CreditTypes)
+                {
+                    var acc = new OrganizationAccreditation { Organization = org, CreditType = cats };
+                    org.Accreditations.Add(acc);
+                }
+                var dept = new Department { Organization = org, Name = "Radiology" };
+                ctx.Add(dept);
+                dept = new Department { Organization = org, Name = "Psychiatry" };
+                ctx.Add(dept);
+
+                var aat = new ActivityAttendanceType { Description = "Attendee" };
+                ctx.Add(aat);
+                aat = new ActivityAttendanceType { Description = "Presenter" };
+                ctx.Add(aat);
+                await ctx.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                var ddd = 4;
+            }
+        }
 
         public static async Task CreateAdminAccount(IServiceProvider provider, IConfiguration configuration)
         {

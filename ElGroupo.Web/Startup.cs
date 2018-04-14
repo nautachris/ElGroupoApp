@@ -132,7 +132,7 @@ namespace ElGroupo.Web
             //ElGroupoDbContext.CreateUsers(app.ApplicationServices).Wait();
             //ElGroupoDbContext.CreateContactTypes(app.ApplicationServices).Wait();
             //ElGroupoDbContext.PopulateUserContacts(app.ApplicationServices).Wait();
-            //ElGroupoDbContext.AddUserPhotos(app.ApplicationServices).Wait();
+            //ElGroupoDbContext.SeedActivityTables2(app.ApplicationServices).Wait();
             //ElGroupoDbContext.SplitNames(app.ApplicationServices).Wait();
             //
 

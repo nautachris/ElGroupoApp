@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElGroupo.Domain
+namespace ElGroupo.Domain.Activities
 {
     public class AccreditationDocument: ClassBase
     {

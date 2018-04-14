@@ -4,11 +4,14 @@ using System.Text;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using ElGroupo.Domain.Lookups;
+using ElGroupo.Domain.Activities;
 namespace ElGroupo.Domain
 {
     public class User : IdentityUser<long>
     {
-        public virtual ICollection<Activity> Activities { get; set; }
+        public virtual ICollection<DepartmentUser> Departments { get; set; }
+        public virtual ICollection<ActivityGroupOrganizer> OrganizedActivities { get; set; }
+        public virtual ICollection<UserActivity> Activities { get; set; }
         public User()
         {
             this.ContactMethods = new HashSet<UserContactMethod>();
@@ -25,10 +28,6 @@ namespace ElGroupo.Domain
             this.ContactMethods.Add(uc);
         }
 
-
-        public ICollection<UserActivity> CMEActivities { get; set; }
-        public ICollection<UserActivity> NonCMEActivities { get; set; }
-        public virtual Organization Organization { get; set; }
         public virtual ICollection<UnregisteredUserConnection> UnregisteredConnections { get; set; }
         public virtual ICollection<UserContactMethod> ContactMethods { get; set; }
 
@@ -48,7 +47,7 @@ namespace ElGroupo.Domain
         public string LastName { get; set; }
         public string Name { get; set; }
         public string ZipCode { get; set; }
-        
+
         [MaxLength(100)]
         public string TimeZoneId { get; set; }
     }

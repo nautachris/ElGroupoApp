@@ -1,4 +1,5 @@
 ﻿using ElGroupo.Domain;
+using ElGroupo.Domain.Activities;
 using ElGroupo.Domain.Data;
 using ElGroupo.Web.Models.Account;
 using ElGroupo.Web.Models.Shared;
@@ -13,9 +14,9 @@ using System.Threading.Tasks;
 
 namespace ElGroupo.Web.Services
 {
-    public class AccountService: BaseService
+    public class AccountService : BaseService
     {
-        public AccountService(ElGroupoDbContext ctx): base(ctx)
+        public AccountService(ElGroupoDbContext ctx) : base(ctx)
         {
 
         }
@@ -196,10 +197,23 @@ namespace ElGroupo.Web.Services
             }
         }
 
+        public List<OrganizationListModel> GetOrganizations()
+        {
+            var orgs = new List<OrganizationListModel>();
+            foreach (var org in _dbContext.Organizations) orgs.Add(new OrganizationListModel { Id = org.Id, Name = org.Name });
+            return orgs.OrderBy(x => x.Name).ToList();
+        }
+        public List<OrganizationListModel> GetDepartmentsByOrganizationId(long orgId)
+        {
+            var orgs = new List<OrganizationListModel>();
+            foreach (var org in _dbContext.Departments.Where(x => x.OrganizationId == orgId)) orgs.Add(new OrganizationListModel { Id = org.Id, Name = org.Name });
+            return orgs.OrderBy(x => x.Name).ToList();
+        }
         public async Task<AttendeeGroupModel> GetAttendeeGroup(long id)
         {
             var ag = await _dbContext.AttendeeGroups.Include(x => x.User).Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
-            if (ag == null) return new AttendeeGroupModel {
+            if (ag == null) return new AttendeeGroupModel
+            {
                 Name = "",
                 Id = 0
             };
@@ -331,6 +345,186 @@ namespace ElGroupo.Web.Services
 
             }).ToListAsync();
         }
+        public SelectUserDepartmentsModel GetUserDepartments(long userId)
+        {
+            var model = new SelectUserDepartmentsModel();
+            //var userDepartments = _dbContext.DepartmentUsers.Where(x => x.UserId == userId).Select(x => x.Department).ToList();
+            var departmentUserRecords = _dbContext.DepartmentUsers.Include(x => x.Department).Include(x => x.UserGroupUsers).Where(x => x.UserId == userId);
+            var userGroups = departmentUserRecords.SelectMany(x => x.UserGroupUsers).Select(x => x.UserGroup.Id).Distinct();
+            //we cant necessarily get departments from groups b/c the user doenst have to be in a group within a department
+            //var groupIds = _dbContext.DepartmentUserGroupUsers.Where(x => departmentUserRecords.Select(y => y.Id).Contains(x.User.Id)).Select(x => x.Id).ToList();
+            var userOrg = departmentUserRecords.Count() > 0 ? departmentUserRecords.Select(x => x.Department.OrganizationId).Distinct().First() : 0;
+            foreach (var org in _dbContext.Organizations.Include(x => x.Departments).ThenInclude(x => x.UserGroups).OrderBy(x => x.Name))
+            {
+                model.Organizations.Add(new OrganizationListModel
+                {
+                    Id = org.Id,
+                    Name = org.Name,
+                    IsSelected = userOrg == org.Id,
+                    Departments = org.Departments.Select(x => new SelectDepartmentModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        IsSelected = departmentUserRecords.Select(y => y.Department.Id).Contains(x.Id),
+                        Groups = x.UserGroups.Select(y => new SelectDepartmentUserGroupModel
+                        {
+                            Id = y.Id,
+                            Name = y.Name,
+                            IsSelected = userGroups.Contains(y.Id)
+                        }).ToList()
+                    }).ToList()
+                });
+            }
+
+            return model;
+        }
+
+
+        private class SequenceCompareResult<T>
+        {
+            public List<T> Added { get; set; }
+            public List<T> Removed { get; set; }
+            public List<T> InBoth { get; set; }
+        }
+
+        private SequenceCompareResult<T> CompareSequences<T>(IEnumerable<T> original, IEnumerable<T> updated)
+        {
+
+            return new SequenceCompareResult<T>
+            {
+                Removed = original.Where(x => !updated.Contains(x)).ToList(),
+                Added = updated.Where(x => !original.Contains(x)).ToList(),
+                InBoth = updated.Intersect(original).ToList()
+            };
+
+        }
+
+        public async Task<SaveDataResponse> AddOrganizationDepartment(long userId, AddDepartmentModel model)
+        {
+            try
+            {
+                var org = _dbContext.Organizations.FirstOrDefault(x => x.Id == model.OrganizationId);
+                if (org == null) return SaveDataResponse.FromErrorMessage("Organization Id " + model.OrganizationId + " does not exist");
+
+                var dept = new Department { Organization = org, Name = model.DepartmentName };
+                _dbContext.Add(dept);
+                await _dbContext.SaveChangesAsync();
+                return SaveDataResponse.IncludeData(dept.Id);
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+        }
+
+        public async Task<SaveDataResponse> DeleteDepartment(long departmentId)
+        {
+            try
+            {
+                var dept = _dbContext.Departments.Include(x => x.Users).Include(x => x.UserGroups).ThenInclude(x => x.Users).Include(x => x.UserGroups).ThenInclude(x => x.ActivityGroups).FirstOrDefault(x => x.Id == departmentId);
+                if (dept != null) _dbContext.Remove(dept);
+                await _dbContext.SaveChangesAsync();
+                return SaveDataResponse.IncludeData(dept.Id);
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+        }
+
+        public async Task<SaveDataResponse> DeleteDepartmentGroup(long groupId)
+        {
+            try
+            {
+                var group = _dbContext.DepartmentUserGroups.Include(x => x.Users).Include(x => x.ActivityGroups).FirstOrDefault(x => x.Id == groupId);
+                if (group != null) _dbContext.Remove(group);
+                await _dbContext.SaveChangesAsync();
+                return SaveDataResponse.IncludeData(group.Id);
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+        }
+        public async Task<SaveDataResponse> UpdateUserDepartments(long userId, EditUserDepartmentsModel[] model)
+        {
+            try
+            {
+                //this updates groups and department
+                //remove groups
+                //remove departments
+                //add departments
+                //add groups
+                //var departmentsToRemove = new List<long>();
+                //var departmentGroupsToRemove = new List<long>();
+                //var departmentsToAdd = new List<long>
+
+
+                var existingDepartmentUsers = _dbContext.DepartmentUsers.Include(x => x.Department).Where(x => x.UserId == userId).ToList();
+                var existingDepartmentGroupUsers = _dbContext.DepartmentUserGroupUsers.Include(x => x.UserGroup).ThenInclude(x => x.Department).Where(x => existingDepartmentUsers.Select(y => y.Id).Contains(x.UserId)).ToList();
+                var updatedDepartments = CompareSequences(existingDepartmentUsers.Select(x => x.Department.Id), model.Select(y => y.DepartmentId));
+
+                //deal with removed departments and associated groups
+                foreach (var toRemove in updatedDepartments.Removed)
+                {
+                    var thisDepartmentUser = existingDepartmentUsers.First(x => x.DepartmentId == toRemove);
+                    foreach (var item in _dbContext.DepartmentUserGroupUsers.Include(x => x.UserGroup).Where(x => x.UserGroup.DepartmentId == toRemove && x.UserId == thisDepartmentUser.Id))
+                    {
+                        //remove from any group associated with a department we're about to remove this user from
+                        _dbContext.Remove(item);
+                    }
+                    _dbContext.Remove(thisDepartmentUser);
+                    //var departmentUser = _dbContext.DepartmentUsers.FirstOrDefault(x => x.DepartmentId == toRemove && x.UserId == userId);
+                    //if (departmentUser != null) 
+                }
+
+                //add new departmentusers
+                foreach (var toAdd in updatedDepartments.Added)
+                {
+                    var du = new DepartmentUser { User = _dbContext.Users.First(x => x.Id == userId), Department = _dbContext.Departments.First(x => x.Id == toAdd) };
+                    _dbContext.Add(du);
+                    foreach (var groupToAdd in model.First(x => x.DepartmentId == toAdd).GroupIds)
+                    {
+                        var dugu = new DepartmentUserGroupUser { UserGroup = _dbContext.DepartmentUserGroups.First(x => x.Id == groupToAdd), User = du };
+                        _dbContext.Add(dugu);
+                    }
+                }
+
+
+
+                //check for modified groups in departments not added or deleted
+                foreach (var inBoth in updatedDepartments.InBoth)
+                {
+                    var thisDepartmentUser = existingDepartmentUsers.First(x => x.DepartmentId == inBoth);
+
+                    //groups that this user is current a part of within this department
+                    var existing = existingDepartmentGroupUsers.Where(x => x.UserGroup.DepartmentId == inBoth).Select(x => x.UserGroupId).ToList();
+                    var updated = model.First(x => x.DepartmentId == inBoth).GroupIds;
+                    var groupCompare = CompareSequences(existing, updated);
+                    foreach (var toDelete in groupCompare.Removed)
+                    {
+                        var item = _dbContext.DepartmentUserGroupUsers.FirstOrDefault(x => x.UserGroupId == toDelete && x.UserId == thisDepartmentUser.Id);
+                        if (item != null) _dbContext.Remove(item);
+                    }
+                    foreach (var toAdd in groupCompare.Added)
+                    {
+                        var dugu = new DepartmentUserGroupUser { UserGroup = _dbContext.DepartmentUserGroups.First(x => x.Id == toAdd), User = thisDepartmentUser };
+                        _dbContext.Add(dugu);
+                    }
+                }
+
+
+                await _dbContext.SaveChangesAsync();
+                return SaveDataResponse.Ok();
+
+
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+
+        }
 
         public async Task<EditAccountModel> GetAccountEditModel(long userId)
         {
@@ -351,7 +545,7 @@ namespace ElGroupo.Web.Services
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
                 ZipCode = user.ZipCode,
-                TimeZones = TimeZoneInfo.GetSystemTimeZones().ToDictionary(x=>x.Id, x=>x.DisplayName),
+                TimeZones = TimeZoneInfo.GetSystemTimeZones().ToDictionary(x => x.Id, x => x.DisplayName),
                 TimeZoneId = user.TimeZoneId
             };
         }
