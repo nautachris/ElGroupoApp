@@ -20,7 +20,7 @@
             @*<input type="checkbox" checked data-department-id="@Model.Id" />*@
             <div>
                 <label class="check-container">
-                    <span>@Model.Name</span>
+                    <span  style="font-weight:bold;">@Model.Name</span>
                     <input data-department-id="@Model.Id" type="checkbox" checked>
                     <span class="checkmark"></span>
                     <a style="float:right;" data-department-id="@Model.Id" data-department-name="@Model.Name" class="delete-department-button">Delete</a>
@@ -35,7 +35,7 @@
             @*<input type="checkbox" data-department-id="@Model.Id" />*@
             <div>
                 <label class="check-container">
-                    <span>@Model.Name</span>
+                    <span style="font-weight:bold;">@Model.Name</span>
                     <input data-department-id="@Model.Id" type="checkbox">
                     <span class="checkmark"></span>
                     <a style="float:right;" data-department-id="@Model.Id" data-department-name="@Model.Name" class="delete-department-button">Delete</a>

@@ -55,6 +55,18 @@ namespace ElGroupo.Web.Controllers
             return View(new CreateEventModel());
         }
 
+        [HttpGet, HttpPost]
+        [Route("Dashboard")]
+        public async Task<IActionResult> Dashboard()
+        {
+            var user = await this.CurrentUser();
+            var model = eventService.GetDashboardModel(user.Id, user.TimeZoneId);
+
+            return View(model);
+        }
+
+
+
 
         [Authorize]
         [HttpGet, HttpPost]
@@ -332,7 +344,7 @@ namespace ElGroupo.Web.Controllers
             var model = await this.eventService.GetEventViewModel(eid, accessLevel.userId, accessLevel.accessType);
             return View("View_New", model);
         }
-                [Authorize]
+        [Authorize]
         [HttpGet, HttpPost]
         [Route("{eid}/ViewNewAgain", Name = "ViewNewAgain")]
         public async Task<IActionResult> ViewNewAgain([FromRoute]long eid)
@@ -396,7 +408,7 @@ namespace ElGroupo.Web.Controllers
             }
         }
 
-                [Authorize]
+        [Authorize]
         [HttpPost]
         [Route("SetEventInactive")]
         public async Task<IActionResult> SetEventAttendeeInactive([FromBody]SetEventInactiveModel model)
@@ -549,7 +561,7 @@ namespace ElGroupo.Web.Controllers
 
 
 
-                /// <summary>
+        /// <summary>
         /// view new wants messages as an entire new page
         /// </summary>
         /// <param name="eid"></param>
@@ -557,7 +569,7 @@ namespace ElGroupo.Web.Controllers
         [Authorize]
         [HttpGet]
         [HttpPost]
-        [Route("{eid}/Messages", Name ="ViewMessages")]
+        [Route("{eid}/Messages", Name = "ViewMessages")]
         public async Task<IActionResult> ViewMessages([FromRoute]long eid)
         {
             var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);

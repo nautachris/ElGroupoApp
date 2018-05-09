@@ -1,0 +1,83 @@
+﻿@using ElGroupo.Web.Models.Home
+@model UserDashboardModel
+
+<section id="secMain">
+    @if (Model.TimeZoneChanged)
+    {
+        <div class="width-100" style="background-color:black; color:white; text-align:center; padding-top:10px; padding-bottom:10px;">
+
+            <div style="text-transform:uppercase;">It appears that you are not in your selected time zone.  Do you want to change your time zone settings?</div>
+
+        </div>
+
+    }
+
+        <div class="row">
+            <div class="centered" style="font-family:Raleway; font-size:20px; color:#161616;">Welcome, @Model.FirstName</div>
+            <div id="divImg" class="image-circle-100" style="background-image: url('/Users/UserPhoto/@Model.UserId')">
+            </div>
+            <div class="centered" style="margin-top:27px; font-size:16px; font-weight:bold">bears</div>
+        </div>
+
+    <div class="row" style="height:280px; margin-top:66px;">
+        <div class="col span-1-of-6">
+            <a asp-controller="Activities" asp-action="Dashboard" class="no-decoration">
+                <div class="user-dashboard-link">
+
+                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+
+                    <div>Log Attendance</div>
+
+
+                </div>
+            </a>
+        </div>
+        <div class="col span-1-of-6">
+            <a asp-controller="Events" asp-action="Dashboard">
+                <div class="user-dashboard-link">
+                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <div>View Upcoming Events</div>
+
+                </div>
+            </a>
+        </div>
+
+        <div class="col span-1-of-6">
+            <a asp-controller="Events" asp-action="Create">
+                <div class="user-dashboard-link">
+                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <div>Create an Event</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col span-1-of-6">
+            <a asp-controller="Events" asp-action="Create">
+                <div class="user-dashboard-link">
+                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <div>Check In to an Event</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col span-1-of-6">
+            <a asp-controller="Events" asp-action="Create">
+                <div class="user-dashboard-link">
+                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <div>My Connections</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col span-1-of-6">
+            <a asp-controller="Activities" asp-action="Records">
+                <div class="user-dashboard-link">
+                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <div>My Records</div>
+                </div>
+            </a>
+        </div>
+
+
+    </div>
+</section>

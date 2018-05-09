@@ -78,6 +78,7 @@ namespace ElGroupo.Web
             services.AddTransient<EventService, EventService>();
             services.AddTransient<AccountService, AccountService>();
             services.AddTransient<UserService, UserService>();
+            services.AddTransient<ActivitiesService, ActivitiesService>();
 
             services.AddSingleton(EngineFactory.CreateEmbedded(typeof(Mail.Templates.TemplatePointer)));
             services.AddSingleton<IEmailService, MailService>();
@@ -126,7 +127,7 @@ namespace ElGroupo.Web
 
             //var sm = app.ApplicationServices.GetRequiredService<SignInManager<User>>();
 
-
+            //ElGroupoDbContext.PopulateSomeFakeActivities(app.ApplicationServices);
             //Models.Configuration.EmailConfigOptions.SendTestEmail().Wait();
             //ElGroupoDbContext.CreateAdminAccount(app.ApplicationServices, Configuration).Wait();
             //ElGroupoDbContext.CreateUsers(app.ApplicationServices).Wait();

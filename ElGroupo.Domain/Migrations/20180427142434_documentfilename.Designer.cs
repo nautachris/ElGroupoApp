@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180427142434_documentfilename")]
+    partial class documentfilename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -55,7 +56,7 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<long>("ActivityGroupId");
+                    b.Property<long?>("ActivityGroupId");
 
                     b.Property<DateTime>("DateCreated");
 
@@ -183,32 +184,6 @@ namespace ElGroupo.Domain.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ActivityGroupOrganizers");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityOrganizer", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<long>("ActivityId");
-
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActivityId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ActivityOrganizers");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Activities.CreditType", b =>
@@ -1265,8 +1240,7 @@ namespace ElGroupo.Domain.Migrations
                 {
                     b.HasOne("ElGroupo.Domain.Activities.ActivityGroup", "ActivityGroup")
                         .WithMany("Activities")
-                        .HasForeignKey("ActivityGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ActivityGroupId");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityCredit", b =>
@@ -1298,19 +1272,6 @@ namespace ElGroupo.Domain.Migrations
                     b.HasOne("ElGroupo.Domain.Activities.ActivityGroup", "ActivityGroup")
                         .WithMany("Organizers")
                         .HasForeignKey("ActivityGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany("OrganizedActivityGroups")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityOrganizer", b =>
-                {
-                    b.HasOne("ElGroupo.Domain.Activities.Activity", "Activity")
-                        .WithMany("Organizers")
-                        .HasForeignKey("ActivityId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("ElGroupo.Domain.User", "User")

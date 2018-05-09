@@ -24,7 +24,8 @@
     });
 }
 
-var MessageDialog = function (message) {
+var MessageDialog = function (message, callback) {
+    var cb = callback;
     $("#divConfirm").hide();
     $("#main").css('opacity', 0.2);
     $("#divMessageDialog").show();
@@ -34,6 +35,7 @@ var MessageDialog = function (message) {
         $("#main").css('opacity', 1);
         $("#divMessageDialog").hide();
         $("#btnMessageDialogOK").off("click");
+        if (cb) cb();
     });
 };
 

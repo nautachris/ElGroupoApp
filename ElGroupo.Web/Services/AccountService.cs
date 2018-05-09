@@ -540,7 +540,8 @@ namespace ElGroupo.Web.Services
                 EmailAddress = user.Email,
                 HasPhoto = user.PhotoId.HasValue,
                 Id = user.Id,
-                Name = user.Name,
+                Title = user.Title,
+                Specialty = user.Specialty,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
@@ -654,7 +655,8 @@ namespace ElGroupo.Web.Services
                 userRecord.ZipCode = model.ZipCode;
                 userRecord.Email = model.EmailAddress;
                 userRecord.PhoneNumber = model.PhoneNumber;
-                userRecord.Name = model.Name;
+                userRecord.Title = model.Title;
+                userRecord.Specialty = model.Specialty;
                 userRecord.FirstName = model.FirstName;
                 userRecord.LastName = model.LastName;
                 userRecord.TimeZoneId = model.TimeZoneId;

@@ -794,7 +794,7 @@ namespace ElGroupo.Web.Controllers
             //deal with time zone shit
             var tzChanged = await TimeZoneChanged(details.UtcOffset, Convert.ToInt64(loginResponse.ResponseData));
             if (returnUrl != null) return Redirect(returnUrl);
-            return RedirectToAction("Dashboard", "Home", new { confirmTimeZone = tzChanged });
+            return RedirectToAction("UserDashboard", "Home", new { confirmTimeZone = tzChanged });
             //return Redirect(returnUrl ?? "/Home/Dashboard");
 
         }

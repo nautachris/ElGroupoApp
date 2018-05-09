@@ -1,0 +1,152 @@
+﻿@using ElGroupo.Web.Models.Activities
+@model ActivitiesDashboardModel
+
+<section style="background-color:#2d2d2d; color:white; padding-top:30px; padding-bottom:30px;">
+
+    @foreach (var dept in Model.Departments)
+    {
+        foreach (var group in dept.Groups)
+        {
+            <div class="row centered" style="width:50%; text-transform:uppercase;">
+                <div style="width:100%; text-align:left; border-bottom:1px solid #f0788c; margin:10px 0 20px;">
+                    <span style="padding:0 10px;">@dept.DepartmentName - @group.Name</span>
+                </div>
+                @for (var x = 0; x < group.ActivityGroups.Count; x = x + 2)
+                {
+                    <div class="row">
+                        <div class="col span-1-of-2" style="height:163px; color:white;">
+                            @if (group.ActivityGroups[x].Id == -1)
+                            {
+                            <a asp-controller="Activities" asp-action="CreateActivityGroup" asp-route-groupId="@group.Id">
+                                <div class="user-dashboard-link">
+                                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                                    <div>@group.ActivityGroups[x].Name</div>
+
+                                </div>
+
+                            </a>
+
+                            }
+                            else
+                            {
+                                <a asp-controller="Activities" asp-action="Group" asp-route-activityGroupId="@group.ActivityGroups[x].Id">
+                                    <div class="user-dashboard-link">
+                                        <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                                        @*(@group.ActivityGroups[x].ActivityCount.ToString())*@
+                                        <div>@group.ActivityGroups[x].Name </div>
+
+                                    </div>
+
+                                </a>
+
+                            }
+
+                        </div>
+                        @if (group.ActivityGroups.Count >= x + 2)
+                        {
+                        <div class="col span-1-of-2" style="height:163px; color:white;">
+
+                            @if (group.ActivityGroups[x + 1].Id == -1)
+    {
+                        <a asp-controller="Activities" asp-action="CreateActivityGroup" asp-route-groupId="@group.Id">
+                            <div class="user-dashboard-link">
+                                <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                                <div>@group.ActivityGroups[x + 1].Name</div>
+
+                            </div>
+                        </a>
+
+
+}
+else
+{
+
+                        <a asp-controller="Activities" asp-action="Group" asp-route-activityGroupId="@group.ActivityGroups[x + 1].Id">
+                            <div class="user-dashboard-link">
+                                <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                                @*(@group.ActivityGroups[x + 1].ActivityCount.ToString()*@
+                                <div>@group.ActivityGroups[x + 1].Name)</div>
+
+                            </div>
+
+                        </a>
+}
+
+
+                        </div>
+
+                        }
+                    </div>
+                }
+            </div>
+
+        }
+
+    }
+
+
+    <div class="row centered" style="width:50%; text-transform:uppercase;">
+        <div style="width:100%; text-align:left; border-bottom:1px solid #f0788c; margin:10px 0 20px;">
+            <span style="padding:0 10px;">My Personal Activities</span>
+        </div>
+        @for (var x = 0; x < Model.PrivateActivities.Count; x = x + 2)
+        {
+            <div class="row">
+                <div class="col span-1-of-2" style="height:163px; color:white;">
+
+                        @if (Model.PrivateActivities[x].Id == -1)
+                        {
+                            <a asp-controller="Activities" asp-action="CreateActivityGroup">
+                                <div class="user-dashboard-link">
+                                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                                    <div>@Model.PrivateActivities[x].Name</div>
+                                </div>
+                            </a>
+
+                        }
+                        else
+                        {
+                            <a asp-controller="Activities" asp-action="Group" asp-route-activityGroupId="@Model.PrivateActivities[x].Id">
+                                <div class="user-dashboard-link">
+                                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                                    <div>@Model.PrivateActivities[x].Name (@Model.PrivateActivities[x].ActivityCount.ToString())</div>
+                                </div>
+                            </a>
+
+                        }
+
+
+                </div>
+                @if (Model.PrivateActivities.Count >= x + 2)
+                {
+                    <div class="col span-1-of-2" style="height:163px; color:white;">
+                        @if (Model.PrivateActivities[x + 1].Id == -1)
+                        {
+                            <a asp-controller="Activities" asp-action="CreateActivityGroup">
+                                <div class="user-dashboard-link">
+                                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                                    <div>@Model.PrivateActivities[x + 1].Name</div>
+                                </div>
+                            </a>
+
+                        }
+                        else
+                        {
+                            <a asp-controller="Activities" asp-action="Group" asp-route-activityGroupId="@Model.PrivateActivities[x + 1].Id">
+                                <div class="user-dashboard-link">
+                                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                                    <div>@Model.PrivateActivities[x + 1].Name (@Model.PrivateActivities[x+1].ActivityCount.ToString())</div>
+                                </div>
+                            </a>
+
+                        }
+
+                    </div>
+
+                }
+            </div>
+        }
+    </div>
+
+
+</section>

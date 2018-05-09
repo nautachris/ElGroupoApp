@@ -58,8 +58,10 @@
             <div style="display:table;" class="width-100">
 
                 <div style="display:table-cell; vertical-align:middle; text-transform:uppercase; font-size:16px; text-align:left; padding-left:2%;" class="span-2-of-8">
-
-                    <span style="display:table-cell; vertical-align:middle; font-family: 'bebas_neuebold';color:black; font-size:29px; letter-spacing:6.3px; line-height:1.28;"><img style="width:100px;" src="~/content/images/logo.jpg" />Scatterbrain</span>
+                    <a asp-controller="Home" asp-action="UserDashboard" class="no-decoration">
+                        <span style="display:table-cell; vertical-align:middle; font-family: 'bebas_neuebold';color:black; font-size:29px; letter-spacing:6.3px; line-height:1.28;"><img style="width:100px;" src="~/content/images/logo.jpg" />Scatterbrain</span>
+                    </a>
+                    
                     @if (Model.IsAdmin)
     {
                 <span style="margin-left:5px; font-weight:bold;">Admin</span>
@@ -68,16 +70,22 @@
 
 
                 <div style="display:table-cell; vertical-align:middle; text-transform:uppercase; font-size:16px; text-align:center; padding-right:2%;" class="span-3-of-8">
-                    <div style="display:inline-block; text-align:center;" class="span-1-of-4">
+                    <div style="display:inline-block; text-align:center;" class="span-1-of-6">
                         <a asp-controller="Events" asp-action="Create">Create New</a>
                     </div>
-                    <div style="display:inline-block; text-align:center;" class="span-1-of-4">
+                    <div style="display:inline-block; text-align:center;" class="span-1-of-6">
                         <a asp-controller="Account" asp-action="Edit">My Connections</a>
                     </div>
-                    <div style="display:inline-block; text-align:center;" class="span-1-of-4">
-                        <a asp-controller="Home" asp-action="Dashboard">My Events</a>
+                    <div style="display:inline-block; text-align:center;" class="span-1-of-6">
+                        <a asp-controller="Events" asp-action="Dashboard">My Events</a>
                     </div>
-                    <div style="text-align:center;" class="span-1-of-4 menu-dropdown">
+                    <div style="display:inline-block; text-align:center;" class="span-1-of-6">
+                        <a asp-controller="Activities" asp-action="Dashboard">My Activities</a>
+                    </div>
+                    <div style="display:inline-block; text-align:center;" class="span-1-of-6">
+                        <a asp-controller="Activities" asp-action="Records">My Records</a>
+                    </div>
+                    <div style="text-align:center;" class="span-1-of-6 menu-dropdown">
                         <div class="menu-dropdown-button">@Model.ActiveUser.Name</div>
                         <div class="menu-dropdown-content">
                             <div style="width:100%; text-align:center;">
@@ -94,12 +102,12 @@
                             </div>
 
                         </div>
-                        
+
                     </div>
-                    
+
                     @*<div style="display:inline-block; text-align: center;" class="span-1-of-5">
-                        <a asp-controller="Account" asp-action="Logout">Sign Out</a>
-                    </div>*@
+            <a asp-controller="Account" asp-action="Logout">Sign Out</a>
+        </div>*@
 
                 </div>
 

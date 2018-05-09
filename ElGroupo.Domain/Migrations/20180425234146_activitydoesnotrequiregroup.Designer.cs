@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180425234146_activitydoesnotrequiregroup")]
+    partial class activitydoesnotrequiregroup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -31,14 +32,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<DateTime>("DateUpdated");
 
-                    b.Property<string>("Description")
-                        .HasColumnName("Description")
-                        .HasMaxLength(255);
-
-                    b.Property<string>("FileName")
-                        .HasColumnName("FileName")
-                        .HasMaxLength(255);
-
                     b.Property<byte[]>("ImageData");
 
                     b.Property<string>("UserCreated");
@@ -55,7 +48,7 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<long>("ActivityGroupId");
+                    b.Property<long?>("ActivityGroupId");
 
                     b.Property<DateTime>("DateCreated");
 
@@ -140,21 +133,17 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<DateTime>("DateUpdated");
 
-                    b.Property<long?>("DepartmentId");
+                    b.Property<long>("DepartmentId");
 
                     b.Property<string>("Name");
 
                     b.Property<string>("UserCreated");
-
-                    b.Property<long?>("UserId");
 
                     b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("ActivityGroups");
                 });
@@ -183,32 +172,6 @@ namespace ElGroupo.Domain.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ActivityGroupOrganizers");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityOrganizer", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<long>("ActivityId");
-
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActivityId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ActivityOrganizers");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Activities.CreditType", b =>
@@ -1265,8 +1228,7 @@ namespace ElGroupo.Domain.Migrations
                 {
                     b.HasOne("ElGroupo.Domain.Activities.ActivityGroup", "ActivityGroup")
                         .WithMany("Activities")
-                        .HasForeignKey("ActivityGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ActivityGroupId");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityCredit", b =>
@@ -1286,11 +1248,8 @@ namespace ElGroupo.Domain.Migrations
                 {
                     b.HasOne("ElGroupo.Domain.Activities.Department", "Department")
                         .WithMany("ActivityGroups")
-                        .HasForeignKey("DepartmentId");
-
-                    b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany("ActivityGroups")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityGroupOrganizer", b =>
@@ -1298,19 +1257,6 @@ namespace ElGroupo.Domain.Migrations
                     b.HasOne("ElGroupo.Domain.Activities.ActivityGroup", "ActivityGroup")
                         .WithMany("Organizers")
                         .HasForeignKey("ActivityGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany("OrganizedActivityGroups")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityOrganizer", b =>
-                {
-                    b.HasOne("ElGroupo.Domain.Activities.Activity", "Activity")
-                        .WithMany("Organizers")
-                        .HasForeignKey("ActivityId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("ElGroupo.Domain.User", "User")

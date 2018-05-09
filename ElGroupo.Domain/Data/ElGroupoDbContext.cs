@@ -29,6 +29,7 @@ namespace ElGroupo.Domain.Data
         public DbSet<ActivityCredit> ActivityCredits { get; set; }
         public DbSet<ActivityGroup> ActivityGroups { get; set; }
         public DbSet<ActivityGroupOrganizer> ActivityGroupOrganizers { get; set; }
+        public DbSet<ActivityOrganizer> ActivityOrganizers { get; set; }
         public DbSet<CreditType> CreditTypes { get; set; }
         public DbSet<CreditTypeCategory> CreditTypeCategories { get; set; }
         public DbSet<Department> Departments { get; set; }
@@ -161,6 +162,8 @@ namespace ElGroupo.Domain.Data
             builder.Entity<AccreditationDocument>().ToTable("AccreditationDocuments");
             builder.Entity<AccreditationDocument>().HasKey(x => x.Id);
             builder.Entity<AccreditationDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<AccreditationDocument>().Property(x => x.Description).HasColumnName("Description").HasMaxLength(255);
+            builder.Entity<AccreditationDocument>().Property(x => x.FileName).HasColumnName("FileName").HasMaxLength(255);
             builder.Entity<AccreditationDocument>().HasMany(x => x.Activities).WithOne(x => x.Document).HasForeignKey(x => x.DocumentId);
 
             builder.Entity<Activity>().ToTable("Activities");
@@ -168,7 +171,7 @@ namespace ElGroupo.Domain.Data
             builder.Entity<Activity>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<Activity>().HasMany(x => x.Credits).WithOne(x => x.Activity).HasForeignKey(x => x.ActivityId);
             builder.Entity<Activity>().HasMany(x => x.Users).WithOne(x => x.Activity).HasForeignKey(x => x.ActivityId);
-            builder.Entity<Activity>().HasOne(x => x.ActivityGroup).WithMany(x => x.Activities).HasForeignKey(x => x.ActivityGroupId);
+            builder.Entity<Activity>().HasOne(x => x.ActivityGroup).WithMany(x => x.Activities).HasForeignKey(x => x.ActivityGroupId).IsRequired();
 
             builder.Entity<ActivityAttendanceType>().ToTable("ActivityAttendanceTypes");
             builder.Entity<ActivityAttendanceType>().HasKey(x => x.Id);
@@ -185,6 +188,7 @@ namespace ElGroupo.Domain.Data
             builder.Entity<ActivityGroup>().HasKey(x => x.Id);
             builder.Entity<ActivityGroup>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<ActivityGroup>().HasOne(x => x.Department).WithMany(x => x.ActivityGroups).HasForeignKey(x => x.DepartmentId);
+            builder.Entity<ActivityGroup>().HasOne(x => x.User).WithMany(x => x.ActivityGroups).HasForeignKey(x => x.UserId);
             builder.Entity<ActivityGroup>().Property(x => x.DateCreated).HasMaxLength(255).IsRequired();
             builder.Entity<ActivityGroup>().HasMany(x => x.Activities).WithOne(x => x.ActivityGroup).HasForeignKey(x => x.ActivityGroupId);
             builder.Entity<ActivityGroup>().HasMany(x => x.UserGroups).WithOne(x => x.ActivityGroup).HasForeignKey(x => x.ActivityGroupId);
@@ -194,7 +198,13 @@ namespace ElGroupo.Domain.Data
             builder.Entity<ActivityGroupOrganizer>().HasKey(x => x.Id);
             builder.Entity<ActivityGroupOrganizer>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<ActivityGroupOrganizer>().HasOne(x => x.ActivityGroup).WithMany(x => x.Organizers).HasForeignKey(x => x.ActivityGroupId);
-            builder.Entity<ActivityGroupOrganizer>().HasOne(x => x.User).WithMany(x => x.OrganizedActivities).HasForeignKey(x => x.UserId);
+            builder.Entity<ActivityGroupOrganizer>().HasOne(x => x.User).WithMany(x => x.OrganizedActivityGroups).HasForeignKey(x => x.UserId);
+
+            builder.Entity<ActivityOrganizer>().ToTable("ActivityOrganizers");
+            builder.Entity<ActivityOrganizer>().HasKey(x => x.Id);
+            builder.Entity<ActivityOrganizer>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<ActivityOrganizer>().HasOne(x => x.Activity).WithMany(x => x.Organizers).HasForeignKey(x => x.ActivityId);
+            builder.Entity<ActivityOrganizer>().HasOne(x => x.User).WithMany(x => x.OrganizedActivities).HasForeignKey(x => x.UserId);
 
             builder.Entity<CreditType>().ToTable("CreditTypes");
             builder.Entity<CreditType>().HasKey(x => x.Id);
@@ -288,15 +298,15 @@ namespace ElGroupo.Domain.Data
 
                 var ctx = provider.GetRequiredService<ElGroupoDbContext>();
                 var dept = ctx.Departments.First();
-                foreach(var u in ctx.Users.Take(100))
+                foreach (var u in ctx.Users.Take(100))
                 {
                     var du = new DepartmentUser { Department = dept, User = u };
                     ctx.Add(du);
                 }
-                
+
 
                 dept = ctx.Departments.Skip(1).First();
-                foreach(var u in ctx.Users.Skip(100).Take(100))
+                foreach (var u in ctx.Users.Skip(100).Take(100))
                 {
                     var du = new DepartmentUser { Department = dept, User = u };
                     ctx.Add(du);
@@ -305,7 +315,7 @@ namespace ElGroupo.Domain.Data
                 await ctx.SaveChangesAsync();
                 var dug = new DepartmentUserGroup { Department = ctx.Departments.First(), Name = "Group 1" };
                 ctx.Add(dug);
-                foreach(var du in ctx.Departments.Include(x => x.Users).First().Users.Take(15))
+                foreach (var du in ctx.Departments.Include(x => x.Users).First().Users.Take(15))
                 {
                     var dugu = new DepartmentUserGroupUser { UserGroup = dug, User = du };
                     ctx.Add(dugu);
@@ -313,7 +323,7 @@ namespace ElGroupo.Domain.Data
 
                 dug = new DepartmentUserGroup { Department = ctx.Departments.First(), Name = "Group 2" };
                 ctx.Add(dug);
-                foreach(var du in ctx.Departments.Include(x => x.Users).First().Users.Skip(15).Take(15))
+                foreach (var du in ctx.Departments.Include(x => x.Users).First().Users.Skip(15).Take(15))
                 {
                     var dugu = new DepartmentUserGroupUser { UserGroup = dug, User = du };
                     ctx.Add(dugu);
@@ -322,7 +332,7 @@ namespace ElGroupo.Domain.Data
 
                 dug = new DepartmentUserGroup { Department = ctx.Departments.Skip(1).First(), Name = "Group 1" };
                 ctx.Add(dug);
-                foreach(var du in ctx.Departments.Include(x => x.Users).Skip(1).First().Users.Take(15))
+                foreach (var du in ctx.Departments.Include(x => x.Users).Skip(1).First().Users.Take(15))
                 {
                     var dugu = new DepartmentUserGroupUser { UserGroup = dug, User = du };
                     ctx.Add(dugu);
@@ -330,7 +340,7 @@ namespace ElGroupo.Domain.Data
 
                 dug = new DepartmentUserGroup { Department = ctx.Departments.Skip(1).First(), Name = "Group 2" };
                 ctx.Add(dug);
-                foreach(var du in ctx.Departments.Include(x => x.Users).Skip(1).First().Users.Skip(15).Take(15))
+                foreach (var du in ctx.Departments.Include(x => x.Users).Skip(1).First().Users.Skip(15).Take(15))
                 {
                     var dugu = new DepartmentUserGroupUser { UserGroup = dug, User = du };
                     ctx.Add(dugu);
@@ -625,7 +635,131 @@ namespace ElGroupo.Domain.Data
 
 
         }
+        public static void PopulateSomeFakeActivities(IServiceProvider provider)
+        {
+            try
+            {
+                var ctx = provider.GetRequiredService<ElGroupoDbContext>();
 
+                //var creditType = ctx.CreditTypes.First(x => x.Description == "AMEP");
+                //var cat = new CreditTypeCategory { CreditType = creditType, Description = "Evidence-Based Practices for EffectiveLarge group Teaching and Learning" };
+                //ctx.Add(cat);
+
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Evidence-based practices for effective small-group teaching and learning" };
+                //ctx.Add(cat);
+
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Best practices in providing feedback with good judgment to learners and colleagues" };
+                //ctx.Add(cat);
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Learning science foundations for an evidence-based framework for teaching practice" };
+                //ctx.Add(cat);
+
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Best practices for mentoring researchers and developing research skills, offered by the CTSC Faculty Mentor Development Program" };
+                //ctx.Add(cat);
+
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Evidence-based practices for teaching clinical reasoning and bedside practice" };
+                //ctx.Add(cat);
+
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Developing curriculum at session to course level: objectives, learning activities, assessment" };
+                //ctx.Add(cat);
+
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Participate in Peer Observation in Support of Effective Teaching (POSET)" };
+                //ctx.Add(cat);
+
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Training session led by an OMED facilitator" };
+                //ctx.Add(cat);
+
+                //cat = new CreditTypeCategory { CreditType = creditType, Description = "Write and submit a teaching philosophy" };
+                //ctx.Add(cat);
+
+
+                var user = ctx.Users.First(x => x.Id == 8);
+                //populated activity groups linked to user groups
+                foreach (var deptUser in ctx.DepartmentUsers.Include(x => x.User).Include(x => x.Department).Where(x => x.User.Id == 8))
+                {
+                    foreach (var deptUserGroup in ctx.DepartmentUserGroupUsers.Include(x => x.User).Include(x => x.UserGroup).Where(x => x.User.Id == deptUser.Id))
+                    {
+                        //i.e. radiologoy residents
+                        var activityGroup = new ActivityGroup
+                        {
+                            Department = deptUser.Department,
+                            Name = "Happy Hour (" + deptUserGroup.UserGroup.Name + ")"
+                        };
+                        ctx.Add(activityGroup);
+                        var activity = new Activity
+                        {
+                            ActivityGroup = activityGroup,
+                            Description = "Wednesday, 4/25/18",
+                            Location = "In Hell",
+                            Credits = new List<ActivityCredit>()
+                        };
+                        //add all credit types
+                        foreach (var creditTypeActivity in ctx.CreditTypeCategories)
+                        {
+                            activity.Credits.Add(new ActivityCredit { CreditTypeCategory = creditTypeActivity });
+                        }
+                        ctx.Add(activity);
+                        var activityGroupUserGroup = new DepartmentUserGroupActivityGroup
+                        {
+                            ActivityGroup = activityGroup,
+                            UserGroup = deptUserGroup.UserGroup
+                        };
+                        ctx.Add(activityGroupUserGroup);
+                        var userActivity = new UserActivity { Activity = activity, User = deptUser.User, Credits = new List<UserActivityCredit>() };
+                        userActivity.AttendanceType = ctx.ActivityAttendanceTypes.First();
+                        foreach (var c in activity.Credits)
+                        {
+                            userActivity.Credits.Add(new UserActivityCredit { CreditHours = 1, CreditTypeCategory = c.CreditTypeCategory });
+                        }
+                        ctx.Add(userActivity);
+
+                    }
+                }
+
+                //populates "private" groups
+                //for (var x = 1; x < 5; x++)
+                //{
+                //    var activityGroup = new ActivityGroup
+                //    {
+                //        User = user,
+                //        Name = "My Own Activity " + x.ToString()
+
+                //    };
+                //    ctx.Add(activityGroup);
+                //    var activity = new Activity
+                //    {
+                //        ActivityGroup = activityGroup,
+                //        Description = "Wednesday, 4/25/18",
+                //        Location = "Office",
+                //        StartDate = DateTime.Now.AddDays(Convert.ToDouble(x)),
+                //        EndDate = DateTime.Now.AddDays(Convert.ToDouble(x)).AddHours(1),
+                //        IsPublic = false,
+                //        Credits = new List<ActivityCredit>()
+                //    };
+                //    //add all credit types
+                //    foreach (var creditTypeActivity in ctx.CreditTypeCategories)
+                //    {
+                //        activity.Credits.Add(new ActivityCredit { CreditTypeCategory = creditTypeActivity });
+                //    }
+                //    ctx.Add(activity);
+
+                //    var userActivity = new UserActivity { Activity = activity, User = user, Credits = new List<UserActivityCredit>() };
+                //    userActivity.AttendanceType = ctx.ActivityAttendanceTypes.First();
+                //    foreach (var c in activity.Credits)
+                //    {
+                //        userActivity.Credits.Add(new UserActivityCredit { CreditHours = 1, CreditTypeCategory = c.CreditTypeCategory });
+                //    }
+                //    ctx.Add(userActivity);
+                //}
+
+
+                ctx.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                var fff = 4;
+            }
+
+        }
 
         public static async Task PopulateUserContacts(IServiceProvider provider)
         {

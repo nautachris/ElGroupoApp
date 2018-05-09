@@ -29,106 +29,23 @@ namespace ElGroupo.Web.Controllers
         }
 
 
-        private CheckInStatuses GetCheckInStatus(Event e, EventAttendee ea)
+
+
+
+
+
+        [HttpGet]
+        [Route("UserDashboard")]
+        public async Task<IActionResult> UserDashboard([FromQuery]bool confirmTimeZone = false)
         {
-            if (ea.CheckedIn) return CheckInStatuses.CheckInSuccessful;
-            if (e.EndTime < DateTime.Now.ToUniversalTime()) return CheckInStatuses.CheckInExpired;
-            if (e.StartTime.AddMinutes(e.CheckInTimeTolerance * -1) <= DateTime.Now.ToUniversalTime()) return CheckInStatuses.AvailableForCheckIn;
-            return CheckInStatuses.NotAvailableForCheckIn;
-        }
-
-
-        private List<EventInformationModel> GroupEventsByRecurrence(List<EventInformationModel> events)
-        {
-            //var recurring = events.Where(x => x.RecurrenceId.HasValue);
-            var outList = new List<EventInformationModel>();
-            outList.AddRange(events.Where(x => !x.RecurrenceId.HasValue));
-            foreach(var ev in events.Where(x => x.RecurrenceId.HasValue).GroupBy(x => x.RecurrenceId.Value))
-            {
-                var parentEvent = ev.OrderBy(x => x.StartDate).First();
-                parentEvent.Recurrences = ev.OrderBy(x => x.StartDate).Skip(1).ToList();
-                foreach (var r in parentEvent.Recurrences) r.IsRecurrenceItem = true;
-                outList.Add(parentEvent);
-            }
-            
-            return outList.OrderBy(x=>x.StartDate).ToList();
-        }
-
-
-        [HttpGet, HttpPost]
-        [Route("Dashboard")]
-        public async Task<IActionResult> Dashboard([FromQuery]bool confirmTimeZone = false)
-        {
-            var model = new DashboardModel();
-            var allEvents = new List<EventInformationModel>();
-            //do we want a third "tab" for events I'm organizing?
+            var model = new UserDashboardModel();
             var user = await this.CurrentUser();
-            var organizedEvents = dbContext.EventAttendees.Include(x => x.User).Where(x => x.User.Id == user.Id && x.Active == true && x.IsOrganizer).Select(x =>
-            new
-            {
-                ea = x,
-                ev = x.Event,
-                rec = x.Event.Recurrence
-            }).ToList();
-            //e.StartTime.ToLocalTime().DayOfWeek.ToString() + " " + e.StartTime.ToLocalTime().ToString("d") + " " + e.StartTime.ToLocalTime().ToString("t")
-            var invitedEvents = dbContext.EventAttendees.Include(x => x.User).Include(x => x.Event).ThenInclude(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Event).ThenInclude(x => x.Recurrence).Where(x => x.User.Id == user.Id && x.Active == true && !x.IsOrganizer).ToList();
-            foreach (var ev in organizedEvents)
-            {
-                allEvents.Add(new EventInformationModel
-                {
-                    EventAttendeeId = ev.ea.Id,
-                    EndDate = ev.ev.EndTime,
-                    StartDate = ev.ev.StartTime,
-                    DateText = ev.ev.GetSimpleDateText(user.TimeZoneId),
-                    Id = ev.ev.Id,
-                    CheckInStatus = GetCheckInStatus(ev.ev, ev.ea),
-                    OrganizedByUser = true,
-                    IsNew = false,
-                    RecurrenceId = ev.rec?.Id,
-                    RSVPStatus = ev.ea.ResponseStatus,
-                    Name = ev.ev.Name,
-                    Status = ev.ev.Status,
-                    IsRecurring = ev.rec != null
-
-                });
-            }
-            foreach (var ev in invitedEvents.Where(x => !organizedEvents.Select(y => y.ev.Id).Contains(x.EventId)))
-            {
-                allEvents.Add(new EventInformationModel
-                {
-                    EventAttendeeId = ev.Id,
-                    EndDate = ev.Event.EndTime,
-                    StartDate = ev.Event.StartTime,
-                    DateText = ev.Event.GetSimpleDateText(user.TimeZoneId),
-                    RecurrenceId = ev.Event.Recurrence?.Id,
-                    Id = ev.Event.Id,
-                    OrganizedByUser = false,
-                    CheckInStatus = GetCheckInStatus(ev.Event, ev),
-                    IsNew = !ev.Viewed,
-                    Name = ev.Event.Name,
-                    OrganizerName = ev.Event.Attendees.First(x => x.IsOrganizer).User.Name,
-                    Status = ev.Event.Status,
-                    RSVPStatus = ev.ResponseStatus,
-                    IsRecurring = ev.Event.Recurrence != null,
-                    RSVPRequested = ev.ShowRSVPReminder == true
-                });
-            }
-
-            var drafts = allEvents.Where(x => x.OrganizedByUser && x.Status == EventStatus.Draft).OrderBy(x => x.StartDate).ToList();
-            var pastEvents = allEvents.Where(x => x.Status != EventStatus.Draft && x.EndDate < DateTime.Now.ToUniversalTime()).OrderBy(x => x.StartDate).ToList();
-            var futureEvents = allEvents.Where(x => x.Status != EventStatus.Draft && x.EndDate >= DateTime.Now.ToUniversalTime()).OrderBy(x => x.StartDate).ToList();
-            var myEvents = allEvents.Where(x => x.OrganizedByUser).ToList();
-
-            model.Drafts = GroupEventsByRecurrence(drafts);
-            model.PastEvents = GroupEventsByRecurrence(pastEvents);
-            model.FutureEvents = GroupEventsByRecurrence(futureEvents);
-            model.MyEvents = GroupEventsByRecurrence(myEvents);
-
-            model.RSVPRequestedEvents = allEvents.Where(x => x.RSVPRequested).ToList();
-            model.RSVPRequestCount = allEvents.Count(x => x.RSVPRequested);
+            model.FirstName = user.FirstName;
+            model.UserId = user.Id;
             model.TimeZoneChanged = confirmTimeZone;
             return View(model);
         }
+
 
         [Route("Index")]
         [AllowAnonymous]

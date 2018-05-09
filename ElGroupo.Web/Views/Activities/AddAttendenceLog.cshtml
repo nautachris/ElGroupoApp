@@ -1,0 +1,197 @@
+﻿@using ElGroupo.Web.Models.Activities
+@model LogAttendenceModel
+
+@functions{
+    public string GenerateId(string prefix, object val)
+    {
+        return prefix + val.ToString();
+
+    }
+
+
+    public bool HasCreditType(List<long> selectedCategories, List<CreditCategoryModel> allCategories, long creditTypeId)
+    {
+        var allowedCategories = allCategories.Where(x => x.CreditTypeId == creditTypeId).Select(x => x.Id).ToList();
+        if (selectedCategories.Intersect(allowedCategories).Count() > 0) return true;
+        else return false;
+
+    }
+
+}
+
+<section class="create-activity-group" style="background-color:#2d2d2d; color:white; text-transform:uppercase; text-align:center; padding:20px;">
+    <h2>@Model.ActivityGroupName</h2>
+    <input type="hidden" asp-for="ActivityId" />
+    <input type="hidden" asp-for="ActivityGroupId" />
+
+    <div class="row">
+        <label>Register For Activity</label>
+
+
+    </div>
+    <div class="row">
+        <label>Activity Description</label>
+        <div class="width-100">
+            @Model.ActivityDescription
+        </div>
+
+    </div>
+    <div class="row">
+        <label>Activity Location</label>
+        <div class="width-100">
+            @Model.ActivityLocation
+        </div>
+
+    </div>
+    @if (Model.ActivityStartTimeText != null)
+    {
+        <div class="row">
+            <label>Activity Date</label>
+            <div class="width-100">
+                @Model.ActivityStartTimeText
+            </div>
+
+        </div>
+
+    }
+
+
+    <div class="row" id="divCreditTypes" style="margin-top:25px;">
+        <label>Credit Types</label>
+        @foreach (var creditType in Model.CreditTypes)
+        {
+            <div class="width-100">
+
+                @if (Model.Credits != null)
+                {
+
+                    if (HasCreditType(Model.Credits.Select(x => x.CreditTypeCategoryId).ToList(), Model.CreditCategories, creditType.Id))
+                    {
+                        <input type="checkbox" checked id="@GenerateId("rbCreditType", creditType.Id)" data-credit-type-id="@creditType.Id" />
+
+                    }
+                    else
+                    {
+                        <input type="checkbox" id="@GenerateId("rbCreditType", creditType.Id)" data-credit-type-id="@creditType.Id" />
+
+                    }
+                }
+                else
+                {
+                    <input type="checkbox" id="@GenerateId("rbCreditType", creditType.Id)" data-credit-type-id="@creditType.Id" />
+
+                }
+
+
+                <label style="cursor:pointer;margin-left:20px;" for="@GenerateId("rbCreditType", creditType.Id)">@creditType.Description</label>
+            </div>
+        }
+    </div>
+    <div class="row" id="divCreditCategories" style="display:none;">
+        <label>Credit Categories</label>
+        @foreach (var creditCategory in Model.CreditCategories)
+        {
+            <div style="display:none; width:75%;" class="row line-after" data-credit-type-id="@creditCategory.CreditTypeId" data-credit-category-id="@creditCategory.Id">
+
+                @if (Model.Credits != null && Model.Credits.Any(x => x.CreditTypeCategoryId == creditCategory.Id))
+                {
+                    <div class="col span-1-of-8"><input checked type="checkbox" id="@GenerateId("rbCreditCategory", creditCategory.Id)" /></div>
+                    <div class="col span-5-of-8" style="text-align:left;"><label style="cursor:pointer;" for="@GenerateId("rbCreditCategory", creditCategory.Id)">@creditCategory.Description</label></div>
+                    <div class="col span-1-of-8"><input type="number" style="width:50px;" min="0" max="24" value="@Model.Credits.First(x=>x.CreditTypeCategoryId == creditCategory.Id).NumberOfCredits" /></div>
+                    <div class="col span-1-of-8" style="text-align:left;"><span>Credits</span></div>
+
+                }
+                else
+                {
+                    <div class="col span-1-of-8"><input type="checkbox" id="@GenerateId("rbCreditCategory", creditCategory.Id)" /></div>
+                    <div class="col span-5-of-8" style="text-align:left;"><label style="cursor:pointer;" for="@GenerateId("rbCreditCategory", creditCategory.Id)">@creditCategory.Description</label></div>
+                    <div class="col span-1-of-8"><input type="number" style="width:50px;" min="0" max="24" value="0" /></div>
+                    <div class="col span-1-of-8" style="text-align:left;"><span>Credits</span></div>
+
+                }
+
+
+
+
+
+            </div>
+
+        }
+    </div>
+    <div class="row" id="divAttendenceType">
+        <label>Attendence Type</label>
+        @for (var x = 0; x < Model.AttendenceTypes.Count; x++)
+        {
+            <div class="width-100">
+                @if (Model.AttendenceType == 0)
+                {
+                    @if (x == 0)
+                    {
+
+                        <input type="radio" name="group" checked id="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)" data-attendence-type-id="@Model.AttendenceTypes[x].Id" />
+                    }
+                    else
+                    {
+                        <input type="radio" name="group" id="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)" data-attendence-type-id="@Model.AttendenceTypes[x].Id" />
+
+                    }
+
+                }
+                else
+                {
+                    if (Model.AttendenceType == Model.AttendenceTypes[x].Id)
+                    {
+                        <input type="radio" name="group" checked id="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)" data-attendence-type-id="@Model.AttendenceTypes[x].Id" />
+
+                    }
+                    else
+                    {
+                        <input type="radio" name="group" id="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)" data-attendence-type-id="@Model.AttendenceTypes[x].Id" />
+
+                    }
+
+                }
+
+
+                <label style="cursor:pointer;margin-left:20px;" for="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)">@Model.AttendenceTypes[x].Description</label>
+            </div>
+
+        }
+
+
+    </div>
+    <div class="row">
+        <label>Documentation</label>
+        <div style="display:none;" id="divRowTemplate">
+            <div style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white; border-right:1px solid white;">
+                <div style="display: table-cell; vertical-align:middle;"></div>
+                <div style="display: table-cell; vertical-align:middle;"><input placeholder="Enter a File Description..." style="width:100%;" type="text" /></div>
+                <div style="display: table-cell; vertical-align:middle;"><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></div>
+            </div>
+        </div>
+
+
+        <div id="divDocumentTable" style="display:none;" class="row centered">
+            <div id="divTable" style="display: table; margin-left:5%; margin-right:5%; width:90%; border-collapse:collapse;">
+                <header style="display: table-row;">
+                    <div style="display: table-cell; width:30%; border:1px solid white;">File Name</div>
+                    <div style="display: table-cell; width:60%; border:1px solid white;">Description</div>
+                    <div style="display: table-cell; width:10%; border:1px solid white;"></div>
+                </header>
+            </div>
+        </div>
+        <div class="row" style="width:75%; margin-top:25px;">
+            <input style="margin: 0 auto;" type="file" multiple id="iptFile" />
+        </div>
+    </div>
+
+    <div class="row">
+        <a class="btn btn-primary" asp-controller="Activities" asp-action="Group" asp-route-activityGroupId="@Model.ActivityGroupId">Cancel</a>
+        <button id="btnCreate" class="btn btn-primary">Add to Attendence Log</button>
+
+    </div>
+</section>
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/activities/add-attendence-log.js"></script>
+
+}

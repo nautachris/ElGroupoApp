@@ -17,8 +17,8 @@
     }
     <div class="page-nav row">
         <div class="col span-1-of-4"><a href="#" class="links bold" data-link-type="details">My Details</</a></div>
-        <div class="col span-1-of-4" ><a  href="#" class="links" data-link-type="contact-methods">My Contact Methods</a></div>
-        <div class="col span-1-of-4" ><a  href="#" class="links" data-link-type="connections">My Connections</a></div>
+        <div class="col span-1-of-4"><a href="#" class="links" data-link-type="contact-methods">My Contact Methods</a></div>
+        <div class="col span-1-of-4"><a href="#" class="links" data-link-type="connections">My Connections</a></div>
         <div class="col span-1-of-4"><a href="#" class="links" data-link-type="attendee-groups">My Groups</a></div>
 
     </div>
@@ -33,10 +33,26 @@
             </div>
             <div class="row line-after">
                 <div class="col span-1-of-3">
-                    <label asp-for="Name">Name:</label>
+                    <label asp-for="Title">Title:</label>
                 </div>
                 <div class="col span-2-of-3">
-                    <input class="input-transparent" type="text" asp-for="Name" placeholder="Enter Name...">
+                    <select asp-for="Title">
+                        @foreach (var tit in Model.Titles)
+                {
+                    if (Model.Title == tit)
+                    {
+                        <option selected value="@tit">@tit</option>
+
+            }
+            else
+            {
+
+                <option value="@tit">@tit</option>
+    }
+
+}
+                    </select>
+
                 </div>
             </div>
             <div class="row line-after">
@@ -53,6 +69,14 @@
                 </div>
                 <div class="col span-2-of-3">
                     <input class="input-transparent" type="text" asp-for="LastName" placeholder="Enter Last Name...">
+                </div>
+            </div>
+            <div class="row line-after">
+                <div class="col span-1-of-3">
+                    <label asp-for="Specialty">Specialty:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <input class="input-transparent" type="text" asp-for="Specialty" placeholder="Enter Specialty...">
                 </div>
             </div>
             <div class="row line-after">
@@ -82,11 +106,11 @@
             <div class="row">
                 <label asp-for="TimeZoneId">Time Zone:</label>
                 <select asp-for="TimeZoneId">
-                    @foreach(var tz in Model.TimeZones)
-                    {
-                        <option value="@tz.Key">@tz.Value</option>
+                    @foreach (var tz in Model.TimeZones)
+            {
+                <option value="@tz.Key">@tz.Value</option>
 
-                    }
+    }
                 </select>
             </div>
 
@@ -103,7 +127,7 @@
                     <label>&nbsp;</label>
                 </div>
                 <div class="col span-2-of-4">
-                    <input type="submit" value="Save Account Changes!">
+                    <input class="btn btn-primary" type="submit" value="Save Account Changes!">
                 </div>
                 <div class="col span-1-of-4">
                     <label>&nbsp;</label>
@@ -119,7 +143,7 @@
             <select class="col span-3-of-10" id="selContactType">
                 <option selected></option>
                 @foreach (var ct in Model.ContactTypes)
-            {
+                {
                     <option value="@ct.Key">@ct.Value</option>
 
                 }
@@ -154,19 +178,19 @@
 
 
     <script type="text/javascript" src="~/content/scripts/account/edit-account.js"></script>
-<script type="text/javascript" src="~/content/scripts/account/google-contacts.js"></script>
+    <script type="text/javascript" src="~/content/scripts/account/google-contacts.js"></script>
     <script type="text/javascript" src="~/content/scripts/account/attendee-groups.js"></script>
-<script async defer src="https://apis.google.com/js/api.js" onload="GoogleContacts.HandleClientLoad('@Model.apiKey','@Model.clientId');" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
-@if (Model.ShowSaveConfirmation)
-{
+    <script async defer src="https://apis.google.com/js/api.js" onload="GoogleContacts.HandleClientLoad('@Model.apiKey','@Model.clientId');" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
+    @if (Model.ShowSaveConfirmation)
+    {
 
-    <script type="text/javascript">
-        $(document).ready(function () {
-            Loading.Stop();
-            MessageDialog("Your account has been updated!");
+        <script type="text/javascript">
+            $(document).ready(function () {
+                Loading.Stop();
+                MessageDialog("Your account has been updated!");
 
-        });
-    </script>
+            });
+        </script>
 
-}
+    }
 }

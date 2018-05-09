@@ -1,20 +1,12 @@
 ﻿@using ElGroupo.Web.Models.Home
-@model DashboardModel
+@model EventDashboardModel
 
 
 
 <section id="secMain">
 
     <h3 style="padding-left:2%;">My Events</h3>
-    @if (Model.TimeZoneChanged)
-    {
-        <div class="width-100" style="background-color:black; color:white; text-align:center; padding-top:10px; padding-bottom:10px;">
 
-                <div style="text-transform:uppercase;">It appears that you are not in your selected time zone.  Do you want to change your time zone settings?</div>
-
-        </div>
-
-    }
 @if (Model.RSVPRequestedEvents.Count > 0)
 {
     <div class="width-100" style="background-color:black; color:white; text-align:center; padding-top:10px; padding-bottom:10px;">

@@ -1,0 +1,32 @@
+﻿@using ElGroupo.Web.Models.Activities
+@model RecordsModel
+
+<section style="background-color:#2d2d2d; color:white; padding-top:30px; padding-bottom:30px; min-height:60%;">
+    <div class="row centered"><h2>My Records</h2></div>
+    <div class="row">
+        @*border-spacing:20px;*@
+        <div style="display:table; margin-left:5%; margin-right:5%; width:90%; ">
+            <header style="display: table-row;border:1px solid white;">
+                <div style="display: table-cell; width:10%; text-align:center; padding:5px;"></div>
+                <div style="display: table-cell; width:20%;text-align:center; padding:5px; font-size:1.3em;">Date</div>
+                <div style="display: table-cell; width:20%;text-align:center; padding:5px; font-size:1.3em;">Description</div>
+                <div style="display: table-cell; width:20%;text-align:center; padding:5px; font-size:1.3em;">Group</div>
+                <div style="display: table-cell; width:20%;text-align:center; padding:5px; font-size:1.3em;">Department</div>
+                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;"># Credits</div>
+            </header>
+            @foreach (var record in Model.Records)
+        {
+            <div style="display:table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white;border-left:1px solid white;border-right:1px solid white;">
+                <div style="display:table-cell; vertical-align:middle; padding:5px; border:1px solid white; text-align:center;"><a style="color:white;" href="@Url.Action("EditAttendenceLog", "Activities", new { userActivityId = record.Id })">View</a></div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.ActivityDate?.ToShortDateString() - @record.ActivityDate?.ToShortTimeString()</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.ActivityDescription</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.GroupName</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.Department</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.TotalCredits</div>
+            </div>
+
+    }
+        </div>
+
+    </div>
+</section>

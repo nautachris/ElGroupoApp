@@ -9,7 +9,76 @@
     box-sizing: border-box;
 }
 
+.user-dashboard-link{
+    margin:10px;
+    background-color:#232323;
+    height:100%;
+    text-align:center;
+    position:relative;
+    border-radius:8px;
+    color:white;
 
+}
+    .user-dashboard-link:hover {
+        background-color: white;
+        color: #232323;
+        border:1px solid black;
+
+    }
+.user-dashboard-link-small {
+    margin: 10px;
+    background-color: #232323;
+    /*height: 100%;*/
+    text-align: center;
+    position: relative;
+    border-radius: 8px;
+    color: white;
+    padding:30px;
+}
+
+    .user-dashboard-link-small:hover {
+        background-color: white;
+        color: #232323;
+        border: 1px solid black;
+    }
+    .user-dashboard-link div :hover{
+        
+
+    }
+.create-activity-group > div > label, .view-activity-group > div > label {
+    font-size: 20px;
+}
+.create-activity-group > div, .view-activity-group > div, .view-activity-group > a{
+    margin-top: 25px;
+}
+
+.user-dashboard-link div {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-transform: uppercase;
+    display: inline-block;
+    font-size: 13px;
+}
+.user-dashboard-link-small div {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-transform: uppercase;
+    display: inline-block;
+    font-size: 13px;
+}
+    .user-dashboard-link img {
+        position: absolute;
+        top: 30%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        text-transform: uppercase;
+        display: inline-block;
+    }
 
 .check-container {
     display: block;

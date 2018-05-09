@@ -10,7 +10,8 @@ namespace ElGroupo.Domain
     public class User : IdentityUser<long>
     {
         public virtual ICollection<DepartmentUser> Departments { get; set; }
-        public virtual ICollection<ActivityGroupOrganizer> OrganizedActivities { get; set; }
+        public virtual ICollection<ActivityGroupOrganizer> OrganizedActivityGroups { get; set; }
+        public virtual ICollection<ActivityOrganizer> OrganizedActivities { get; set; }
         public virtual ICollection<UserActivity> Activities { get; set; }
         public User()
         {
@@ -38,6 +39,8 @@ namespace ElGroupo.Domain
 
         public virtual ICollection<AttendeeGroup> AttendeeGroups { get; set; }
 
+        public virtual ICollection<ActivityGroup> ActivityGroups { get; set; }
+
 
         public virtual UserPhoto Photo { get; set; }
 
@@ -46,6 +49,9 @@ namespace ElGroupo.Domain
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Name { get; set; }
+
+        public string Title { get; set; }
+        public string Specialty { get; set; }
         public string ZipCode { get; set; }
 
         [MaxLength(100)]

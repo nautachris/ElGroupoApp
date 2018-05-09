@@ -16,12 +16,21 @@ namespace ElGroupo.Web.Models.Account
         public bool IsAdminEditing { get; set; }
         public List<EditContactModel> Contacts { get; set; }
 
+        public List<string> Titles
+        {
+            get
+            {
+                return new List<string> { "Mr", "Ms", "Mrs", "Dr", "", "Sir", "Lady" };
+            }
+        }
+
         public List<UserConnectionModel> Connections { get; set; }
 
                 public List<AttendeeGroupListModel> AttendeeGroups { get; set; }
         public long Id { get; set; }
 
-        public string Name { get; set; }
+        public string Title { get; set; }
+        public string Specialty { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
 

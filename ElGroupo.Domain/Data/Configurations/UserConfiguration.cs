@@ -14,6 +14,8 @@ namespace ElGroupo.Domain.Data.Configurations
             Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             Property(x => x.FirstName).HasColumnName("FirstName").HasMaxLength(100);
             Property(x => x.LastName).HasColumnName("LastName").HasMaxLength(100);
+            Property(x => x.Title).HasColumnName("Title").HasMaxLength(10);
+            Property(x => x.Specialty).HasColumnName("Specialty").HasMaxLength(30);
             Property(x => x.Email).HasColumnName("EmailAddress");
             Property(x => x.TimeZoneId).HasColumnName("TimeZoneId");
             HasMany(x => x.ConnectedUsers).WithOne(x => x.User);
@@ -22,6 +24,8 @@ namespace ElGroupo.Domain.Data.Configurations
             HasMany(x => x.Departments).WithOne(x => x.User).HasForeignKey(x=>x.UserId);
             HasMany(x => x.OrganizedActivities).WithOne(x => x.User).HasForeignKey(x => x.UserId);
 
+            //for "private" activity groups
+            HasMany(x => x.ActivityGroups).WithOne(x => x.User).HasForeignKey(x => x.UserId);
         }
     }
 }

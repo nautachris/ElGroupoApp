@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180428161551_addactivityorganizers")]
+    partial class addactivityorganizers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -55,7 +56,7 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<long>("ActivityGroupId");
+                    b.Property<long?>("ActivityGroupId");
 
                     b.Property<DateTime>("DateCreated");
 
@@ -1265,8 +1266,7 @@ namespace ElGroupo.Domain.Migrations
                 {
                     b.HasOne("ElGroupo.Domain.Activities.ActivityGroup", "ActivityGroup")
                         .WithMany("Activities")
-                        .HasForeignKey("ActivityGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ActivityGroupId");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityCredit", b =>

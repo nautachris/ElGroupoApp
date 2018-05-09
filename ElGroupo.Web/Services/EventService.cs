@@ -43,6 +43,92 @@ namespace ElGroupo.Web.Services
         //    return EditAccessTypes.None;
         //}
 
+        public EventDashboardModel GetDashboardModel(long userId, string userTimeZone)
+        {
+            var model = new EventDashboardModel();
+            var allEvents = new List<EventInformationModel>();
+            //do we want a third "tab" for events I'm organizing?
+
+            var organizedEvents = _dbContext.EventAttendees.Include(x => x.User).Where(x => x.User.Id == userId && x.Active == true && x.IsOrganizer).Select(x =>
+            new
+            {
+                ea = x,
+                ev = x.Event,
+                rec = x.Event.Recurrence
+            }).ToList();
+            //e.StartTime.ToLocalTime().DayOfWeek.ToString() + " " + e.StartTime.ToLocalTime().ToString("d") + " " + e.StartTime.ToLocalTime().ToString("t")
+            var invitedEvents = _dbContext.EventAttendees.Include(x => x.User).Include(x => x.Event).ThenInclude(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Event).ThenInclude(x => x.Recurrence).Where(x => x.User.Id == userId && x.Active == true && !x.IsOrganizer).ToList();
+            foreach (var ev in organizedEvents)
+            {
+                allEvents.Add(new EventInformationModel
+                {
+                    EventAttendeeId = ev.ea.Id,
+                    EndDate = ev.ev.EndTime,
+                    StartDate = ev.ev.StartTime,
+                    DateText = ev.ev.GetSimpleDateText(userTimeZone),
+                    Id = ev.ev.Id,
+                    CheckInStatus = GetCheckInStatus(ev.ev, ev.ea),
+                    OrganizedByUser = true,
+                    IsNew = false,
+                    RecurrenceId = ev.rec?.Id,
+                    RSVPStatus = ev.ea.ResponseStatus,
+                    Name = ev.ev.Name,
+                    Status = ev.ev.Status,
+                    IsRecurring = ev.rec != null
+
+                });
+            }
+            foreach (var ev in invitedEvents.Where(x => !organizedEvents.Select(y => y.ev.Id).Contains(x.EventId)))
+            {
+                allEvents.Add(new EventInformationModel
+                {
+                    EventAttendeeId = ev.Id,
+                    EndDate = ev.Event.EndTime,
+                    StartDate = ev.Event.StartTime,
+                    DateText = ev.Event.GetSimpleDateText(userTimeZone),
+                    RecurrenceId = ev.Event.Recurrence?.Id,
+                    Id = ev.Event.Id,
+                    OrganizedByUser = false,
+                    CheckInStatus = GetCheckInStatus(ev.Event, ev),
+                    IsNew = !ev.Viewed,
+                    Name = ev.Event.Name,
+                    OrganizerName = ev.Event.Attendees.First(x => x.IsOrganizer).User.Name,
+                    Status = ev.Event.Status,
+                    RSVPStatus = ev.ResponseStatus,
+                    IsRecurring = ev.Event.Recurrence != null,
+                    RSVPRequested = ev.ShowRSVPReminder == true
+                });
+            }
+
+            var drafts = allEvents.Where(x => x.OrganizedByUser && x.Status == EventStatus.Draft).OrderBy(x => x.StartDate).ToList();
+            var pastEvents = allEvents.Where(x => x.Status != EventStatus.Draft && x.EndDate < DateTime.Now.ToUniversalTime()).OrderBy(x => x.StartDate).ToList();
+            var futureEvents = allEvents.Where(x => x.Status != EventStatus.Draft && x.EndDate >= DateTime.Now.ToUniversalTime()).OrderBy(x => x.StartDate).ToList();
+            var myEvents = allEvents.Where(x => x.OrganizedByUser).ToList();
+
+            model.Drafts = GroupEventsByRecurrence(drafts);
+            model.PastEvents = GroupEventsByRecurrence(pastEvents);
+            model.FutureEvents = GroupEventsByRecurrence(futureEvents);
+            model.MyEvents = GroupEventsByRecurrence(myEvents);
+
+            model.RSVPRequestedEvents = allEvents.Where(x => x.RSVPRequested).ToList();
+            model.RSVPRequestCount = allEvents.Count(x => x.RSVPRequested);
+            return model;
+        }
+        private List<EventInformationModel> GroupEventsByRecurrence(List<EventInformationModel> events)
+        {
+            //var recurring = events.Where(x => x.RecurrenceId.HasValue);
+            var outList = new List<EventInformationModel>();
+            outList.AddRange(events.Where(x => !x.RecurrenceId.HasValue));
+            foreach (var ev in events.Where(x => x.RecurrenceId.HasValue).GroupBy(x => x.RecurrenceId.Value))
+            {
+                var parentEvent = ev.OrderBy(x => x.StartDate).First();
+                parentEvent.Recurrences = ev.OrderBy(x => x.StartDate).Skip(1).ToList();
+                foreach (var r in parentEvent.Recurrences) r.IsRecurrenceItem = true;
+                outList.Add(parentEvent);
+            }
+
+            return outList.OrderBy(x => x.StartDate).ToList();
+        }
         public async Task<(EditAccessTypes accessType, long userId)> CheckEventAccess(ClaimsPrincipal principal, long eventId)
         {
 
@@ -65,14 +151,14 @@ namespace ElGroupo.Web.Services
         }
         public async Task<SaveDataResponse> SetEventAttendeesInactive(long[] id)
         {
-            var ea = _dbContext.EventAttendees.Where(x=> id.Contains(x.Id));
+            var ea = _dbContext.EventAttendees.Where(x => id.Contains(x.Id));
             if (ea.Count() == 0) return SaveDataResponse.FromErrorMessage("Event Attendee Id Not found");
             foreach (var e in ea)
             {
                 e.Active = false;
-                 _dbContext.Update(e);
+                _dbContext.Update(e);
             }
-           
+
             await _dbContext.SaveChangesAsync();
             return SaveDataResponse.Ok();
         }
@@ -306,7 +392,7 @@ namespace ElGroupo.Web.Services
 
         public async Task<Event> GetEvent(long id)
         {
-            return await _dbContext.Events.Include(x=>x.Attendees).ThenInclude(x=>x.User).FirstOrDefaultAsync(x => x.Id == id);
+            return await _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         private async Task AddEventAttendee(Event e, PendingEventAttendeeModel model)
@@ -1576,12 +1662,12 @@ namespace ElGroupo.Web.Services
 
         public async Task<EventMessageContainerModel> GetEventMessages(long eventId, User user, bool canEdit)
         {
-            
+
             var attendee = await _dbContext.EventAttendees.FirstOrDefaultAsync(x => x.EventId == eventId && x.User.Id == user.Id);
 
             var model = new EventMessageContainerModel();
-            
-            foreach (var topic in _dbContext.MessageBoardTopics.Include(x => x.StartedBy).Include(x => x.Messages).ThenInclude(x=>x.PostedBy).Include(x => x.Messages).ThenInclude(x => x.Attendees).ThenInclude(x => x.Attendee).Where(x => x.Event.Id == eventId).OrderByDescending(x => x.StartedDate))
+
+            foreach (var topic in _dbContext.MessageBoardTopics.Include(x => x.StartedBy).Include(x => x.Messages).ThenInclude(x => x.PostedBy).Include(x => x.Messages).ThenInclude(x => x.Attendees).ThenInclude(x => x.Attendee).Where(x => x.Event.Id == eventId).OrderByDescending(x => x.StartedDate))
             {
                 var topicModel = new EventMessageBoardTopicModel
                 {
@@ -1595,7 +1681,7 @@ namespace ElGroupo.Web.Services
                     topicModel.Messages.Add(new EventMessageModel
                     {
                         MessageText = msg.MessageText,
-                        CanEdit = canEdit? true : msg.PostedBy.Id == user.Id,
+                        CanEdit = canEdit ? true : msg.PostedBy.Id == user.Id,
                         PostedBy = msg.PostedBy.Name,
                         PostedById = msg.PostedBy.Id,
                         Id = msg.Attendees.First(x => x.Attendee.Id == attendee.Id).Id,
