@@ -12,5 +12,7 @@ namespace ElGroupo.Domain.Activities
         public Activity Activity { get; set; }
         public long CreditTypeCategoryId { get; set; }
         public CreditTypeCategory CreditTypeCategory { get; set; }
+
+        public double CreditHours { get; set; }
     }
 }

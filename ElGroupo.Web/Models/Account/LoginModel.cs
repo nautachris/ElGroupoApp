@@ -19,5 +19,7 @@ namespace ElGroupo.Web.Models.Account
 
         [Display(Description = "Remember Me?")]
         public bool RememberMe { get; set; }
+
+        public CreateAccountModel CreateModel { get; set; }
     }
 }

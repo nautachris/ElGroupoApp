@@ -70,6 +70,17 @@ AddAttendenceLog = {
                 $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").hide();
             }
         });
+        $("#btnAddDocuments").on("click", function () {
+            $("#iptFile").click();
+        });
+        $("#rbPresentingYes, #rbPresentingNo").on("change", function () {
+            if ($("#rbPresentingYes").is(":checked")) {
+                $("#divPresentationName").show();
+            }
+            else {
+                $("#divPresentationName").hide();
+            }
+        });
 
 
         AddAttendenceLog.InitDocumentTable();
@@ -102,7 +113,11 @@ AddAttendenceLog = {
     Create: function () {
         
         var model = {};
-        model.attendenceType = Number($("#divAttendenceType input[type=radio]:checked").attr('data-attendence-type-id'));
+        model.personalNotes = $("#txtMyNotes").val();
+        model.isPresenting = $("rbPresentingYes").is(":checked");
+        if ($("#divPresentationName").is(":visible")) {
+            model.presentationName = $("#txtPresentationName").val();
+        }
         model.activityId = Number($("#ActivityId").val());
         model.userActivityId = Number($("#UserActivityId").val());
         model.credits = [];

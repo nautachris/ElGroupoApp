@@ -20,7 +20,7 @@
             @*<input type="checkbox" checked data-department-id="@Model.Id" />*@
             <div>
                 <label class="check-container">
-                    <span  style="font-weight:bold;">@Model.Name</span>
+                    <span style="font-weight:bold;">@Model.Name</span>
                     <input data-department-id="@Model.Id" type="checkbox" checked>
                     <span class="checkmark"></span>
                     <a style="float:right;" data-department-id="@Model.Id" data-department-name="@Model.Name" class="delete-department-button">Delete</a>
@@ -56,7 +56,17 @@
     <div class="row centered">
         <a style="text-align:center;" data-department-id="@Model.Id" class="add-group-button">Add New Group</a>
     </div>
-    
+
+    <div style="display:none;" class="row centered add-group-container" data-department-id="@Model.Id">
+        <span>Group Name:</span>
+        <input type="text" style="width:250px;" />
+    </div>
+
+    <div style="display:none;" data-department-id="@Model.Id" class="centered save-group-buttons">
+        <button data-department-id="@Model.Id" class="btn btn-primary save-group-button">Save</button>
+        <button data-department-id="@Model.Id" class="btn btn-primary cancel-add-group-button">Cancel</button>
+    </div>
+
     @*<div class="row centered">
             <button data-department-id="@Model.Id" class="btn btn-primary delete-department-button">Delete Department</button>
         </div>*@

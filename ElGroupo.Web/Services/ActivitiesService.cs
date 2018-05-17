@@ -23,7 +23,8 @@ namespace ElGroupo.Web.Services
 
 
             var existingUserActivity = _dbContext.UserActivities.Include(x => x.Credits).First(x => x.Id == model.UserActivityId);
-            existingUserActivity.AttendanceTypeId = model.AttendenceType;
+            //existingUserActivity.AttendanceTypeId = model.AttendenceType;
+            existingUserActivity.IsPresenting = model.IsPresenting;
 
             //check for modified
             foreach (var credit in model.Credits)
@@ -47,7 +48,7 @@ namespace ElGroupo.Web.Services
         {
             var activity = _dbContext.Activities.First(x => x.Id == model.ActivityId);
             var user = _dbContext.Users.First(x => x.Id == userId);
-            var userActivity = new UserActivity { Activity = activity, User = user, AttendanceTypeId = model.AttendenceType, Credits = new List<UserActivityCredit>() };
+            var userActivity = new UserActivity { Activity = activity, User = user, IsPresenting = model.IsPresenting, Credits = new List<UserActivityCredit>() };
             userActivity.Credits = model.Credits.Select(x => new UserActivityCredit { CreditHours = x.NumberOfCredits, CreditTypeCategoryId = x.CreditTypeCategoryId }).ToList();
             _dbContext.Add(userActivity);
 
@@ -120,23 +121,68 @@ namespace ElGroupo.Web.Services
 
         public async Task<RecordsModel> GetUserRecords(long userId, string timeZoneId)
         {
-            var myRecords = await _dbContext.UserActivities.Include(x => x.Credits).Include(x => x.AttendanceType).Include(x => x.Activity).ThenInclude(x => x.ActivityGroup).ThenInclude(x => x.Department).Where(x => x.UserId == userId).ToListAsync();
+            //var myRecords = await _dbContext.UserActivities.Include(x => x.Credits).Include(x => x.AttendanceType).Include(x => x.Activity).ThenInclude(x => x.ActivityGroup).ThenInclude(x => x.Department).Where(x => x.UserId == userId).ToListAsync();
+
+            var myRecords = await _dbContext.UserActivities.Include(x => x.Credits).ThenInclude(x => x.CreditTypeCategory).ThenInclude(x => x.CreditType).Include(x => x.Activity).ThenInclude(x => x.ActivityGroup).ThenInclude(x => x.Department).Where(x => x.UserId == userId).ToListAsync();
             var model = new RecordsModel();
-            
+
             foreach (var record in myRecords.OrderByDescending(x => x.Activity.StartDate))
             {
-                model.Records.Add(new RecordsListModel
+                foreach (var credit in record.Credits)
                 {
-                    ActivityDate = TimeZoneInfo.ConvertTimeToUtc(record.Activity.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZoneId)),
-                    ActivityDescription = record.Activity.Description,
-                    AttendenceType = record.AttendanceType.Description,
-                    Department = record.Activity.ActivityGroup.Department.Name,
-                    GroupName = record.Activity.ActivityGroup.Name,
-                    Id = record.Id,
-                    TotalCredits = record.Credits.Sum(x => x.CreditHours)
-                });
+                    model.Records.Add(new RecordsListModel
+                    {
+                        ActivityStartDate = TimeZoneInfo.ConvertTimeToUtc(record.Activity.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZoneId)),
+                        ActivityEndDate = TimeZoneInfo.ConvertTimeToUtc(record.Activity.EndDate.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZoneId)),
+                        ActivityDescription = record.Activity.Description,
+                        ActivityLocation = record.Activity.Location,
+                        CreditCategory = credit.CreditTypeCategory.Description,
+                        CreditType = credit.CreditTypeCategory.CreditType.Description,
+                        IsPresenting = record.IsPresenting,
+                        Department = record.Activity.ActivityGroup.Department.Name,
+                        GroupName = record.Activity.ActivityGroup.Name,
+                        Id = record.Id,
+                        CreditHours = credit.CreditHours
+                    });
+                }
+
             }
             return model;
+        }
+
+        public async Task<byte[]> GetMyRecordsDownloadStream(long userId, string timeZoneId)
+        {
+            var myRecords = await _dbContext.UserActivities.Include(x => x.Credits).ThenInclude(x => x.CreditTypeCategory).ThenInclude(x => x.CreditType).Include(x => x.Activity).ThenInclude(x => x.ActivityGroup).ThenInclude(x => x.Department).Where(x => x.UserId == userId).ToListAsync();
+
+            MemoryStream ms = new MemoryStream();
+            TextWriter writer = new StreamWriter(ms);
+            writer.WriteLine("Start Date|End Date|Department|Activity Group Name|Activity Description|Location|Is Presenting?|Credit Type|Credit Category|# Credits");
+            //start date, end date, department, group name, description, location, credit type, credit category, # credits
+            foreach (var record in myRecords.OrderByDescending(x => x.Activity.StartDate))
+            {
+                var startDate = TimeZoneInfo.ConvertTimeToUtc(record.Activity.StartDate.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZoneId));
+                var endDate = TimeZoneInfo.ConvertTimeToUtc(record.Activity.EndDate.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZoneId));
+                foreach (var credit in record.Credits)
+                {
+                    var outList = new List<string>();
+                    outList.Add(startDate.ToShortDateString() + " " + startDate.ToShortTimeString());
+                    outList.Add(endDate.ToShortDateString() + " " + endDate.ToShortTimeString());
+                    outList.Add(record.Activity.ActivityGroup.Department.Name);
+                    outList.Add(record.Activity.ActivityGroup.Name);
+                    outList.Add(record.Activity.Description);
+                    outList.Add(record.Activity.Location);
+                    outList.Add(record.IsPresenting ? "Yes" : "No");
+                    outList.Add(credit.CreditTypeCategory.CreditType.Description);
+                    outList.Add(credit.CreditTypeCategory.Description);
+                    outList.Add(credit.CreditHours.ToString());
+                    writer.WriteLine(string.Join("|", outList));
+                    //credit.CreditTypeCategory.Description
+                    //credit.CreditTypeCategory.CreditType.Description
+                }
+            }
+            writer.Flush();
+            writer.Close();
+            return ms.ToArray();
         }
 
         public async Task<SaveDataResponse> SaveNewActivity(CreateActivityModel model, long userId)
@@ -150,6 +196,7 @@ namespace ElGroupo.Web.Services
 
                 var activity = new Activity
                 {
+                    Notes = model.PublicNotes,
                     Description = model.ActivityDescription,
                     Location = model.ActivityLocation,
                     ActivityGroup = group,
@@ -178,16 +225,20 @@ namespace ElGroupo.Web.Services
                         activity.EndDate = model.EndTime.Value;
                     }
                 }
-
-                foreach (var creditTypeCategory in _dbContext.CreditTypeCategories.Where(x => model.Credits.Select(y => y.CreditTypeCategoryId).Contains(x.Id)))
+                foreach (var creditType in model.Credits)
                 {
-                    activity.Credits.Add(new ActivityCredit { CreditTypeCategory = creditTypeCategory });
+                    //new - storing allowed credits & #of credits at the activity level - users cannot choose their own
+                    activity.Credits.Add(new ActivityCredit { CreditTypeCategoryId = creditType.CreditTypeCategoryId, CreditHours = creditType.NumberOfCredits });
                 }
+                //foreach (var creditTypeCategory in _dbContext.CreditTypeCategories.Where(x => model.Credits.Select(y => y.CreditTypeCategoryId).Contains(x.Id)))
+                //{
+                //    activity.Credits.Add(new ActivityCredit { CreditTypeCategory = creditTypeCategory });
+                //}
                 _dbContext.Add(activity);
 
                 var ao = new ActivityOrganizer { Activity = activity, User = user };
                 _dbContext.Add(ao);
-                var userActivity = new UserActivity { Activity = activity, User = user, AttendanceTypeId = model.AttendenceType, Credits = new List<UserActivityCredit>() };
+                var userActivity = new UserActivity { Activity = activity, User = user, IsPresenting = model.IsPresenting, Notes = model.PersonalNotes, PresentationName = model.PresentationName, Credits = new List<UserActivityCredit>() };
                 userActivity.Credits = model.Credits.Select(x => new UserActivityCredit { CreditHours = x.NumberOfCredits, CreditTypeCategoryId = x.CreditTypeCategoryId }).ToList();
                 _dbContext.Add(userActivity);
                 await _dbContext.SaveChangesAsync();
@@ -228,43 +279,65 @@ namespace ElGroupo.Web.Services
                 var ago = new ActivityGroupOrganizer { ActivityGroup = activityGroup, User = user };
                 _dbContext.Add(ago);
 
-
-
-                var activity = new Activity
+                if (model.CreateFirstActivity)
                 {
-                    Description = model.ActivityDescription,
-                    Location = model.ActivityLocation,
-                    ActivityGroup = activityGroup,
-                    Credits = new List<ActivityCredit>()
-                };
-                if (model.StartTime.Value.Kind != DateTimeKind.Utc)
-                {
-                    activity.StartDate = TimeZoneInfo.ConvertTimeToUtc(model.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId));
+                    var activity = new Activity
+                    {
+                        Description = model.ActivityDescription,
+                        Location = model.ActivityLocation,
+                        ActivityGroup = activityGroup,
+                        Credits = new List<ActivityCredit>()
+                    };
+                    if (model.StartTime.Value.Kind != DateTimeKind.Utc)
+                    {
+                        activity.StartDate = TimeZoneInfo.ConvertTimeToUtc(model.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId));
+                    }
+                    else
+                    {
+                        activity.StartDate = model.StartTime.Value;
+                    }
+                    if (model.EndTime.Value.Kind != DateTimeKind.Utc)
+                    {
+                        activity.EndDate = TimeZoneInfo.ConvertTimeToUtc(model.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId));
+                    }
+                    else
+                    {
+                        activity.EndDate = model.EndTime.Value;
+                    }
+                    foreach (var creditType in model.Credits)
+                    {
+                        //new - storing allowed credits & #of credits at the activity level - users cannot choose their own
+                        activity.Credits.Add(new ActivityCredit { CreditTypeCategoryId = creditType.CreditTypeCategoryId, CreditHours = creditType.NumberOfCredits });
+                    }
+                    //foreach (var creditTypeCategory in _dbContext.CreditTypeCategories.Where(x => model.Credits.Select(y => y.CreditTypeCategoryId).Contains(x.Id)))
+                    //{
+                    //    activity.Credits.Add(new ActivityCredit { CreditTypeCategory = creditTypeCategory });
+                    //}
+                    activity.Notes = model.PublicNotes;
+                    _dbContext.Add(activity);
+
+                    var userActivity = new UserActivity
+                    {
+                        Activity = activity,
+                        User = user,
+                        IsPresenting = model.IsPresenting,
+                        PresentationName = model.IsPresenting ? model.PresentationName : null,
+                        Notes = model.PersonalNotes,
+                        Credits = new List<UserActivityCredit>()
+                    };
+                    userActivity.Credits = model.Credits.Select(x => new UserActivityCredit { CreditHours = x.NumberOfCredits, CreditTypeCategoryId = x.CreditTypeCategoryId }).ToList();
+                    _dbContext.Add(userActivity);
+                    await _dbContext.SaveChangesAsync();
+                    return SaveDataResponse.IncludeData(userActivity.Id);
                 }
                 else
                 {
-                    activity.StartDate = model.StartTime.Value;
-                }
-                if (model.EndTime.Value.Kind != DateTimeKind.Utc)
-                {
-                    activity.EndDate = TimeZoneInfo.ConvertTimeToUtc(model.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId));
-                }
-                else
-                {
-                    activity.EndDate = model.EndTime.Value;
+                    await _dbContext.SaveChangesAsync();
+                    return SaveDataResponse.IncludeData(activityGroup.Id);
                 }
 
-                foreach (var creditTypeCategory in _dbContext.CreditTypeCategories.Where(x => model.Credits.Select(y => y.CreditTypeCategoryId).Contains(x.Id)))
-                {
-                    activity.Credits.Add(new ActivityCredit { CreditTypeCategory = creditTypeCategory });
-                }
-                _dbContext.Add(activity);
 
-                var userActivity = new UserActivity { Activity = activity, User = user, AttendanceTypeId = model.AttendenceType, Credits = new List<UserActivityCredit>() };
-                userActivity.Credits = model.Credits.Select(x => new UserActivityCredit { CreditHours = x.NumberOfCredits, CreditTypeCategoryId = x.CreditTypeCategoryId }).ToList();
-                _dbContext.Add(userActivity);
-                await _dbContext.SaveChangesAsync();
-                return SaveDataResponse.IncludeData(userActivity.Id);
+
             }
             catch (Exception ex)
             {
@@ -309,7 +382,7 @@ namespace ElGroupo.Web.Services
         {
             //if groupId has value, that means the user clicked "Other" from within a group, therefore that group will by default be selected and "Is Public" will be true
             var model = new CreateActivityModel();
-            model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
+            //model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
             model.CreditTypes = _dbContext.CreditTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
             model.CreditCategories = _dbContext.CreditTypeCategories.Select(x => new CreditCategoryModel { Id = x.Id, CreditTypeId = x.CreditTypeId, Description = x.Description }).OrderBy(x => x.Description).ToList();
             model.ActivityGroupId = groupId;
@@ -392,7 +465,8 @@ namespace ElGroupo.Web.Services
             model.ActivityId = activity.Id;
             model.ActivityGroupId = activity.ActivityGroup.Id;
             model.ActivityStartTimeText = GetSimpleDateText(timeZoneId, activity.StartDate);
-            model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
+            //model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
+            model.IsPresenting = false;
             model.CreditTypes = _dbContext.CreditTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
             model.CreditCategories = _dbContext.CreditTypeCategories.Select(x => new CreditCategoryModel { Id = x.Id, CreditTypeId = x.CreditTypeId, Description = x.Description }).OrderBy(x => x.Description).ToList();
             ;
@@ -413,7 +487,8 @@ namespace ElGroupo.Web.Services
             if (existingRecord.UserId != userId) throw new Exception("user ids do not match");
 
             model.UserActivityId = existingRecord.Id;
-            model.AttendenceType = existingRecord.AttendanceTypeId;
+            //model.AttendenceType = existingRecord.AttendanceTypeId;
+            model.IsPresenting = existingRecord.IsPresenting;
             model.Credits = _dbContext.UserActivityCredits.Where(x => x.UserActivityId == existingRecord.Id).Select(x => new ActivityCreditModel { CreditTypeCategoryId = x.CreditTypeCategoryId, NumberOfCredits = x.CreditHours }).ToList();
 
 
@@ -423,7 +498,8 @@ namespace ElGroupo.Web.Services
             model.ActivityId = existingRecord.Activity.Id;
             model.ActivityGroupId = existingRecord.Activity.ActivityGroup.Id;
             model.ActivityStartTimeText = GetSimpleDateText(timeZoneId, existingRecord.Activity.StartDate);
-            model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
+            //model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
+            model.IsPresenting = existingRecord.IsPresenting;
             model.CreditTypes = _dbContext.CreditTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
             model.CreditCategories = _dbContext.CreditTypeCategories.Select(x => new CreditCategoryModel { Id = x.Id, CreditTypeId = x.CreditTypeId, Description = x.Description }).OrderBy(x => x.Description).ToList();
             ;
@@ -442,7 +518,7 @@ namespace ElGroupo.Web.Services
         {
             //if groupId has value, that means the user clicked "Other" from within a group, therefore that group will by default be selected and "Is Public" will be true
             var model = new CreateActivityGroupModel();
-            model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
+            //model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
             model.CreditTypes = _dbContext.CreditTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
             model.CreditCategories = _dbContext.CreditTypeCategories.Select(x => new CreditCategoryModel { Id = x.Id, CreditTypeId = x.CreditTypeId, Description = x.Description }).OrderBy(x => x.Description).ToList();
 

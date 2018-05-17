@@ -60,7 +60,10 @@ namespace ElGroupo.Web.Services
                 return SaveDataResponse.FromException(ex);
             }
         }
-
+        //public async Task<List<OrganizationListModel>> GetOrganizations()
+        //{
+        //    return await _dbContext.Organizations.Select(x => new OrganizationListModel { Name = x.Name, Id = x.Id }).OrderBy(x => x.Name).ToListAsync();
+        //}
         public async Task<UnregisteredEventAttendee> GetUnregisteredAttendee(Guid token)
         {
             return await _dbContext.UnregisteredEventAttendees.FirstOrDefaultAsync(x => x.RegisterToken == token);
@@ -417,6 +420,41 @@ namespace ElGroupo.Web.Services
             }
         }
 
+        //public SelectDepartmentModel GetSelectDepartmentModel(long orgId)
+        //{
+        //    var org = _dbContext.Organizations.Include(x => x.Departments).FirstOrDefault(x => x.Id == orgId);
+        //    var model = org.Departments.Select(x => new SelectDepartmentModel
+        //            {
+        //                Id = x.Id,
+        //                Name = x.Name,
+        //                IsSelected = departmentUserRecords.Select(y => y.Department.Id).Contains(x.Id),
+        //                Groups = x.UserGroups.Select(y => new SelectDepartmentUserGroupModel
+        //                {
+        //                    Id = y.Id,
+        //                    Name = y.Name,
+        //                    IsSelected = userGroups.Contains(y.Id)
+        //                }).ToList()
+        //            }).ToList()
+        //}
+
+
+        public async Task<SaveDataResponse> AddDepartmentGroup(long userId, AddDepartmentGroupModel model)
+        {
+            try
+            {
+                var dept = _dbContext.Departments.FirstOrDefault(x => x.Id == model.DepartmentId);
+                if (dept == null) return SaveDataResponse.FromErrorMessage("Department Id " + model.DepartmentId + " does not exist");
+
+                var group = new DepartmentUserGroup { Department = dept, Name = model.GroupName };
+                _dbContext.Add(dept);
+                await _dbContext.SaveChangesAsync();
+                return SaveDataResponse.IncludeData(dept.Id);
+            }
+            catch (Exception ex)
+            {
+                return SaveDataResponse.FromException(ex);
+            }
+        }
         public async Task<SaveDataResponse> DeleteDepartment(long departmentId)
         {
             try

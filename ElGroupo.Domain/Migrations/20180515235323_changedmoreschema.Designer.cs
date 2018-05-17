@@ -9,9 +9,10 @@ using ElGroupo.Domain.Enums;
 namespace ElGroupo.Domain.Migrations
 {
     [DbContext(typeof(ElGroupoDbContext))]
-    partial class ElGroupoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180515235323_changedmoreschema")]
+    partial class changedmoreschema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -90,8 +91,6 @@ namespace ElGroupo.Domain.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<long>("ActivityId");
-
-                    b.Property<double>("CreditHours");
 
                     b.Property<long>("CreditTypeCategoryId");
 

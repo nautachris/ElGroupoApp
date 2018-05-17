@@ -112,9 +112,18 @@ namespace ElGroupo.Web.Controllers
         {
             var doc = _activitiesService.GetDocument(documentId);
             if (doc == null) return BadRequest();
+            
             return File(doc.ImageData, doc.ContentType);
         }
 
+
+        [HttpGet("DownloadRecords")]
+        public async Task<IActionResult> DownloadRecords()
+        {
+            var user = await CurrentUser();
+            var ms = await _activitiesService.GetMyRecordsDownloadStream(user.Id, user.TimeZoneId);
+            return File(ms, "text/plain", "scatterbrainrecords.csv");
+        }
 
         [HttpPost("UploadDocuments")]
         public async Task<IActionResult> UploadDocuments()

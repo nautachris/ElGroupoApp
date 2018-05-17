@@ -1,0 +1,44 @@
+--my records 
+--add 2 new columms (credit type, credit category)
+--each activity a separate row for each type of credit received
+--done--export to csv (scatterbrain_records.csv)
+--create account - add title and organization and department (1 dept)
+revisit create account - security token invalid
+remove email confirm for the time being
+
+time selector - remove hour/minute/ampm, replace with one dropdown 12:00 am, 12:15am, etc..
+
+when logging attendence to an activity that was alredady created, the user shouldnt be able to choose their own credit types/credit count - the acitivty creator decides this
+
+**done** when create new axtivity group, only ask for the title, then have two buttons "Save as Tile" (only creates group) and "Continue to Log" to save the other data elements (time, location, description)
+
+**done** when creating new activity, description is not required - if none is entered, we'll just show the group name +date time
+
+**done** user needs to click "add unique title" to add a description - text box will be borderless
+
+add logic to make time/date selection work better (if start time > end time, reset end to time = start time)
+
+AMEP credits are booleans, not number of hours
+
+**added to schema** for credit type categories, add a "visible" or "showinactivitylist" boolean field so we can exclude some from the add activity UI - for the time being, only set "papers and publications" to hidden
+
+**done** style the add document file input like coordinate where we actually hide the file input and simulate click/change event
+
+**added to schema** add a notes/comment column for activity and useractivity so each organizer and user can add can add custom text
+
+**done** remove attendence type lookup (we only user attending or presenting) - replace with IsPresenting boolean on useractivity tabel
+
+**added to schema** add lecture/presentation title to useractivity - only show if "are you presenting" is true
+
+change "cancel" button to small "link" beneath the save buttons
+
+activity dashboard - remove border for "add new" tile
+
+create activity/activity group - left justify
+
+view activity group activities - make look more like a list instead of buttons - make "create new activity" button look like the "return to dashbard", change "return to dashboard" button to cancel link
+
+add attendence log, make it look like create activity
+
+top links - move into hamburger menu (like we have on top right) or write some simple responsive styling to hide these when the width shrinks beneath x
+

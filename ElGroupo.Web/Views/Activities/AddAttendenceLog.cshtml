@@ -119,45 +119,29 @@
         }
     </div>
     <div class="row" id="divAttendenceType">
-        <label>Attendence Type</label>
-        @for (var x = 0; x < Model.AttendenceTypes.Count; x++)
-        {
-            <div class="width-100">
-                @if (Model.AttendenceType == 0)
-                {
-                    @if (x == 0)
-                    {
+        <label>Presenting?</label>
+        <div class="width-100">
+            <input type="radio" name="group" checked id="rbPresentingNo" />
+            <label style="cursor:pointer;margin-left:20px;" for="rbPresentingNo">No</label>
+        </div>
+        <div class="width-100">
+            <input type="radio" name="group" id="rbPresentingYes" />
+            <label style="cursor:pointer;margin-left:20px;" for="rbPresentingYes">Yes</label>
+        </div>
+    </div>
 
-                        <input type="radio" name="group" checked id="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)" data-attendence-type-id="@Model.AttendenceTypes[x].Id" />
-                    }
-                    else
-                    {
-                        <input type="radio" name="group" id="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)" data-attendence-type-id="@Model.AttendenceTypes[x].Id" />
+    <div class="row" id="divPresentationName" style="display:none;">
+        <label>Presentation Name</label>
+        <div class="width-100">
+            <input type="text" id="txtPresentationName" class="width-100" />
+        </div>
 
-                    }
-
-                }
-                else
-                {
-                    if (Model.AttendenceType == Model.AttendenceTypes[x].Id)
-                    {
-                        <input type="radio" name="group" checked id="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)" data-attendence-type-id="@Model.AttendenceTypes[x].Id" />
-
-                    }
-                    else
-                    {
-                        <input type="radio" name="group" id="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)" data-attendence-type-id="@Model.AttendenceTypes[x].Id" />
-
-                    }
-
-                }
-
-
-                <label style="cursor:pointer;margin-left:20px;" for="@GenerateId("rbAttType", Model.AttendenceTypes[x].Id)">@Model.AttendenceTypes[x].Description</label>
-            </div>
-
-        }
-
+    </div>
+    <div class="row">
+        <label for="txtDescription">My Notes</label>
+        <div class="width-100">
+            <textarea style="width:75%; height:100px;" id="txtMyNotes"></textarea>
+        </div>
 
     </div>
     <div class="row">
@@ -181,7 +165,9 @@
             </div>
         </div>
         <div class="row" style="width:75%; margin-top:25px;">
-            <input style="margin: 0 auto;" type="file" multiple id="iptFile" />
+            @*//style="margin: 0 auto;"*@
+            <input style="display:none;" type="file" multiple id="iptFile" />
+            <button id="btnAddDocuments" class="btn btn-primary">Add Document(s)</button>
         </div>
     </div>
 

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Activities\ActivityAttendanceTypes.cs" />
     <Compile Remove="Migrations\20180412211713_activityworkflow.cs" />
     <Compile Remove="Migrations\20180412212117_madeactivenullable.cs" />
     <Compile Remove="Migrations\20180412212339_cascadeissues.cs" />

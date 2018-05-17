@@ -127,7 +127,7 @@ namespace ElGroupo.Web
 
             //var sm = app.ApplicationServices.GetRequiredService<SignInManager<User>>();
 
-            //ElGroupoDbContext.PopulateSomeFakeActivities(app.ApplicationServices);
+           //ElGroupoDbContext.PopulateRealActivities(app.ApplicationServices).Wait();
             //Models.Configuration.EmailConfigOptions.SendTestEmail().Wait();
             //ElGroupoDbContext.CreateAdminAccount(app.ApplicationServices, Configuration).Wait();
             //ElGroupoDbContext.CreateUsers(app.ApplicationServices).Wait();

@@ -1,158 +1,195 @@
 ﻿
-@{ 
+@{
     Layout = null;
 }
 
 @using ElGroupo.Web.Models.Account
 @model CreateAccountModel
 <style type="text/css">
-    input{
-        width:100%;
+    input {
+        width: 100%;
     }
 
-        /*input[type=text], input[type=email], input[type=password], input[type=tel] {
+    /*input[type=text], input[type=email], input[type=password], input[type=tel] {
             border: none transparent;
         }*/
-div.img-photo{
-    display:none;
+    div.img-photo {
+        display: none;
+    }
 
-}
-textarea{
-    width:100%;
+    textarea {
+        width: 100%;
+    }
 
-}
-div.terms-of-service{
-    display:none;
-
-}
+    div.terms-of-service {
+        display: none;
+    }
 </style>
 @*<section class="section-form">*@
-    
-    @*<div class="row">
+
+@*<div class="row">
         <h2>Create a new account</h2>
     </div>*@
-    <div class="row">
-        
-        <form asp-controller="Account" asp-action="Create" enctype="multipart/form-data" method="post" class="contact-form sans-pro uppercase left" style="margin-top:50px;">
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <input asp-for="InviteId" type="hidden" />
-            @if (Model.InvitedFromEvent)
-            {
-                <div class="row">
-                    <span>Welcome @Model.InviteName !!</span>
-                </div>
-                <div class="row">
-                    <span>You've been invited to @Model.EventName !!</span>
-                </div>
-            }
+<div class="row">
 
+    <form asp-controller="Account" asp-action="Create" enctype="multipart/form-data" method="post" class="contact-form sans-pro uppercase left" style="margin-top:50px;">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <input asp-for="InviteId" type="hidden" />
+        @if (Model.InvitedFromEvent)
+        {
+            <div class="row">
+                <span>Welcome @Model.InviteName !!</span>
+            </div>
+            <div class="row">
+                <span>You've been invited to @Model.EventName !!</span>
+            </div>
+        }
 
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase; text-transform:uppercase; text-transform:uppercase;">
-                    <label asp-for="FirstName">First Name:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="FirstName" placeholder="Enter First Name">
-                </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3">
+                <label asp-for="Title">Title:</label>
             </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                    <label asp-for="LastName">Last Name:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="LastName" placeholder="Enter Last Name">
-                </div>
-            </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                    <label asp-for="EmailAddress">Email:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    @if (Model.InvitedFromEvent)
+            <div class="col span-2-of-3">
+                <select asp-for="Title">
+                    @foreach (var tit in Model.Titles)
                     {
-                        <input asp-for="InvitedEmail" type="hidden" placeholder="Enter Email">
-                        <label>@Model.InvitedEmail</label>
-                    }
-                    else
-                    {
-                        <input asp-for="EmailAddress" placeholder="Enter Email">
+
+                        <option value="@tit">@tit</option>
+
 
                     }
-                    
-                </div>
-            </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                    <label asp-for="EmailAddress">Password:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="Password" placeholder="Enter Password">
-                </div>
-            </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                    <label asp-for="ConfirmPassword">Confirm Password:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="ConfirmPassword" placeholder="Enter Password">
-                </div>
-            </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                    <label asp-for="UserName">Username:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="UserName" placeholder="Enter Username">
-                </div>
-            </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                    <label asp-for="PhoneNumber">Phone Number:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="PhoneNumber" placeholder="Enter Phone Number">
-                </div>
-            </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                    <label asp-for="ZipCode">ZIP Code:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="ZipCode" placeholder="Enter Zip Code">
-                </div>
-            </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                    <label asp-for="Photo">Photo/Avatar:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input asp-for="Photo" type="file" id="inputPhoto" placeholder="Select a photo">
-                </div>
-                <div class="col span-3-of-3 img-photo">
-                    <img id="imgPhoto" src="" alt="Select a Photo" height="300" width="300" />
-                </div>
-            </div>
-            <div class="row terms-of-service centered">
-                <h3>Terms of Service</h3>
-                <textarea>I am terms of service</textarea>
-            </div>
-            <div class="row terms-of-service">
-                <div class="col span-1-of-2">
-                    <a id="btnBack" class="btn btn-ghost width-100">Back</a>
-                </div>
-                <div class="col span-1-of-2">
-                    <input type="submit" value="Sign Up!" class="btn btn-primary" />
-                </div>
-            </div>
-            <div class="row" style="margin-top:40px; text-align:center;">
+                </select>
 
-                <div class="col width-100">
-                    <a class="btn btn-primary" style="width:50%; margin-top:20px;" id="btnTerms">Continue</a>
-                </div>
             </div>
-        </form>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase; text-transform:uppercase; text-transform:uppercase;">
+                <label asp-for="FirstName">First Name:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="FirstName" placeholder="Enter First Name">
+            </div>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="LastName">Last Name:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="LastName" placeholder="Enter Last Name">
+            </div>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="EmailAddress">Email:</label>
+            </div>
+            <div class="col span-2-of-3">
+                @if (Model.InvitedFromEvent)
+                {
+                    <input asp-for="InvitedEmail" type="hidden" placeholder="Enter Email">
+                    <label>@Model.InvitedEmail</label>
+                }
+                else
+                {
+                    <input asp-for="EmailAddress" placeholder="Enter Email">
 
-    </div>
+                }
+
+            </div>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="EmailAddress">Password:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="Password" placeholder="Enter Password">
+            </div>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="ConfirmPassword">Confirm Password:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="ConfirmPassword" placeholder="Enter Password">
+            </div>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="UserName">Username:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="UserName" placeholder="Enter Username">
+            </div>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="PhoneNumber">Phone Number:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="PhoneNumber" placeholder="Enter Phone Number">
+            </div>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="ZipCode">ZIP Code:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="ZipCode" placeholder="Enter Zip Code">
+            </div>
+        </div>
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="Title">Organization:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <select asp-for="OrganizationId">
+                    <option value="-1" selected></option>
+                    @foreach (var org in Model.Organizations)
+                    {
+
+                        <option value="@org.Id">@org.Name</option>
+
+
+                    }
+                </select>
+
+            </div>
+        </div>
+        <div class="row line-after" id="divSelectDepartments" style="display:none;">
+
+        </div>
+
+        <div class="row line-after">
+            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
+                <label asp-for="Photo">Photo/Avatar:</label>
+            </div>
+            <div class="col span-2-of-3">
+                <input asp-for="Photo" type="file" id="inputPhoto" placeholder="Select a photo">
+            </div>
+            <div class="col span-3-of-3 img-photo">
+                <img id="imgPhoto" src="" alt="Select a Photo" height="300" width="300" />
+            </div>
+        </div>
+        <div class="row terms-of-service centered">
+            <h3>Terms of Service</h3>
+            <textarea>I am terms of service</textarea>
+        </div>
+        <div class="row terms-of-service">
+            <div class="col span-1-of-2">
+                <a id="btnBack" class="btn btn-ghost width-100">Back</a>
+            </div>
+            <div class="col span-1-of-2">
+                <input type="submit" value="Sign Up!" class="btn btn-primary" />
+            </div>
+        </div>
+        <div class="row" style="margin-top:40px; text-align:center;">
+
+            <div class="col width-100">
+                <a class="btn btn-primary" style="width:50%; margin-top:20px;" id="btnTerms">Continue</a>
+            </div>
+        </div>
+    </form>
+
+</div>
 @*</section>*@
 @section Scripts{
     @*<script type="text/javascript" src="~/content/scripts/account/create.js"></script>*@

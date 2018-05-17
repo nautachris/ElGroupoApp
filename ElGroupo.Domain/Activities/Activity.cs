@@ -11,6 +11,8 @@ namespace ElGroupo.Domain.Activities
         //whether the event should be visible to others or if it's a one-off only meant to be seen by myself
         public bool IsPublic { get; set; } = true;
         public long ActivityGroupId { get; set; }
+
+        public string Notes { get; set; }
         //if not related to a conference, or if h
         public virtual ActivityGroup ActivityGroup { get; set; }
 

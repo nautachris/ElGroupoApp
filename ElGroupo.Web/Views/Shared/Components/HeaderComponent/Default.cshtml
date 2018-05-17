@@ -86,7 +86,7 @@
                         <a asp-controller="Activities" asp-action="Records">My Records</a>
                     </div>
                     <div style="text-align:center;" class="span-1-of-6 menu-dropdown">
-                        <div class="menu-dropdown-button">@Model.ActiveUser.Name</div>
+                        <div class="menu-dropdown-button">@Model.ActiveUser.FirstName</div>
                         <div class="menu-dropdown-content">
                             <div style="width:100%; text-align:center;">
                                 <a asp-controller="Account" asp-action="Edit">Account Details</a>
@@ -105,17 +105,13 @@
 
                     </div>
 
-                    @*<div style="display:inline-block; text-align: center;" class="span-1-of-5">
-            <a asp-controller="Account" asp-action="Logout">Sign Out</a>
-        </div>*@
+
 
                 </div>
 
 
             </div>
-            @*<div class=" col span-1-of-8">
-                    <span style="font-size:30px;cursor:pointer; float:right;" onclick="openNav()">&#9776;</span>
-                </div>*@
+
             <div class="row width-100" style="display:table;">
                 <div id="mySidenav" class="sidenav">
 

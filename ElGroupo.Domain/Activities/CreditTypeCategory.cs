@@ -11,5 +11,6 @@ namespace ElGroupo.Domain.Activities
         public string Description { get; set; }
         public long CreditTypeId { get; set; }
         public CreditType CreditType { get; set; }
+        public bool Active { get; set; }
     }
 }

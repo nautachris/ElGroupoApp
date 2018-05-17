@@ -54,6 +54,40 @@ CreateActivityGroup = {
     },
     Init: function () {
         //click on any credit type checkboxes
+        //$("#divCreditTypes :checkbox").on("change", function () {
+        //    if ($("#divCreditTypes :checkbox:checked").length > 0) {
+        //        $("#divCreditCategories").show();
+        //    }
+        //    else {
+        //        $("#divCreditCategories").hide();
+        //    }
+
+
+        //    var creditTypeId = Number($(this).attr('data-credit-type-id'));
+        //    var isChecked = $(this).is(':checked');
+
+        //    if (isChecked) {
+        //        $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").show();
+        //    }
+        //    else {
+        //        $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").hide();
+        //    }
+        //});
+
+        $("#aEditTitle").on("click", function () {
+            $("#divEditGroupName").show();
+            $("#txtDescription").select();
+            //$("#divGroupName").hide();
+        });
+
+        $("div.credit-type-table input[type=text]").on("click", function () {
+            console.log('input clicked');
+            $(this).select();
+        });
+        $("#btnAddDocuments").on("click", function () {
+            $("#iptFile").click();
+        });
+        //click on any credit type checkboxes
         $("#divCreditTypes :checkbox").on("change", function () {
             if ($("#divCreditTypes :checkbox:checked").length > 0) {
                 $("#divCreditCategories").show();
@@ -67,10 +101,22 @@ CreateActivityGroup = {
             var isChecked = $(this).is(':checked');
 
             if (isChecked) {
-                $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").show();
+                $("div.credit-type-table[data-credit-type-id=" + creditTypeId.toString() + "]").show();
             }
             else {
-                $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").hide();
+                $("div.credit-type-table[data-credit-type-id=" + creditTypeId.toString() + "]").hide();
+            }
+
+
+        });
+
+        $("#rbPresentingYes, #rbPresentingNo").on("change", function () {
+            if ($("#rbPresentingYes").is(":checked")) {
+                $("#divPresentationName").show();
+            }
+            else {
+                console.log('unchecked');
+                $("#divPresentationName").hide();
             }
         });
 
@@ -87,6 +133,12 @@ CreateActivityGroup = {
         //$("#EndTime").datepicker();
         CreateActivityGroup.InitDocumentTable();
         $("#btnCreate").on("click", CreateActivityGroup.Create);
+        $("#btnSaveAsTile").on("click", CreateActivityGroup.CreateGroupOnly);
+        $("#btnContinueToLog").on("click", function () {
+            $(".hide-if-create-group-only").show();
+            $("#divPresentationName").hide();
+            $(".group-save-options").hide();
+        });
 
     },
     GetStartDate: function () {
@@ -119,13 +171,43 @@ CreateActivityGroup = {
         var newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, min);
         return newDate;
     },
+    CreateGroupOnly: function () {
+        var model = {};
+        model.groupName = $("#txtGroupName").val();
+        model.createFirstActivity = false;
+        MessageDialog("Creating Activity Group");
+        $.ajax({
+            url: "/Activities/ActivityGroup/Create",
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(model),
+            async: true,
+            cache: false,
+            //dataType: 'html',
+            success: function success(results) {
+                MessageDialog("Activity Group Saved", function () {
+                    window.location.href = '/Activities/Dashboard';
+                });
+
+
+                //$("#divViewAttendees").html(results);
+            },
+            error: function error(err) {
+                //alert('error');
+                MessageDialog("Error Creating New Activity Group. " + err.error);
+            }
+        });
+    },
     Create: function () {
         //console.log('makepublic');
         //console.log(Boolean($("#MakePublic").val()));
         //console.log($("#MakePublic").val());
         //return;
         var model = {};
-        model.attendenceType = Number($("#divAttendenceType input[type=radio]:checked").attr('data-attendence-type-id'));
+        model.createFirstActivity = true;
+        model.isPresenting = $("#rbPresentingYes").is(":checked");
+        model.publicNotes = $("#txtPublicNotes").val();
+        model.personalNotes = $("#txtMyNotes").val();
         model.startTime = CreateActivityGroup.GetStartDate();
         model.endTime = CreateActivityGroup.GetEndDate();
         model.groupName = $("#txtGroupName").val();
@@ -139,12 +221,19 @@ CreateActivityGroup = {
             });
         }
         model.credits = [];
-        $("div[data-credit-category-id]").each(function () {
-            if ($(this).find(':checkbox').is(':checked')) {
-                var hours = Number($(this).find('input[type=number]').val());
-                model.credits.push({ CreditTypeCategoryId: Number($(this).attr('data-credit-category-id')), NumberOfCredits: hours});
+        $("input[type=checkbox][data-credit-type-id]").each(function () {
+            if ($(this).is(':checked')) {
+                var creditType = $(this).attr('data-credit-type-id');
+                $("div.credit-type-table[data-credit-type-id=" + creditType + "] input[type=text]").each(function () {
+                    var hourCount = Number($(this).val());
+                    if (hourCount > 0) {
+                        model.credits.push({ CreditTypeCategoryId: Number($(this).attr('data-credit-category-id')), NumberOfCredits: hourCount });
+                    }
+                });
             }
         });
+
+
 
         MessageDialog("Creating Activity Group");
         $.ajax({

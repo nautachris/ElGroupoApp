@@ -8,22 +8,26 @@
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
+.hide-if-create-group-only {
+display:none;
+}
+input[type=text]{
+    border-radius:10px;
+}
 
-.user-dashboard-link{
-    margin:10px;
-    background-color:#232323;
-    height:100%;
-    text-align:center;
-    position:relative;
-    border-radius:8px;
-    color:white;
-
+.user-dashboard-link {
+    margin: 10px;
+    color: #232323;
+    height: 100%;
+    text-align: center;
+    position: relative;
+    border-radius: 8px;
+    border: 1px solid #232323;
 }
     .user-dashboard-link:hover {
-        background-color: white;
-        color: #232323;
-        border:1px solid black;
-
+        color: white;
+        background-color: #232323;
+        border: 1px solid black;
     }
 .user-dashboard-link-small {
     margin: 10px;
@@ -45,13 +49,20 @@
         
 
     }
-.create-activity-group > div > label, .view-activity-group > div > label {
+/*.create-activity-group > div > label, .view-activity-group > div > label {
     font-size: 20px;
-}
+}*/
 .create-activity-group > div, .view-activity-group > div, .view-activity-group > a{
     margin-top: 25px;
 }
-
+div.divider {
+    width: 30%;
+    margin-left: 35%;
+    text-align: center;
+    height: 1px;
+    margin-top: 34px;
+    background-color: #dfdfdf;
+}
 .user-dashboard-link div {
     position: absolute;
     top: 60%;
@@ -985,7 +996,7 @@ font-weight:bold;
 input[type=text], input[type=email], input[type=password], input[type=tel], input[type=date], select, textarea, input[type=datetime], input[type=number] {
     /*width: 100%;*/
     padding: 7px;
-    border-radius: 3px;
+    border-radius: 10px;
     border: 1px solid #d6d6d6;
 }
 

@@ -15,9 +15,13 @@ namespace ElGroupo.Web.Models.Activities
         public long Id { get; set; }
         public string GroupName { get; set; }
         public string ActivityDescription { get; set; }
-        public DateTime? ActivityDate { get; set; }
-        public double TotalCredits { get; set; }
-        public string AttendenceType { get; set; }
+        public string ActivityLocation { get; set; }
+        public DateTime? ActivityStartDate { get; set; }
+        public DateTime? ActivityEndDate { get; set; }
+        public double CreditHours { get; set; }
+        public string CreditType { get; set; }
+        public string CreditCategory { get; set; }
+        public bool IsPresenting { get; set; }
         public string Department { get; set; }
     }
     public class ActivitiesDashboardModel
@@ -67,6 +71,8 @@ namespace ElGroupo.Web.Models.Activities
     {
         //if false, this is a one-off "personal" activity that will only be visible by the user looking at his/her credits
         //no one will be able to add
+        public bool CreateFirstActivity { get; set; }
+
         public bool MakePublic { get; set; }
 
         public string GroupName { get; set; }
@@ -88,28 +94,26 @@ namespace ElGroupo.Web.Models.Activities
     }
     public abstract class ActivityModel
     {
+        public string ActivityDescription { get; set; }
+        public string ActivityLocation { get; set; }
+        public string PersonalNotes { get; set; }
+        public string PublicNotes { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public List<ActivityCreditModel> Credits { get; set; }
 
         public List<LookupModel> CreditTypes { get; set; }
         public List<CreditCategoryModel> CreditCategories { get; set; }
-        public long AttendenceType { get; set; }
-        public List<LookupModel> AttendenceTypes { get; set; }
+        public bool IsPresenting { get; set; }
+        public string PresentationName { get; set; }
+
 
     }
     public class CreateActivityModel : ActivityModel
     {
-        //public long ActivityId { get; set; }
+
         public long ActivityGroupId { get; set; }
         public string ActivityGroupName { get; set; }
-
-        //if the group is set to public, we not only create a group, but create the first activity within the group
-
-        //public string ActivityName { get; set; }
-        public string ActivityDescription { get; set; }
-        public string ActivityLocation { get; set; }
-
 
     }
 
@@ -129,18 +133,18 @@ namespace ElGroupo.Web.Models.Activities
 
     public class LogAttendenceModel : ActivityModel
     {
-        
+
         public long ActivityId { get; set; }
         public long ActivityGroupId { get; set; }
         public string ActivityGroupName { get; set; }
         public string ActivityDescription { get; set; }
         public string ActivityLocation { get; set; }
         public string ActivityStartTimeText { get; set; }
-        
+
 
     }
 
-    public class EditLogAttendenceModel: LogAttendenceModel
+    public class EditLogAttendenceModel : LogAttendenceModel
     {
         public List<ViewDocumentModel> Documents { get; set; } = new List<ViewDocumentModel>();
         public long UserActivityId { get; set; }

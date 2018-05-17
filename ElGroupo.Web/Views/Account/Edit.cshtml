@@ -38,19 +38,19 @@
                 <div class="col span-2-of-3">
                     <select asp-for="Title">
                         @foreach (var tit in Model.Titles)
-                {
-                    if (Model.Title == tit)
-                    {
-                        <option selected value="@tit">@tit</option>
+                        {
+                            if (Model.Title == tit)
+                            {
+                                <option selected value="@tit">@tit</option>
 
-            }
-            else
-            {
+                            }
+                            else
+                            {
 
-                <option value="@tit">@tit</option>
-    }
+                                <option value="@tit">@tit</option>
+                            }
 
-}
+                        }
                     </select>
 
                 </div>
@@ -107,10 +107,10 @@
                 <label asp-for="TimeZoneId">Time Zone:</label>
                 <select asp-for="TimeZoneId">
                     @foreach (var tz in Model.TimeZones)
-            {
-                <option value="@tz.Key">@tz.Value</option>
+                    {
+                        <option value="@tz.Key">@tz.Value</option>
 
-    }
+                    }
                 </select>
             </div>
 

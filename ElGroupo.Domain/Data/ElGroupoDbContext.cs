@@ -25,7 +25,7 @@ namespace ElGroupo.Domain.Data
 
         public DbSet<AccreditationDocument> AccreditationDocuments { get; set; }
         public DbSet<Activity> Activities { get; set; }
-        public DbSet<ActivityAttendanceType> ActivityAttendanceTypes { get; set; }
+        //public DbSet<ActivityAttendanceType> ActivityAttendanceTypes { get; set; }
         public DbSet<ActivityCredit> ActivityCredits { get; set; }
         public DbSet<ActivityGroup> ActivityGroups { get; set; }
         public DbSet<ActivityGroupOrganizer> ActivityGroupOrganizers { get; set; }
@@ -173,10 +173,10 @@ namespace ElGroupo.Domain.Data
             builder.Entity<Activity>().HasMany(x => x.Users).WithOne(x => x.Activity).HasForeignKey(x => x.ActivityId);
             builder.Entity<Activity>().HasOne(x => x.ActivityGroup).WithMany(x => x.Activities).HasForeignKey(x => x.ActivityGroupId).IsRequired();
 
-            builder.Entity<ActivityAttendanceType>().ToTable("ActivityAttendanceTypes");
-            builder.Entity<ActivityAttendanceType>().HasKey(x => x.Id);
-            builder.Entity<ActivityAttendanceType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<ActivityAttendanceType>().Property(x => x.Description).HasMaxLength(255).IsRequired();
+            //builder.Entity<ActivityAttendanceType>().ToTable("ActivityAttendanceTypes");
+            //builder.Entity<ActivityAttendanceType>().HasKey(x => x.Id);
+            //builder.Entity<ActivityAttendanceType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            //builder.Entity<ActivityAttendanceType>().Property(x => x.Description).HasMaxLength(255).IsRequired();
 
             builder.Entity<ActivityCredit>().ToTable("ActivityCredits");
             builder.Entity<ActivityCredit>().HasKey(x => x.Id);
@@ -216,6 +216,7 @@ namespace ElGroupo.Domain.Data
             builder.Entity<CreditTypeCategory>().HasKey(x => x.Id);
             builder.Entity<CreditTypeCategory>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<CreditTypeCategory>().Property(x => x.Description).HasMaxLength(255).IsRequired();
+            builder.Entity<CreditTypeCategory>().Property(x => x.Active).HasDefaultValue(true);
             builder.Entity<CreditTypeCategory>().HasOne(x => x.CreditType).WithMany(x => x.Categories).HasForeignKey(x => x.CreditTypeId);
 
             builder.Entity<Department>().ToTable("Departments");
@@ -271,7 +272,7 @@ namespace ElGroupo.Domain.Data
             builder.Entity<UserActivity>().ToTable("UserActivities");
             builder.Entity<UserActivity>().HasKey(x => x.Id);
             builder.Entity<UserActivity>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<UserActivity>().HasOne(x => x.AttendanceType).WithMany().HasForeignKey(x => x.AttendanceTypeId);
+            //builder.Entity<UserActivity>().HasOne(x => x.AttendanceType).WithMany().HasForeignKey(x => x.AttendanceTypeId);
             builder.Entity<UserActivity>().HasOne(x => x.Activity).WithMany(x => x.Users).HasForeignKey(x => x.ActivityId);
             builder.Entity<UserActivity>().HasOne(x => x.User).WithMany(x => x.Activities).HasForeignKey(x => x.UserId);
             builder.Entity<UserActivity>().HasMany(x => x.Documents).WithOne(x => x.UserActivity).HasForeignKey(x => x.UserActivityId);
@@ -408,10 +409,10 @@ namespace ElGroupo.Domain.Data
                 dept = new Department { Organization = org, Name = "Psychiatry" };
                 ctx.Add(dept);
 
-                var aat = new ActivityAttendanceType { Description = "Attendee" };
-                ctx.Add(aat);
-                aat = new ActivityAttendanceType { Description = "Presenter" };
-                ctx.Add(aat);
+                //var aat = new ActivityAttendanceType { Description = "Attendee" };
+                //ctx.Add(aat);
+                //aat = new ActivityAttendanceType { Description = "Presenter" };
+                //ctx.Add(aat);
                 await ctx.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -635,6 +636,162 @@ namespace ElGroupo.Domain.Data
 
 
         }
+        public static List<User> ReadUsers(string path)
+        {
+            var users = new List<User>();
+            var reader = File.OpenText(path);
+            var line = reader.ReadLine();
+            while (line != null)
+            {
+                var ary = line.Split('|');
+                var newUser = new User();
+                newUser.LastName = ary[0];
+                newUser.FirstName = ary[1];
+                newUser.Email = ary[2];
+                newUser.PhoneNumber = "505 555-1212";
+                newUser.UserName = newUser.Email;
+                newUser.ZipCode = "87111";
+                newUser.TimeZoneId = "Mountain Standard Time";
+                newUser.EmailConfirmed = true;
+                users.Add(newUser);
+                line = reader.ReadLine();
+            }
+            return users;
+        }
+
+        public static async Task PopulateRealActivities(IServiceProvider provider)
+        {
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+            UserManager<User> userManager = provider.GetRequiredService<UserManager<User>>();
+            //var user = ctx.Users.First(x => x.Id == 8);
+
+            //var users = ReadUsers("C:\\Projects\\ElGroupo\\ElGroupoApp\\radiology_attendings.csv");
+            //var facGroup = ctx.DepartmentUserGroups.Include(x => x.Department).First(x => x.Id == 4293);
+            //foreach (var u in users)
+            //{
+            //    var user = ctx.Users.FirstOrDefault(x => x.Email == u.Email);
+            //    if (user == null) continue;
+            //    var deptUser = ctx.DepartmentUsers.FirstOrDefault(x => x.User.Id == user.Id && x.Department.Id == 4042);
+            //    if (deptUser == null)
+            //    {
+            //        deptUser = new DepartmentUser { User = user, Department = ctx.Departments.First(x => x.Id == 4042) };
+            //        ctx.Add(deptUser);
+            //    }
+            //    var facGroupUser = ctx.DepartmentUserGroupUsers.Include(x => x.User).ThenInclude(x => x.User).Include(x => x.UserGroup).FirstOrDefault(x => x.User.User.Id == user.Id && x.UserGroup.Id == 4293);
+            //    if (facGroupUser == null)
+            //    {
+            //        facGroupUser = new DepartmentUserGroupUser { UserGroup = facGroup, User = deptUser };
+            //        ctx.Add(facGroupUser);
+            //    }
+            //}
+
+            //await ctx.SaveChangesAsync();
+            var resGroup = ctx.DepartmentUserGroups.First(x => x.Id == 4277);
+            var users = ReadUsers("C:\\Projects\\ElGroupo\\ElGroupoApp\\radiology_residents.csv");
+            
+            foreach (var u in users)
+            {
+                var user = ctx.Users.FirstOrDefault(x => x.Email == u.Email);
+                if (user == null) {
+                    await userManager.CreateAsync(u, "scatterbrain1");
+                    user = ctx.Users.FirstOrDefault(x => x.Email == u.Email);
+                }
+                var deptUser = ctx.DepartmentUsers.Include(x=>x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Department.Id == 4042);
+                if (deptUser == null)
+                {
+                    deptUser = new DepartmentUser { User = user, Department = ctx.Departments.First(x => x.Id == 4042) };
+                    ctx.Add(deptUser);
+                }
+                var resGroupUser = ctx.DepartmentUserGroupUsers.Include(x => x.User).ThenInclude(x => x.User).Include(x => x.UserGroup).FirstOrDefault(x => x.User.User.Id == user.Id && x.UserGroup.Id == 4277);
+                if (resGroupUser == null)
+                {
+                    resGroupUser = new DepartmentUserGroupUser { UserGroup = resGroup, User = deptUser };
+                    ctx.Add(resGroupUser);
+                }
+            }
+            await ctx.SaveChangesAsync();
+            return;
+
+            //var actGroup = new ActivityGroup { Department = facGroup.Department, Name = "Tumor Board", User = user };
+
+            //ctx.Add(actGroup);
+            //var actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = facGroup };
+            //ctx.Add(actUserGroup);
+            //actGroup = new ActivityGroup { Department = facGroup.Department, Name = "Conference", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = facGroup };
+            //ctx.Add(actUserGroup);
+            //actGroup = new ActivityGroup { Department = facGroup.Department, Name = "Teaching", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = facGroup };
+            //ctx.Add(actUserGroup);
+            //actGroup = new ActivityGroup { Department = facGroup.Department, Name = "Preceptorship", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = facGroup };
+            //ctx.Add(actUserGroup);
+            //actGroup = new ActivityGroup { Department = facGroup.Department, Name = "CPR", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = facGroup };
+            //ctx.Add(actUserGroup);
+            //actGroup = new ActivityGroup { Department = facGroup.Department, Name = "AMEP Workshop", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = facGroup };
+            //ctx.Add(actUserGroup);
+            //actGroup = new ActivityGroup { Department = facGroup.Department, Name = "Other", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = facGroup };
+            //ctx.Add(actUserGroup);
+            ctx.SaveChanges();
+
+            //read users
+
+            //foreach (var newUser in users)
+            //{
+
+            //    await userManager.CreateAsync(newUser, "scatterbrain1");
+            //    var deptUser = new DepartmentUser { User = newUser, Department = facGroup.Department };
+            //    ctx.Add(deptUser);
+            //    var userGroupUser = new DepartmentUserGroupUser { User = deptUser, UserGroup = facGroup };
+            //    ctx.Add(deptUser);
+            //}
+            //ctx.SaveChanges();
+
+            //actGroup = new ActivityGroup { Department = resGroup.Department, Name = "Resident Noon Conference", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = resGroup };
+            //ctx.Add(actUserGroup);
+
+            //actGroup = new ActivityGroup { Department = resGroup.Department, Name = "Resident Case Conference", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = resGroup };
+            //ctx.Add(actUserGroup);
+
+            //actGroup = new ActivityGroup { Department = resGroup.Department, Name = "Journal Club", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = resGroup };
+            //ctx.Add(actUserGroup);
+
+            //actGroup = new ActivityGroup { Department = resGroup.Department, Name = "Brandt Helms Conference", User = user };
+            //ctx.Add(actGroup);
+            //actUserGroup = new DepartmentUserGroupActivityGroup { ActivityGroup = actGroup, UserGroup = resGroup };
+            //ctx.Add(actUserGroup);
+
+
+            //ctx.SaveChanges();
+
+            //users = ReadUsers("C:\\Projects\\ElGroupo\\ElGroupoApp\\radiology_residents.csv");
+            //foreach (var newUser in users)
+            //{
+
+            //    await userManager.CreateAsync(newUser, "scatterbrain");
+            //    var deptUser = new DepartmentUser { User = newUser, Department = resGroup.Department };
+            //    ctx.Add(deptUser);
+            //    var userGroupUser = new DepartmentUserGroupUser { User = deptUser, UserGroup = resGroup };
+            //    ctx.Add(deptUser);
+            //}
+
+            //ctx.SaveChanges();
+        }
         public static void PopulateSomeFakeActivities(IServiceProvider provider)
         {
             try
@@ -705,7 +862,8 @@ namespace ElGroupo.Domain.Data
                         };
                         ctx.Add(activityGroupUserGroup);
                         var userActivity = new UserActivity { Activity = activity, User = deptUser.User, Credits = new List<UserActivityCredit>() };
-                        userActivity.AttendanceType = ctx.ActivityAttendanceTypes.First();
+                        //userActivity.AttendanceType = ctx.ActivityAttendanceTypes.First();
+                        userActivity.IsPresenting = false;
                         foreach (var c in activity.Credits)
                         {
                             userActivity.Credits.Add(new UserActivityCredit { CreditHours = 1, CreditTypeCategory = c.CreditTypeCategory });

@@ -26,7 +26,7 @@ CreateActivity = {
         $("#iptFile").on("change", function (evt) {
             console.log('file change');
             for (var x = 0; x < evt.target.files.length; x++) {
-                CreateActivity.AddDocument(evt.target.files[x]);               
+                CreateActivity.AddDocument(evt.target.files[x]);
             }
             if (CreateActivity.Documents.length > 0) $("#divDocumentTable").show();
             else $("#divDocumentTable").hide();
@@ -50,6 +50,13 @@ CreateActivity = {
 
     },
     Init: function () {
+        $("div.credit-type-table input[type=text]").on("click", function () {
+            console.log('input clicked');
+            $(this).select();
+        });
+        $("#btnAddDocuments").on("click", function () {
+            $("#iptFile").click();
+        });
         //click on any credit type checkboxes
         $("#divCreditTypes :checkbox").on("change", function () {
             if ($("#divCreditTypes :checkbox:checked").length > 0) {
@@ -64,14 +71,29 @@ CreateActivity = {
             var isChecked = $(this).is(':checked');
 
             if (isChecked) {
-                $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").show();
+                $("div.credit-type-table[data-credit-type-id=" + creditTypeId.toString() + "]").show();
             }
             else {
-                $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").hide();
+                $("div.credit-type-table[data-credit-type-id=" + creditTypeId.toString() + "]").hide();
             }
 
-           
+
         });
+        $("#aEditTitle").on("click", function () {
+            $("#divEditGroupName").show();
+            $("#txtDescription").select();
+            //$("#divGroupName").hide();
+        });
+        $("#rbPresentingYes, #rbPresentingNo").on("change", function () {           
+            if ($("#rbPresentingYes").is(":checked")) {              
+                $("#divPresentationName").show();
+            }
+            else {
+                console.log('unchecked');
+                $("#divPresentationName").hide();
+            }
+        });
+
         CreateActivity.InitDocumentTable();
         $("#StartTime").datepicker({
             defaultDate: new Date(Date.now())
@@ -146,19 +168,36 @@ CreateActivity = {
         //return;
 
         var model = {};
-        model.attendenceType = Number($("#divAttendenceType input[type=radio]:checked").attr('data-attendence-type-id'));
+        
+        model.isPresenting = $("#rbPresentingYes").is(":checked");
+        model.publicNotes = $("#txtPublicNotes").val();
+        model.personalNotes = $("#txtMyNotes").val();
         model.startTime = CreateActivity.GetStartDate();
         model.endTime = CreateActivity.GetEndDate();
         model.activityGroupId = Number($("#ActivityGroupId").val());
         model.activityDescription = $("#txtDescription").val();
         model.activityLocation = $("#txtLocation").val();
         model.credits = [];
-        $("div[data-credit-category-id]").each(function () {
-            if ($(this).find(':checkbox').is(':checked')) {
-                var hours = Number($(this).find('input[type=number]').val());
-                model.credits.push({ CreditTypeCategoryId: Number($(this).attr('data-credit-category-id')), NumberOfCredits: hours});
+        $("input[type=checkbox][data-credit-type-id]").each(function () {
+            if ($(this).is(':checked')) {
+                var creditType = $(this).attr('data-credit-type-id');
+                $("div.credit-type-table[data-credit-type-id=" + creditType + "] input[type=text]").each(function () {
+                    var hourCount = Number($(this).val());
+                    if (hourCount > 0) {
+                        model.credits.push({ CreditTypeCategoryId: Number($(this).attr('data-credit-category-id')), NumberOfCredits: hourCount });
+                    }
+                });
             }
         });
+
+
+
+        //$("div[data-credit-category-id]").each(function () {
+        //    if ($(this).find(':checkbox').is(':checked')) {
+        //        var hours = Number($(this).find('input[type=number]').val());
+        //        model.credits.push({ CreditTypeCategoryId: Number($(this).attr('data-credit-category-id')), NumberOfCredits: hours });
+        //    }
+        //});
         $.ajax({
             url: "/Activities/Activity/Create",
             type: 'POST',
@@ -168,7 +207,7 @@ CreateActivity = {
             cache: false,
             //dataType: 'html',
             success: function success(results) {
-                if (CreateActivity.Documents.length > 0) {                  
+                if (CreateActivity.Documents.length > 0) {
                     var fd = CreateActivity.GetDocumentsFormData(results.userActivityId);
                     $.ajax({
                         url: "/Activities/UploadDocuments",
@@ -193,7 +232,7 @@ CreateActivity = {
                     MessageDialog("Activity Created", function () {
                         window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
                     });
-                    
+
                 }
 
                 //$("#divViewAttendees").html(results);

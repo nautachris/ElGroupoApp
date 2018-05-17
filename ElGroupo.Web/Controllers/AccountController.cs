@@ -241,7 +241,10 @@ namespace ElGroupo.Web.Controllers
         {
             if (_userService.IsSignedIn(HttpContext.User)) return Redirect("/Home/Dashboard");
             ViewBag.returnUrl = returnUrl;
-            return View();
+            return View(new LoginModel {
+                CreateModel = new CreateAccountModel {
+                    Organizations = _accountService.GetOrganizations()
+                } });
         }
 
         [Route("AccessDenied")]
@@ -255,7 +258,7 @@ namespace ElGroupo.Web.Controllers
         [Route("Create")]
         public IActionResult Create()
         {
-            return View(new CreateAccountModel());
+            return View(new CreateAccountModel { Organizations = _accountService.GetOrganizations() });
         }
 
         [AllowAnonymous]
@@ -344,6 +347,7 @@ namespace ElGroupo.Web.Controllers
 
                     User newUser = new User
                     {
+                        Title = model.Title,
                         Email = model.EmailAddress,
                         UserName = model.UserName,
                         Name = model.Name,
@@ -527,6 +531,25 @@ namespace ElGroupo.Web.Controllers
                 return BadRequest(new { Message = response.ErrorMessage });
             }
         }
+
+        //[HttpPost]
+        //[Route("AddDepartmentGroup")]
+        //public async Task<IActionResult> AddDepartmentGroup([FromBody]AddDepartmentGroupModel model)
+        //{
+        //    var user = await CurrentUser();
+        //    var response = await _accountService.AddDepartmentGroup(user.Id, model);
+        //    if (response.Success)
+        //    {
+        //        var groupId = Convert.ToInt64(response.ResponseData);
+        //        //_accountService.getd
+        //        var newModel = new SelectDepartmentModel { Id = deptId, Name = model.DepartmentName, IsSelected = false, Groups = new List<SelectDepartmentUserGroupModel>() };
+        //        return View("_OrganizationDepartment", newModel);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest(new { Message = response.ErrorMessage });
+        //    }
+        //}
 
         [HttpPost]
         [Route("DeleteDepartment")]

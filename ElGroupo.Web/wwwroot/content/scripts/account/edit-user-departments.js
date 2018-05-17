@@ -28,6 +28,55 @@ EditUserDepartment = {
             $('div.organization-container[data-organization-id=' + orgId + ']').show(); 
 
         });
+        $(".add-group-button").on('click', function () {
+            var deptId = $(this).attr('data-department-id');
+            //var orgId = $(this).closest('div.organization-container').attr('data-organization-id');
+            $("div.add-group-container[data-department-id=" + deptId + "]").show();
+            $(this).hide();
+
+            $("div.save-group-buttons[data-department-id=" + deptId + "]").show();
+        });
+
+        $(".cancel-add-group-button").on('click', function () {
+            var deptId = $(this).attr('data-department-id');
+            $("div.add-group-container[data-department-id=" + deptId + "]").hide();
+            $(".add-group-button[data-department-id=" + deptId + "]").show();
+            $("div.save-group-buttons[data-department-id=" + deptId + "]").hide();
+        });
+        $(".save-group-button").on('click', function () {
+            var deptId = $(this).attr('data-department-id');
+            var groupName = $("div.add-group-container[data-department-id=" + deptId + "]").find('input[type=text]').val();
+            if (groupName === null || groupName === undefined || groupName === '') return false;
+            var model = {
+                DepartmentId: Number(deptId),
+                GroupName: groupName
+            };
+
+            $.ajax({
+                url: "/Account/AddOrganizationDepartment",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(model),
+                async: true,
+                cache: false,
+                dataType: "html",
+                success: function success(results) {
+                    console.log(results);
+                    console.log($(".organization-container[data-organization-id=" + orgId + "] div.organization-group-container").length);
+                    $(".organization-container[data-organization-id=" + orgId + "] div.organization-group-container").append(results);
+                    $("div.add-department-container[data-organization-id=" + orgId + "]").hide();
+                    $(".add-department-button[data-organization-id=" + orgId + "]").show();
+                    $("div.save-department-buttons[data-organization-id=" + orgId + "]").hide();
+                    //MessageDialog("New Department Added");
+                },
+                error: function error(err) {
+                    alert('error');
+                }
+            });
+
+
+
+        });
 
         $(".add-department-button").on('click', function () {
             //var orgId = $(this).attr('data-organization-id');
@@ -74,7 +123,7 @@ EditUserDepartment = {
         });
         $(".delete-department-button").on('click', function () {
             var deptId = $(this).attr('data-department-id');
-            var name = $("div.department-name[data-department-id=" + deptId + "]").text();
+            var name = $(this).attr('data-department-name');
             Confirm("Do you want to delete the department " + name + "?",
                 function () {
                     var obj = { DepartmentId: deptId };

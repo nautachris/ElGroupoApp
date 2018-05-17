@@ -9,6 +9,9 @@ namespace ElGroupo.Web.Models.Account
 {
     public class CreateAccountModel
     {
+        public List<OrganizationListModel> Organizations { get; set; } = new List<OrganizationListModel>();
+
+        public int OrganizationId { get; set; }
         public bool InvitedFromEvent { get; set; }
         public string InviteName { get; set; }
         public string EventName { get; set; }
@@ -16,8 +19,14 @@ namespace ElGroupo.Web.Models.Account
         public string InvitedEmail { get; set; }
         public Guid? InviteId { get; set; }
 
-
-
+        public List<string> Titles
+        {
+            get
+            {
+                return new List<string> { "Mr", "Ms", "Mrs", "Dr", "", "Sir", "Lady" };
+            }
+        }
+        public string Title { get; set; }
 
         [Display(Description = "User Name")]
         public string UserName { get; set; }

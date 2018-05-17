@@ -99,7 +99,18 @@ EditAttendenceLog = {
             }
         });
 
+        $("#btnAddDocuments").on("click", function () {
+            $("#iptFile").click();
+        });
 
+        $("#rbPresentingYes, #rbPresentingNo").on("change", function () {
+            if ($("#rbPresentingYes").is(":checked")) {
+                $("#divPresentationName").show();
+            }
+            else {
+                $("#divPresentationName").hide();
+            }
+        });
         $("#btnUpload").on("click", EditAttendenceLog.Upload);
         $("#btnCreate").on("click", EditAttendenceLog.Create);
 
@@ -165,7 +176,11 @@ EditAttendenceLog = {
     Create: function () {
         
         var model = {};
-        model.attendenceType = Number($("#divAttendenceType input[type=radio]:checked").attr('data-attendence-type-id'));
+        model.personalNotes = $("#txtMyNotes").val();
+        model.isPresenting = $("rbPresentingYes").is(":checked");
+        if ($("#divPresentationName").is(":visible")) {
+            model.presentationName = $("#txtPresentationName").val();
+        }
         model.activityId = Number($("#ActivityId").val());
         model.userActivityId = Number($("#UserActivityId").val());
         model.credits = [];
@@ -196,7 +211,8 @@ EditAttendenceLog = {
                         cache: false,
                         success: function success(results) {
                             MessageDialog("Activity and Documents Saved", function () {
-                                window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
+                                //window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
+                                window.location.href = '/Activities/Records';
                             });
                         },
                         error: function error(err) {
@@ -206,8 +222,9 @@ EditAttendenceLog = {
                     });
                 }
                 else {
-                    MessageDialog("Activity Created", function () {
-                        window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
+                    MessageDialog("Activity Updated", function () {
+                        //window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
+                        window.location.href = '/Activities/Records';
                     });
 
                 }

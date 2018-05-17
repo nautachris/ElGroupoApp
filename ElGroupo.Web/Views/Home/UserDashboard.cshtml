@@ -12,71 +12,79 @@
 
     }
 
-        <div class="row">
-            <div class="centered" style="font-family:Raleway; font-size:20px; color:#161616;">Welcome, @Model.FirstName</div>
-            <div id="divImg" class="image-circle-100" style="background-image: url('/Users/UserPhoto/@Model.UserId')">
-            </div>
-            <div class="centered" style="margin-top:27px; font-size:16px; font-weight:bold">bears</div>
+    <div class="row">
+        <div class="centered" style="font-family:Raleway; font-size:20px; color:#161616;">Welcome, @Model.FirstName</div>
+        <div id="divImg" class="image-circle-100" style="background-image: url('/Users/UserPhoto/@Model.UserId')">
         </div>
+        <div class="centered" style="margin-top:27px; font-size:16px; font-weight:bold"></div>
+    </div>
 
-    <div class="row" style="height:280px; margin-top:66px;">
-        <div class="col span-1-of-6">
+    <div class="row" style="height:186px; margin-top:66px;">
+        <div class="col span-1-of-3">
             <a asp-controller="Activities" asp-action="Dashboard" class="no-decoration">
                 <div class="user-dashboard-link">
 
-                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <img src="~/content/images/logactivity.png" style="height:75px; width:75px;" />
 
-                    <div>Log Attendance</div>
+                    <div>Log An Activity</div>
 
 
                 </div>
             </a>
         </div>
-        <div class="col span-1-of-6">
+        <div class="col span-1-of-3">
             <a asp-controller="Events" asp-action="Dashboard">
                 <div class="user-dashboard-link">
-                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <img src="~/content/images/upcomingevents.png" style="height:50px; width:50px;" />
                     <div>View Upcoming Events</div>
 
                 </div>
             </a>
         </div>
 
-        <div class="col span-1-of-6">
+        <div class="col span-1-of-3">
             <a asp-controller="Events" asp-action="Create">
                 <div class="user-dashboard-link">
-                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <img src="~/content/images/createvent.png" style="height:75px; width:75px;" />
                     <div>Create an Event</div>
                 </div>
             </a>
         </div>
 
-        <div class="col span-1-of-6">
+
+
+
+    </div>
+    <div class="row" style="height:186px; margin-top:66px;">
+
+        <div class="col span-1-of-3">
             <a asp-controller="Events" asp-action="Create">
                 <div class="user-dashboard-link">
-                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
+                    <img src="~/content/images/connections.png" style="height:75px; width:75px;" />
+                    <div>My Connections</div>
+                </div>
+            </a>
+        </div>
+        <div class="col span-1-of-3">
+            <a asp-controller="Activities" asp-action="Records">
+                <div class="user-dashboard-link">
+                    <img src="~/content/images/myrecords.png" style="height:75px; width:75px;" />
+                    <div>My Records</div>
+                </div>
+            </a>
+        </div>
+        <div class="col span-1-of-3">
+            <a asp-controller="Events" asp-action="Create">
+                <div class="user-dashboard-link">
+                    <img src="~/content/images/checkin.png" style="height:75px; width:75px;" />
                     <div>Check In to an Event</div>
                 </div>
             </a>
         </div>
 
-        <div class="col span-1-of-6">
-            <a asp-controller="Events" asp-action="Create">
-                <div class="user-dashboard-link">
-                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
-                    <div>My Connections</div>
-                </div>
-            </a>
-        </div>
 
-        <div class="col span-1-of-6">
-            <a asp-controller="Activities" asp-action="Records">
-                <div class="user-dashboard-link">
-                    <img src="~/content/images/add-attendee.png" style="height:40px; width:40px;" />
-                    <div>My Records</div>
-                </div>
-            </a>
-        </div>
+
+
 
 
     </div>

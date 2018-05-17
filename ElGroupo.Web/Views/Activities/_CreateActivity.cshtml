@@ -1,0 +1,291 @@
+﻿
+@using ElGroupo.Web.Models.Activities
+@model ActivityModel
+@{
+    Layout = null;
+}
+@functions{
+    public string GenerateId(string prefix, object val)
+    {
+        return prefix + val.ToString();
+
+    }
+    public string GetPrimaryDivClass()
+    {
+        if (Model is CreateActivityGroupModel)
+        {
+            return "row hide-if-create-group-only";
+
+        }
+        else
+        {
+            return "row";
+
+        }
+
+    }
+    public string GetDividerDivClass()
+    {
+        if (Model is CreateActivityGroupModel)
+        {
+            return "divider hide-if-create-group-only";
+
+        }
+        else
+        {
+            return "divider";
+
+        }
+
+    }
+
+}
+
+<div class="@GetPrimaryDivClass()" id="divEditGroupName" style="display:none;">
+
+    <div class="width-100">
+        <input style="text-align:center;width:75%; text-transform:uppercase; font-size:24px; background-color:transparent; border:none; font-family: 'Source Sans Pro';" type="text" id="txtDescription" value="Enter Title Here" />
+    </div>
+
+</div>
+<div class="@GetDividerDivClass()"></div>
+
+
+<div class="@GetPrimaryDivClass()">
+    <label>Start Time</label>
+    <div class="row centered" style="width:50%;">
+        <div>
+            <input asp-for="StartTime" type="text" class="width-100" placeholder="Enter Event Start Date...">
+        </div>
+    </div>
+    <div class="row centered" style="width:50%;">
+
+
+        <div class="col span-1-of-3">
+            <select id="selStartHour">
+                <option value="12" selected>12</option>
+                @for (int hour = 1; hour <= 11; hour++)
+                {
+                    <option value="@hour">@hour.ToString()</option>
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-3">
+            <select id="selStartMin">
+                @for (var min = 0; min < 60; min++)
+                {
+                    @if (min < 10)
+                    {
+                        <option value="@min">@("0" + min.ToString())</option>
+
+                    }
+                    else
+                    {
+                        <option value="@min">@min.ToString()</option>
+                    }
+
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-3">
+            <select id="selStartAMPM">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="@GetPrimaryDivClass()">
+    <label>End Time</label>
+    <div class="row centered" style="width:50%;">
+        <div>
+            <input asp-for="EndTime" type="text" class="width-100" placeholder="Enter Event Start Date...">
+        </div>
+    </div>
+    <div class="row centered" style="width:50%;">
+
+
+        <div class="col span-1-of-3">
+            <select id="selEndHour">
+                <option value="12" selected>12</option>
+                @for (int hour = 1; hour <= 11; hour++)
+                {
+                    <option value="@hour">@hour.ToString()</option>
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-3">
+            <select id="selEndMin">
+                @for (var min = 0; min < 60; min++)
+                {
+                    @if (min < 10)
+                    {
+                        <option value="@min">@("0" + min.ToString())</option>
+
+                    }
+                    else
+                    {
+                        <option value="@min">@min.ToString()</option>
+                    }
+
+                }
+            </select>
+        </div>
+        <div class="col span-1-of-3">
+            <select id="selEndAMPM">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="@GetPrimaryDivClass()">
+    <label for="txtDescription">Activity Location</label>
+    <div class="width-100">
+        <input style="width:50%;" type="text" id="txtLocation" />
+    </div>
+
+</div>
+<div class="@GetDividerDivClass()"></div>
+<div class="@GetPrimaryDivClass()" id="divCreditTypes" style="margin-top:25px;">
+    <label>Credit Types</label>
+    <div>
+        @for (var x = 0; x < Model.CreditTypes.Count; x++)
+    {
+        if (x == 0)
+        {
+            <input type="checkbox" id="@GenerateId("rbCreditType", Model.CreditTypes[x].Id)" data-credit-type-id="@Model.CreditTypes[x].Id" />
+            <label style="cursor:pointer;margin-left:10px; font-size:14px;" for="@GenerateId("rbCreditType", Model.CreditTypes[x].Id)">@Model.CreditTypes[x].Description</label>
+
+    }
+    else
+    {
+        <input type="checkbox" style="margin-left:40px;" id="@GenerateId("rbCreditType", Model.CreditTypes[x].Id)" data-credit-type-id="@Model.CreditTypes[x].Id" />
+        <label style="cursor:pointer;margin-left:10px; font-size:14px;" for="@GenerateId("rbCreditType", Model.CreditTypes[x].Id)">@Model.CreditTypes[x].Description</label>
+
+}
+
+}
+    </div>
+    @for (var x = 0; x < Model.CreditTypes.Count; x++)
+    {
+
+        <div class="width-100 credit-type-table" style="display:none;" data-credit-type-id="@Model.CreditTypes[x].Id">
+            <div style="display:table; margin-left:25%; margin-right:25%; width:50%; border-collapse:collapse">
+                @{ var validCategories = Model.CreditCategories.Where(y => y.CreditTypeId == Model.CreditTypes[x].Id).OrderBy(y => y.Description).ToList();}
+                @for (var groupCount = 0; groupCount < validCategories.Count; groupCount += 3)
+                {
+                    <div style="display: table-row; word-wrap:break-word; vertical-align:middle; margin-bottom:10px;">
+                        @foreach (var creditCategory in validCategories.Skip(groupCount).Take(3))
+                        {
+                            <div style="display: table-cell; width:30%; vertical-align:middle;">
+                                <div class="width-100 centered">
+                                    <input type="text" style="text-align:center;font-family: 'Raleway'; margin-top:31px; width:40%; background-color:transparent; font-size:38px; border:none;" value="0" data-credit-category-id="@creditCategory.Id" />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div style="display: table-row; word-wrap:break-word; vertical-align:middle; margin-bottom:10px;">
+                        @foreach (var creditCategory in validCategories.Skip(groupCount).Take(3))
+                        {
+
+
+                            <div style="display: table-cell; width:30%; vertical-align:middle;">
+                                <div class="centered" style="margin-top:10px; text-transform:none; margin-left:20%; margin-right:20%;">@creditCategory.Description</div>
+                            </div>
+
+
+
+
+                        }
+                    </div>
+
+
+
+                    @*<div style="display: table-row; word-wrap:break-word; vertical-align:middle; margin-bottom:10px;">
+                            @foreach (var creditCategory in validCategories.Skip(groupCount).Take(3))
+                            {
+                                <div style="display: table-cell; width:30%; vertical-align:middle;">
+                                    <div class="width-100 centered">
+                                        <input type="text" style="text-align:center;font-family: 'Raleway'; margin-top:31px; width:40%; background-color:transparent; font-size:38px; border:none;" value="0" data-credit-category-id="@creditCategory.Id" />
+                                    </div>
+                                    <div class="centered" style="margin-top:10px; text-transform:none; margin-left:20%; margin-right:20%;">@creditCategory.Description</div>
+                                </div>
+
+                            }
+
+                        </div>*@
+                }
+
+            </div>
+            @if (x < Model.CreditTypes.Count - 1)
+            {
+                <div class="divider"></div>
+
+            }
+        </div>
+    }
+</div>
+<div class="@GetDividerDivClass()"></div>
+<div class="@GetPrimaryDivClass()" id="divAttendenceType">
+    <label>Presenting?</label>
+    <div class="row" id="divAttendenceType">
+        <input type="radio" name="group" checked id="rbPresentingNo" />
+        <label style="cursor:pointer;margin-left:10px; font-size:14px;" for="rbPresentingNo">No</label>
+        <input type="radio" name="group" style="margin-left:40px;" id="rbPresentingYes" />
+        <label style="cursor:pointer;margin-left:10px; font-size:14px;" for="rbPresentingYes">Yes</label>
+
+    </div>
+</div>
+<div class="@GetPrimaryDivClass()" id="divPresentationName" style="display:none;">
+    <label>Presentation Name</label>
+    <div class="width-100">
+        <input type="text" style="width:50%;" id="txtPresentationName" />
+    </div>
+
+</div>
+
+
+<div class="@GetDividerDivClass()"></div>
+<div class="@GetPrimaryDivClass()">
+    <label for="txtDescription">My Notes</label>
+    <div class="width-100">
+        <textarea style="width:50%; height:100px;" id="txtMyNotes"></textarea>
+    </div>
+
+</div>
+<div class="@GetPrimaryDivClass()">
+    <label for="txtDescription">Notes For Group</label>
+    <div class="width-100">
+        <textarea style="width:50%; height:100px;" id="txtPublicNotes"></textarea>
+    </div>
+
+</div>
+<div class="@GetDividerDivClass()"></div>
+<div class="@GetPrimaryDivClass()">
+    <label>Documentation</label>
+    <div style="display:none;" id="divRowTemplate">
+        <div style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white; border-right:1px solid white;">
+            <div style="display: table-cell; vertical-align:middle;"></div>
+            <div style="display: table-cell; vertical-align:middle;"><input placeholder="Enter a File Description..." style="width:100%;" type="text" /></div>
+            <div style="display: table-cell; vertical-align:middle;"><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></div>
+        </div>
+    </div>
+
+
+    <div id="divDocumentTable" style="display:none;" class="row centered">
+        <div id="divTable" style="display: table; margin-left:5%; margin-right:5%; width:90%; border-collapse:collapse;">
+            <header style="display: table-row;">
+                <div style="display: table-cell; width:30%; border:1px solid white;">File Name</div>
+                <div style="display: table-cell; width:60%; border:1px solid white;">Description</div>
+                <div style="display: table-cell; width:10%; border:1px solid white;"></div>
+            </header>
+        </div>
+    </div>
+    <div class="row" style="width:75%; margin-top:25px;">
+        <input style="display:none;" type="file" multiple id="iptFile" />
+        <button id="btnAddDocuments" class="btn btn-ghost">Add Document(s)</button>
+    </div>
+</div>
+<div class="@GetDividerDivClass()"></div>
