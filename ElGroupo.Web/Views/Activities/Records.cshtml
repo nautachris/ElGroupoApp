@@ -1,18 +1,18 @@
 ﻿@using ElGroupo.Web.Models.Activities
 @model RecordsModel
 
-<section style="background-color:#2d2d2d; color:white; padding-top:30px; padding-bottom:30px; min-height:60%;">
+<section style="color:#2d2d2d; padding-top:30px; padding-bottom:30px; min-height:60%;">
     <div class="row centered"><h2>My Records</h2></div>
     <div class="row">
         @*border-spacing:20px;*@
         <div style="display:table; margin-left:5%; margin-right:5%; width:90%; ">
-            <header style="display: table-row;border:1px solid white;">
+            <header style="display: table-row;border:1px solid #2d2d2d;">
                 <div style="display: table-cell; width:10%; text-align:center; padding:5px;"></div>
-                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Start Date</div>
-                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">End Date</div>
+                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Start</div>
+                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">End</div>
                 <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Department</div>
-                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Group Name</div>
-                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Description</div>
+                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Activity</div>
+                <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Title</div>
                 <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Location</div>
                 <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Credit Type</div>
                 <div style="display: table-cell; width:10%;text-align:center; padding:5px; font-size:1.3em;">Credit Category</div>
@@ -20,17 +20,17 @@
             </header>
             @foreach (var record in Model.Records)
         {
-            <div style="display:table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white;border-left:1px solid white;border-right:1px solid white;">
-                <div style="display:table-cell; vertical-align:middle; padding:5px; border:1px solid white; text-align:center;"><a style="color:white;" href="@Url.Action("EditAttendenceLog", "Activities", new { userActivityId = record.Id })">View</a></div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.ActivityStartDate?.ToShortDateString() - @record.ActivityStartDate?.ToShortTimeString()</div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.ActivityEndDate?.ToShortDateString() - @record.ActivityEndDate?.ToShortTimeString()</div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.Department</div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.GroupName</div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.ActivityDescription</div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.ActivityLocation</div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.CreditType</div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.CreditCategory</div>
-                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid white;">@record.CreditHours</div>
+            <div style="display:table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid #2d2d2d;border-left:1px solid #2d2d2d;border-right:1px solid #2d2d2d;">
+                <div style="display:table-cell; vertical-align:middle; padding:5px; border:1px solid #2d2d2d; text-align:center;"><a style="color:#2d2d2d;" href="@Url.Action("EditAttendenceLog", "Activities", new { userActivityId = record.Id })">View</a></div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.ActivityStartDate?.ToShortDateString() - @record.ActivityStartDate?.ToShortTimeString()</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.ActivityEndDate?.ToShortDateString() - @record.ActivityEndDate?.ToShortTimeString()</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.Department</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.GroupName</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.ActivityDescription</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.ActivityLocation</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.CreditType</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.CreditCategory</div>
+                <div style="display: table-cell; vertical-align:middle; padding:5px;border:1px solid #2d2d2d;">@record.CreditHours</div>
             </div>
 
     }

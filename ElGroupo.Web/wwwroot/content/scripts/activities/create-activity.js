@@ -3,46 +3,95 @@
 });
 
 CreateActivity = {
-    AddDocument: function (file) {
-        var idx = CreateActivity.Documents.length + 1;
-        CreateActivity.Documents.push({ id: idx, document: file });
-        var $newRow = $($("#divRowTemplate").html());
+    AddMyDocument: function (file) {
+        var idx = CreateActivity.MyDocuments.length + 1;
+        CreateActivity.MyDocuments.push({ id: idx, document: file });
+        var $newRow = $($("#divMyDocumentRowTemplate").html());
         $newRow.attr('data-document-id', idx);
         $($newRow.find("div").get(0)).text(file.name);
         $($newRow.find("div").get(2)).attr('data-remove-document', idx);
-        $("#divDocumentTable header").after($newRow);
+        $("#divMyDocumentTableContainer header").after($newRow);
     },
-    Documents: [],
+    AddActivityDocument: function (file) {
+        var idx = CreateActivity.ActivityDocuments.length + 1;
+        CreateActivity.ActivityDocuments.push({ id: idx, document: file });
+        var $newRow = $($("#divActivityDocumentRowTemplate").html());
+        $newRow.attr('data-document-id', idx);
+        $($newRow.find("div").get(0)).text(file.name);
+        $($newRow.find("div").get(2)).attr('data-remove-document', idx);
+        $("#divActivityDocumentTableContainer header").after($newRow);
+    },
+    MyDocuments: [],
+    ActivityDocuments: [],
     GetDocumentsFormData: function (userActivityId) {
         var fd = new FormData();
         fd.append('userActivityId', Number(userActivityId));
-        for (var x = 0; x < CreateActivity.Documents.length; x++) {
-            fd.append('file_' + x.toString(), CreateActivity.Documents[x].document, CreateActivity.Documents[x].document.name);
-            fd.append('description_' + x.toString(), $("#divTable div[data-document-id=" + CreateActivity.Documents[x].id + "] input[type=text]").val());
+        for (var x = 0; x < CreateActivity.MyDocuments.length; x++) {
+            fd.append('type_' + x.toString(), 'personal');
+            fd.append('file_' + x.toString(), CreateActivity.MyDocuments[x].document, CreateActivity.MyDocuments[x].document.name);
+            fd.append('description_' + x.toString(), $("#divMyDocumentTableContainer div[data-document-id=" + CreateActivity.MyDocuments[x].id + "] input[type=text]").val());
         }
+
+        for (var y = 0; y < CreateActivity.ActivityDocuments.length; y++) {
+            fd.append('type_' + (y + x).toString(), 'shared');
+            fd.append('file_' + (y + x).toString(), CreateActivity.ActivityDocuments[y].document, CreateActivity.ActivityDocuments[y].document.name);
+            fd.append('description_' + (y + x).toString(), $("#divActivityDocumentTableContainer div[data-document-id=" + CreateActivity.ActivityDocuments[y].id + "] input[type=text]").val());
+        }
+        console.log('document data');
+        console.log(fd);
         return fd;
     },
     InitDocumentTable: function () {
         $("#iptFile").on("change", function (evt) {
             console.log('file change');
             for (var x = 0; x < evt.target.files.length; x++) {
-                CreateActivity.AddDocument(evt.target.files[x]);
+                CreateActivity.AddMyDocument(evt.target.files[x]);
             }
-            if (CreateActivity.Documents.length > 0) $("#divDocumentTable").show();
-            else $("#divDocumentTable").hide();
+            if (CreateActivity.MyDocuments.length > 0) $("#divMyDocumentTableContainer").show();
+            else $("#divMyDocumentTableContainer").hide();
             $("#iptFile").val(null);
         });
 
         //delete button
-        $("#divDocumentTable").on("click", "div[data-remove-document]", function () {
+        $("#divMyDocumentTableContainer").on("click", "div[data-remove-document]", function () {
 
             var idToRemove = Number($(this).closest('div').attr('data-remove-document'));
             console.log(idToRemove);
 
-            $("#divTable div[data-document-id=" + idToRemove + "]").remove();
-            for (var x = 0; x < CreateActivity.Documents.length; x++) {
-                if (CreateActivity.Documents[x].id === idToRemove) {
-                    CreateActivity.Documents.splice(x, 1);
+            $("#divMyDocumentTableContainer div[data-document-id=" + idToRemove + "]").remove();
+            for (var x = 0; x < CreateActivity.MyDocuments.length; x++) {
+                if (CreateActivity.MyDocuments[x].id === idToRemove) {
+                    CreateActivity.MyDocuments.splice(x, 1);
+                    break;
+                }
+            }
+        });
+
+
+
+
+
+
+        $("#iptActivityFile").on("change", function (evt) {
+            console.log('file change');
+            for (var x = 0; x < evt.target.files.length; x++) {
+                CreateActivity.AddActivityDocument(evt.target.files[x]);
+            }
+            if (CreateActivity.AddActivityDocument.length > 0) $("#divActivityDocumentTableContainer").show();
+            else $("#divActivityDocumentTableContainer").hide();
+            $("#iptActivityFile").val(null);
+        });
+
+        //delete button
+        $("#divActivityDocumentTableContainer").on("click", "div[data-remove-document]", function () {
+
+            var idToRemove = Number($(this).closest('div').attr('data-remove-document'));
+            console.log(idToRemove);
+
+            $("#divActivityDocumentTableContainer div[data-document-id=" + idToRemove + "]").remove();
+            for (var x = 0; x < CreateActivity.ActivityDocuments.length; x++) {
+                if (CreateActivity.ActivityDocuments[x].id === idToRemove) {
+                    CreateActivity.ActivityDocuments.splice(x, 1);
                     break;
                 }
             }
@@ -54,8 +103,12 @@ CreateActivity = {
             console.log('input clicked');
             $(this).select();
         });
-        $("#btnAddDocuments").on("click", function () {
+        $("#btnAddMyDocuments").on("click", function () {
             $("#iptFile").click();
+        });
+
+        $("#btnAddActivityDocuments").on("click", function () {
+            $("#iptActivityFile").click();
         });
         //click on any credit type checkboxes
         $("#divCreditTypes :checkbox").on("change", function () {
@@ -207,7 +260,7 @@ CreateActivity = {
             cache: false,
             //dataType: 'html',
             success: function success(results) {
-                if (CreateActivity.Documents.length > 0) {
+                if (CreateActivity.MyDocuments.length > 0) {
                     var fd = CreateActivity.GetDocumentsFormData(results.userActivityId);
                     $.ajax({
                         url: "/Activities/UploadDocuments",
@@ -219,7 +272,8 @@ CreateActivity = {
                         cache: false,
                         success: function success(results) {
                             MessageDialog("Activity and Documents Saved", function () {
-                                window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
+                                //window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
+                                window.location.href = '/Home/UserDashboard';
                             });
                         },
                         error: function error(err) {
@@ -230,7 +284,8 @@ CreateActivity = {
                 }
                 else {
                     MessageDialog("Activity Created", function () {
-                        window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
+                        //window.location.href = '/Activities/Group/' + $("#ActivityGroupId").val();
+                        window.location.href = '/Home/UserDashboard';
                     });
 
                 }

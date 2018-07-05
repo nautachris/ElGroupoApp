@@ -1,0 +1,59 @@
+﻿@using ElGroupo.Web.Models.Records
+@model EditElementsModel
+
+<section style="text-align:center">
+    <a asp-controller="Records" asp-action="Admin">Return to Admin</a>
+    <h3>Data Elements</h3>
+    <div id="element-list">
+        @Html.Partial("_EditElementList", Model.Elements)
+    </div>
+
+
+
+    <button class="btn btn-primary add-element-btn">Add New Element</button>
+    <div class="add-element" style="display:none;">
+        <div style="width:100%">
+            <label for="txtAddElement">Name:</label>
+            <input type="text" id="txtAddElement" style="width:200px;" />
+        </div>
+        <div style="width:100%">
+            <label for="txtAddDisplayName">Display Name:</label>
+            <input type="text" id="txtAddDisplayName" style="width:200px;" />
+        </div>
+        <div style="width:100%">
+            <label for="selAddDataType">Data Type:</label>
+            <select id="selAddDataType" style="width:200px;">
+                <option selected value=""></option>
+                @foreach (var item in Model.DataTypes)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </select>
+        </div>
+        <div style="width:100%">
+            <label for="selAddInputType">Input Type:</label>
+            <select id="selAddInputType" style="width:200px;"></select>
+        </div>
+        <div style="width:100%">
+
+            <input type="checkbox" id="chkAddLookupTable" />
+            <label for="selAddLookupTables">Lookup Table:</label>
+            <select disabled id="selAddLookupTables" style="width:200px;">
+                <option selected value=""></option>
+                @foreach (var item in Model.LookupTables)
+                {
+                    <option value="@item.Id">@item.Description</option>
+                }
+            </select>
+        </div>
+
+        <button class="cancel-add-element">Cancel</button>
+        <button class="confirm-add-element">Add</button>
+    </div>
+</section>
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/records/records-admin.js"></script>
+    <script type="text/javascript" src="~/content/scripts/records/edit-elements.js"></script>
+
+}

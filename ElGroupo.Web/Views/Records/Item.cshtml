@@ -1,0 +1,93 @@
+﻿@using ElGroupo.Web.Models.Records
+@model ViewItemModel
+
+
+
+<section style="text-align:center">
+    @if (Model.Category != null)
+    {
+        <a asp-controller="Records" asp-action="EditCategory" asp-route-categoryId="@Model.Category.Id">Return to @Model.Category.Name</a>
+
+    }
+    else if (Model.SubCategory != null)
+    {
+        <a asp-controller="Records" asp-action="EditSubCategory" asp-route-subCategoryId="@Model.SubCategory.Id">Return to @Model.SubCategory.Name</a>
+
+    }
+    <h4>Edit Record Item</h4>
+    <input type="hidden" asp-for="Id" />
+    <h3 id="item-name">@Model.Name</h3>
+
+
+    <div style="margin:45px;">
+        <h3>Elements</h3>
+        <div id="element-list">
+            @Html.Partial("_ElementList", Model.Elements)
+        </div>
+    </div>
+    <div style="margin:45px;">
+        <div id="divViewCategory">
+            @if (Model.SubCategory != null)
+            {
+                <div style="width:100%;">Parent Category: @Model.SubCategory.ParentCategory.Name</div>
+                <div style="width:100%;">Parent Sub Category: @Model.SubCategory.Name</div>
+                <input type="hidden" asp-for="SubCategory.Id" />
+                <input type="hidden" asp-for="SubCategory.ParentCategory.Id" />
+            }
+            else
+            {
+                <div style="width:100%;">Parent Category: @Model.Category.Name</div>
+                <div style="width:100%;">Parent Sub Category: None</div>
+                <input type="hidden" asp-for="Category.Id" />
+            }
+        </div>
+
+
+        <div style="display:none;" id="divEditCategory">
+            <div style="width:100%;">
+                <label for="selEditCategory">Category:</label>
+                <select style="width:300px;" id="selEditCategory"></select>
+            </div>
+            <div id="divEditSubCategory" style="width:100%;">
+                <label for="selEditSubCategory">Sub Category:</label>
+                <select style="width:300px;" id="selEditSubCategory"></select>
+            </div>
+            <div style="width:100%;">
+                <a class="cancel-category">Cancel</a>
+                <a class="save-category">Save</a>
+            </div>
+        </div>
+        <button class="btn btn-primary change-category-btn">Change Parent Category/Sub Category</button>
+    </div>
+
+    <div style="margin:45px;">
+        <button class="btn btn-primary add-element-btn">Add New Element</button>
+        <div class="add-element" style="display:none;">
+            <div style="width:100%;">
+                <label for="selElement">Element:</label>
+                <select id="selElement" style="width:300px;">
+                    @foreach (var item in Model.ElementList)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+
+                    }
+                </select>
+            </div>
+            <div style="width:100%">
+                <label for="chkIsPrimary">Primary Display?</label>
+                <input type="checkbox" id="chkPrimaryDisplay" />
+            </div>
+
+            <button class="cancel-add-element">Cancel</button>
+            <button class="confirm-add-element">Add</button>
+        </div>
+    </div>
+
+</section>
+
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/records/records-admin.js"></script>
+    <script type="text/javascript" src="~/content/scripts/records/item.js"></script>
+
+}

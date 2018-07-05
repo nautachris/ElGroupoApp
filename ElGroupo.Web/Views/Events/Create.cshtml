@@ -60,10 +60,10 @@
                 <div class="row centered">
                     <div class="col span-1-of-6"><label>Start:</label></div>
                     <div class="col span-2-of-6">
-                        <input asp-for="StartDate" type="text" class="width-100" placeholder="Enter Event Start Date...">
+                        <input data-start-date asp-for="StartDate" type="text" class="width-100" placeholder="Enter Event Start Date...">
                     </div>
                     <div class="col span-1-of-6">
-                        <select asp-for="StartHour">
+                        <select data-start-hour asp-for="StartHour">
                             <option value="12" selected>12</option>
                             @for (int hour = 1; hour <= 11; hour++)
                             {
@@ -72,8 +72,8 @@
                         </select>
                     </div>
                     <div class="col span-1-of-6">
-                        <select asp-for="StartMinute">
-                            @for (var min = 0; min < 60; min++)
+                        <select data-start-min asp-for="StartMinute">
+                            @for (var min = 0; min < 60; min = min + 5)
                             {
                                 @if (min < 10)
                                 {
@@ -90,7 +90,7 @@
                         </select>
                     </div>
                     <div class="col span-1-of-6">
-                        <select asp-for="StartAMPM">
+                        <select data-start-am-pm asp-for="StartAMPM">
                             <option value="AM">AM</option>
                             <option value="PM">PM</option>
                         </select>
@@ -99,10 +99,10 @@
                 <div class="row centered">
                     <div class="col span-1-of-6"><label>End:</label></div>
                     <div class="col span-2-of-6">
-                        <input asp-for="EndDate" type="text" class="width-100" placeholder="Enter Event End Date...">
+                        <input data-end-date asp-for="EndDate" type="text" class="width-100" placeholder="Enter Event End Date...">
                     </div>
                     <div class="col span-1-of-6">
-                        <select asp-for="EndHour">
+                        <select data-end-hour asp-for="EndHour">
                             <option value="12" selected>12</option>
                             @for (int hour = 1; hour <= 11; hour++)
             {
@@ -111,8 +111,8 @@
                         </select>
                     </div>
                     <div class="col span-1-of-6">
-                        <select asp-for="EndMinute">
-                            @for (var min = 0; min < 60; min++)
+                        <select data-end-min asp-for="EndMinute">
+                            @for (var min = 0; min < 60; min = min + 5)
             {
                 @if (min < 10)
 {
@@ -130,7 +130,7 @@ else
                         </select>
                     </div>
                     <div class="col span-1-of-6">
-                        <select asp-for="EndAMPM">
+                        <select data-end-am-pm asp-for="EndAMPM">
                             <option value="AM">AM</option>
                             <option value="PM">PM</option>
                         </select>
@@ -405,21 +405,14 @@ else
             showDrawTools: false
         });
     </script>
+    <script type="text/javascript" src="~/content/scripts/shared/start-end-dates.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            //this now loads when they click to step 3 for the first time
-            //Maps.Init({
-            //    mapDiv: 'divMap',
-            //    txtAutocomplete: 'txtAutocompleteSearch',
-            //    placeChangeCallback: CreateEvent.PlaceChange,
-            //    createDrawTools: true,
-            //    showDrawTools: false
-            //});
-
+            StartEndDates.Init("#frmCreateEvent");
         });
     </script>
     <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8AObtWB7hUVmZkx7p6KIt2aXiKMZVXDk&libraries=places,drawing&callback=Maps.InitMap">
+            src="https://maps.googleapis.com/maps/api/js?key=@Model.GoogleApiKey&libraries=places,drawing&callback=Maps.InitMap">
     </script>
 
 }

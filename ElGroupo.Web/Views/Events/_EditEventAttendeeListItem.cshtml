@@ -1,0 +1,103 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Domain.Enums
+@model EventAttendeeModel
+@{
+    Layout = null;
+}
+@functions{
+
+    public string GetImageUrl(long id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+    public string GetUserViewLink(long id)
+    {
+        var url = Url.Action("View", "Account", new { id = id });
+        return url;
+
+    }
+
+    public string GetNewUserNameAttribute(EventAttendeeModel att)
+    {
+        if (!att.IsRegistered) return att.Name;
+        return null;
+
+    }
+    public string GetNewUserEmailAttribute(EventAttendeeModel att)
+    {
+        if (!att.IsRegistered) return att.Email;
+        return null;
+
+    }
+
+    public string GetInvitedUserAttributes(EventAttendeeModel att)
+    {
+        if (att.IsRegistered) return null;
+        return "data-invited-user data-new-user-email=\"" + att.Email + "\" data-new-user-name=\"" + att.Name + "\"";
+
+    }
+
+
+    public string GetAttendeeTypeAttribute(EventAttendeeModel att)
+    {
+        if (att.EventAttendeeId.HasValue) return "attendee";
+        else if (att.UserId.HasValue) return "user";
+        else if (att.UserGroupId.HasValue) return "group";
+        else if (!att.IsRegistered) return "invite";
+        else return null;
+
+    }
+    public string GetAttendeeIdAttribute(EventAttendeeModel att)
+    {
+        if (att.EventAttendeeId.HasValue) return att.EventAttendeeId.Value.ToString();
+        else if (att.UserId.HasValue) return att.UserId.Value.ToString();
+        else if (att.UserGroupId.HasValue) return att.UserGroupId.Value.ToString();
+        else if (!att.IsRegistered) return 0.ToString();
+        else return null;
+
+    }
+
+}
+<div data-attendee-type="@GetAttendeeTypeAttribute(Model)" data-attendee-id="@GetAttendeeIdAttribute(Model)" data-new-user-name="@GetNewUserNameAttribute(Model)" data-new-user-email="@GetNewUserEmailAttribute(Model)" class="centered rounded-border attendee-container" style="text-align:center; position:relative; display:flex; margin-left:50px; margin-bottom:30px;">
+    <div class="attendee-info">
+        @if (Model.IsOrganizer)
+        {
+            <img data-is-editable="@Model.IsEditable" class="image-circle-200 img-event-organizer" style="background-image:url('@GetImageUrl(Model.UserId.Value)')" />
+            <a href="@GetUserViewLink(Model.UserId.Value)" target="_blank" class="no-decoration">
+                <span class="attendee-name @Model.RSVPStatus.ToString().ToLower()">@Model.Name*</span>
+            </a>
+        }
+        else
+        {
+            @if (Model.UserId.HasValue)
+            {
+                <img class="image-circle-200" style="background-image:url('@GetImageUrl(Model.UserId.Value)')" />
+                <a href="@GetUserViewLink(Model.UserId.Value)" target="_blank" class="no-decoration">
+                    <span class="attendee-name @Model.RSVPStatus.ToString().ToLower()">@Model.Name</span>
+                </a>
+
+            }
+            else
+            {
+                <img class="image-circle-200" style="background-image:url('@GetImageUrl(-1)')" />
+
+                <span class="attendee-name @Model.RSVPStatus.ToString().ToLower()">@Model.Name</span>
+
+
+            }
+
+        }
+        @if (Model.IsEditable)
+        {
+            <div>
+                <img class="delete-attendee" style="width:40px; height:40px; cursor:pointer;" src="~/content/images/delete.png" />
+            </div>
+
+        }
+
+
+    </div>
+
+
+</div>

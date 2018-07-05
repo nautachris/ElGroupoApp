@@ -3,25 +3,27 @@
         //p1 is url, p2 is datatype, p3 content type
         var url = null;
         var dataType = null;
-        var contentType = null;
+        var requestContentType = null;
         if (typeof (p1) === 'object') {
             dataType = p1.hasOwnProperty('dataType') ? p1.dataType : 'html';
-            contentType = p1.hasOwnProperty('contentType') ? p1.contentType : 'application/json';
+            requestContentType = p1.hasOwnProperty('contentType') ? p1.contentType : 'application/json';
             url = p1.url;
         }
         else {
             url = p1;
             dataType = (p2 !== undefined) ? p2 : 'html';
-            contentType = (p3 !== undefined) ? p3 : 'html';
+            requestContentType = (p3 !== undefined) ? p3 : 'html';
         }
-
+        console.log(url);
+        console.log(requestContentType);
+        console.log(dataType);
         return $.ajax({
             url: url,
             type: 'GET',
-            contentType: "application/json",
+            //contentType: requestContentType,
             async: true,
             cache: false,
-            dataType: dataType,
+            //dataType: dataType,
             error: function error(err) {
                 console.log('in ajax.js error handler');
                 console.log(JSON.parse(err.responseText));
@@ -57,11 +59,6 @@
     //    });
     //}
     Post: function (p1, p2, p3, p4) {
-        console.log('in post');
-        console.log(p1);
-        console.log(p2);
-        console.log(p3);
-        console.log(p4);
         //p1 is url, p2 is data, p3 is datatype, p4 content type
         var url = null;
         var dataType = null;
@@ -76,18 +73,10 @@
         }
         else {
             url = p1;
-            data = typeof (p2) === 'string' ? JSON.stringify(p2) : p2;
+            data = typeof (p2) === 'string' ? p2:JSON.stringify(p2);
             dataType = (p3 !== undefined) ? p3 : 'html';
             contentType = (p4 !== undefined) ? p4 : 'application/json';
         }
-        console.log('url');
-        console.log(url);
-        console.log('data');
-        console.log(data);
-        console.log('datatype');
-        console.log(dataType);
-        console.log('contentType');
-        console.log(contentType);
         return $.ajax({
             url: url,
             type: 'POST',
@@ -105,11 +94,6 @@
         });
     },
     Delete: function (p1, p2, p3, p4) {
-        console.log('in delete');
-        console.log(p1);
-        console.log(p2);
-        console.log(p3);
-        console.log(p4);
         //p1 is url, p2 is data, p3 is datatype, p4 content type
         var url = null;
         var dataType = null;
@@ -123,18 +107,10 @@
         }
         else {
             url = p1;
-            data = typeof (p2) === 'string' ? JSON.stringify(p2) : p2;
+            data = typeof (p2) === 'string' ? p2:JSON.stringify(p2);
             dataType = (p3 !== undefined) ? p3 : 'html';
             contentType = (p4 !== undefined) ? p4 : 'html';
         }
-        console.log('url');
-        console.log(url);
-        console.log('data');
-        console.log(data);
-        console.log('datatype');
-        console.log(dataType);
-        console.log('contentType');
-        console.log(contentType);
         return $.ajax({
             url: url,
             type: 'DELETE',

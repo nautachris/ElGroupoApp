@@ -1,0 +1,74 @@
+﻿@using ElGroupo.Web.Models.Records
+@using ElGroupo.Web.Models.Shared
+@model RecordsDashboardModel
+
+@functions{
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+
+
+}
+<section id="secMain">
+    <div class="row">
+        @*<div class="centered" style="font-family:Raleway; font-size:20px; color:#161616;">Welcome, @Model.FirstName</div>
+            <div id="divImg" class="image-circle-100" style="background-image: url('/Users/UserPhoto/@Model.UserId')">
+
+            </div>*@
+
+        <div class="width-100 centered">
+            <img src="/Users/UserPhoto/@Model.UserId" style="border-radius:100%; height:80px; width:80px; vertical-align:middle; line-height:80px;" />
+            <span style="font-family:Raleway; font-size:20px; color:#161616; vertical-align:middle; line-height:80px;">Welcome, @Model.FirstName</span>
+        </div>
+
+
+
+    </div>
+
+    @foreach (var row in SplitList<IdValueModel>(Model.Categories, 4))
+    {
+        <div class="row" style="height:186px; margin-top:26px;">
+            @foreach (var item in row)
+            {
+                <div class="col span-1-of-4">
+                    <a asp-controller="Records" asp-action="ViewCategory" asp-route-categoryId="@item.Id" class="no-decoration">
+                        <div class="user-dashboard-link">
+
+                            <img src="~/content/images/logactivity.png" style="height:75px; width:75px;" />
+
+                            <div>@item.Value</div>
+
+
+                        </div>
+                    </a>
+                </div>
+
+            }
+        </div>
+
+    }
+</section>

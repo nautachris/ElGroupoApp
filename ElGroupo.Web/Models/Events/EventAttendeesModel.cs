@@ -5,13 +5,15 @@ using System.Threading.Tasks;
 
 namespace ElGroupo.Web.Models.Events
 {
-    public class ViewEventAttendeesModel
+    public class EventAttendeesModel
     {
-        public ViewEventAttendeesModel()
+        public EventAttendeesModel(long eventId)
         {
+            this.EventId = eventId;
             this.Attendees = new List<EventAttendeeModel>();
 
         }
+        public long EventId { get; set; }
         public bool IsOrganizer { get; set; }
         public List<EventAttendeeModel> Attendees { get; set; }
     }

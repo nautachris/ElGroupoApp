@@ -598,7 +598,7 @@ namespace ElGroupo.Web.Services
                 ContactTypes = await GetContactTypes(),
                 EmailAddress = user.Email,
                 Id = user.Id,
-                Name = user.Name,
+                Name = user.Name != null ? user.Name : (user.FirstName + " " + user.LastName),
                 PhoneNumber = user.PhoneNumber,
                 ZipCode = user.ZipCode
             };

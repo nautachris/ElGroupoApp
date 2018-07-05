@@ -525,7 +525,16 @@ h2 {
     content: "";
     width: 90%;
     margin: 0 auto;
-    margin-top: 30px;
+    margin-top: 10px;
+}
+.line-after:before {
+    display: block;
+    /*height: 1px;*/
+    /*background-color: #d3d3d3;*/
+    content: "";
+    width: 90%;
+    margin: 0 auto;
+    margin-bottom: 10px;
 }
 
 h2:after {
@@ -885,7 +894,7 @@ header {
 
 
 
-a, .edit-links, .save-links, .close-links {
+a, .edit-links, .save-links, .close-links, .edit-attendee-links {
     color: black;
     cursor:pointer;
 }
@@ -896,7 +905,7 @@ cursor:pointer;
 font-weight:bold;
 }
 
-    a:focus, a:hover, .edit-links:hover, .save-links:hover, .close-links:hover, .delete-links:hover {
+    a:focus, a:hover, .edit-links:hover, .save-links:hover, .close-links:hover, .delete-links:hover, .edit-attendee-links:hover {
         /*color: #23527c;*/
         color: darkblue;
         padding-bottom: 2px;
@@ -1494,7 +1503,10 @@ select {
     /* prevent horizontal scrollbar */
     overflow-x: hidden;
 }
+img.img-event-organizer{
+    border:4px solid purple;
 
+}
 .dashboard-status {
     border: 1px solid black;
     border-radius: 25px;
@@ -1522,9 +1534,7 @@ a.ui-button:active,
     color: #ffffff;
 }
 
-.no-border {
-    border: none transparent;
-}
+
 
 #fountainG {
     /*position: relative;
@@ -1647,7 +1657,9 @@ a.ui-button:active,
     -moz-animation-delay: 1.64s;
 }
 
-
+.no-border {
+    border: none transparent;
+}
 
 @keyframes bounce_fountainG {
     0% {

@@ -1,0 +1,15 @@
+﻿@using ElGroupo.Web.Models.Shared
+@model IEnumerable<IdValueModel>
+@{
+    Layout = null;
+}
+<table style="margin:0 auto; text-align:center;">
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td><a asp-controller="Records" asp-action="EditCategory" asp-route-categoryId="@item.Id">@item.Value</a></td>
+            <td><a style="margin-left:25px;" data-remove-category data-category-id="@item.Id">Remove</a></td>
+        </tr>
+
+    }
+</table>

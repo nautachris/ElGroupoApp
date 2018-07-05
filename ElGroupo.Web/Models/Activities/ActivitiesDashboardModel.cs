@@ -67,7 +67,7 @@ namespace ElGroupo.Web.Models.Activities
         public long? UserActivityId { get; set; }
     }
 
-    public class CreateActivityGroupModel : ActivityModel
+    public class CreateActivityGroupModel : AssignCreditTypesModel
     {
         //if false, this is a one-off "personal" activity that will only be visible by the user looking at his/her credits
         //no one will be able to add
@@ -80,8 +80,7 @@ namespace ElGroupo.Web.Models.Activities
         //if the group is set to public, we not only create a group, but create the first activity within the group
 
         // public string ActivityName { get; set; }
-        public string ActivityDescription { get; set; }
-        public string ActivityLocation { get; set; }
+
         public List<LookupModel> AvailableGroups { get; set; }
         public List<long> SharedGroupIds { get; set; }
 
@@ -94,22 +93,28 @@ namespace ElGroupo.Web.Models.Activities
     }
     public abstract class ActivityModel
     {
+        public string PersonalNotes { get; set; }
         public string ActivityDescription { get; set; }
         public string ActivityLocation { get; set; }
-        public string PersonalNotes { get; set; }
+
         public string PublicNotes { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public List<ActivityCreditModel> Credits { get; set; }
 
-        public List<LookupModel> CreditTypes { get; set; }
-        public List<CreditCategoryModel> CreditCategories { get; set; }
+
         public bool IsPresenting { get; set; }
         public string PresentationName { get; set; }
 
 
     }
-    public class CreateActivityModel : ActivityModel
+
+    public abstract class AssignCreditTypesModel : ActivityModel
+    {
+        public List<LookupModel> CreditTypes { get; set; }
+        public List<CreditCategoryModel> CreditCategories { get; set; }
+    }
+    public class CreateActivityModel : AssignCreditTypesModel
     {
 
         public long ActivityGroupId { get; set; }
@@ -125,6 +130,7 @@ namespace ElGroupo.Web.Models.Activities
     }
     public class DocumentListModel
     {
+        public bool Shared { get; set; }
         public byte[] Data { get; set; }
         public string FileName { get; set; }
         public string Description { get; set; }
@@ -133,34 +139,53 @@ namespace ElGroupo.Web.Models.Activities
 
     public class LogAttendenceModel : ActivityModel
     {
-
+        public List<ViewActivityDocumentModel> Documents { get; set; } = new List<ViewActivityDocumentModel>();
         public long ActivityId { get; set; }
         public long ActivityGroupId { get; set; }
         public string ActivityGroupName { get; set; }
-        public string ActivityDescription { get; set; }
-        public string ActivityLocation { get; set; }
-        public string ActivityStartTimeText { get; set; }
 
+        public string ActivityTimeText { get; set; }
+
+        public List<ActivityCreditListModel> AllowedCredits { get; set; } = new List<ActivityCreditListModel>();
 
     }
 
     public class EditLogAttendenceModel : LogAttendenceModel
     {
-        public List<ViewDocumentModel> Documents { get; set; } = new List<ViewDocumentModel>();
+        public List<ViewUserActivityDocumentModel> Documents { get; set; } = new List<ViewUserActivityDocumentModel>();
+
+        public List<ViewActivityDocumentModel> ActivityDocuments { get; set; } = new List<ViewActivityDocumentModel>();
         public long UserActivityId { get; set; }
+
     }
 
-    public class ViewDocumentModel
+    public class ViewUserActivityDocumentModel
     {
         public string Description { get; set; }
         public long Id { get; set; }
         public string FileName { get; set; }
         public long UserActivityDocumentId { get; set; }
     }
+    public class ViewActivityDocumentModel
+    {
+        public string Description { get; set; }
+        public long Id { get; set; }
+        public string FileName { get; set; }
+    }
     public class ActivityCreditModel
     {
         public long CreditTypeCategoryId { get; set; }
         public double NumberOfCredits { get; set; }
+    }
+
+    public class ActivityCreditListModel
+    {
+        public long CreditTypeCategoryId { get; set; }
+        public string CreditTypeCategoryName { get; set; }
+        public long CreditTypeId { get; set; }
+        public string CreditTypeName { get; set; }
+        public double Hours { get; set; }
+
     }
 
 

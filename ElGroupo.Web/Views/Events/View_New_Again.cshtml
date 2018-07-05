@@ -57,60 +57,106 @@
 
 <input type="hidden" asp-for="EventId" />
 <input type="hidden" asp-for="IsRecurring" />
-<div class="row">
-
-
-    <div class="col span-3-of-9 summary-container">
-        <div class="row centered">
-            <h3 id="lblEventName" class="centered" style="font-size:24px; margin-bottom:10px; word-spacing:2px; letter-spacing:4px;">@Model.Details.Name</h3>
-            @if (Model.Organizers.Count == 1)
-            {
-            <h3 class="centered" style="text-transform:none; font-size:110%; margin-top:4px;">
-                by&nbsp;<a href="@Url.Action("View", "Account", new { userId = Model.Organizers[0].Id })">@Model.Organizers[0].Name</a>
-                @if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
+<div class="row centered">
+    <h3 id="lblEventName" class="centered" style="font-size:24px; margin-bottom:10px; word-spacing:2px; letter-spacing:4px;">@Model.Details.Name</h3>
+    @if (Model.Organizers.Count == 1)
     {
-            <img src="~/content/images/dot-maybe.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
-            <span style="vertical-align:middle; letter-spacing:normal;">I'm a maybe</span>
-
-}
-else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.None)
-{
-            <img src="~/content/images/dot-unknown.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
-            <span style="vertical-align:middle; letter-spacing:normal;">Undecided</span>
-
-}
-else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.No)
-{
-            <img src="~/content/images/dot-no.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
-            <span style="vertical-align:middle; letter-spacing:normal;">No way</span>
-
-}
-else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Yes)
-{
-            <img src="~/content/images/dot-yes.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
-            <span style="vertical-align:middle; letter-spacing:normal;">I'm in</span>
-
-}
-
-            </h3>
-
-            }
-            else
+        <h3 class="centered" style="text-transform:none; font-size:110%; margin-top:4px;">
+            by&nbsp;<a href="@Url.Action("View", "Account", new { userId = Model.Organizers[0].Id })">@Model.Organizers[0].Name</a>
+            @if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
             {
-                <h3 class="centered" style="text-transform:none; font-size:110%; margin-top:4px;">
-                    <span>by </span>
-                    @foreach (var org in Model.Organizers)
-                    {
-                        <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a> @:&nbsp;
-                    }
-                </h3>
+                <img src="~/content/images/dot-maybe.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+                <span style="vertical-align:middle; letter-spacing:normal;">I'm a maybe</span>
+
+            }
+            else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.None)
+            {
+                <img src="~/content/images/dot-unknown.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+                <span style="vertical-align:middle; letter-spacing:normal;">Undecided</span>
+
+            }
+            else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.No)
+            {
+                <img src="~/content/images/dot-no.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+                <span style="vertical-align:middle; letter-spacing:normal;">No way</span>
+
+            }
+            else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Yes)
+            {
+                <img src="~/content/images/dot-yes.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+                <span style="vertical-align:middle; letter-spacing:normal;">I'm in</span>
 
             }
 
-        </div>
+        </h3>
+
+    }
+    else
+    {
+        <h3 class="centered" style="text-transform:none; font-size:110%; margin-top:4px;">
+            <span>by </span>
+            @foreach (var org in Model.Organizers)
+            {
+                <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a> @:&nbsp;
+            }
+        </h3>
+
+    }
+</div>
+
+<div class="row centered" style="height:1px; width:50%; background-color:lightgray; margin-top:20px;"></div>
+<div class="row" style="margin-top:20px;">
+
+
+    <div class="col span-2-of-9 summary-container">
+        @*<div class="row centered">
+                <h3 id="lblEventName" class="centered" style="font-size:24px; margin-bottom:10px; word-spacing:2px; letter-spacing:4px;">@Model.Details.Name</h3>
+                @if (Model.Organizers.Count == 1)
+                {
+                    <h3 class="centered" style="text-transform:none; font-size:110%; margin-top:4px;">
+                        by&nbsp;<a href="@Url.Action("View", "Account", new { userId = Model.Organizers[0].Id })">@Model.Organizers[0].Name</a>
+                        @if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Maybe)
+                        {
+                            <img src="~/content/images/dot-maybe.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+                            <span style="vertical-align:middle; letter-spacing:normal;">I'm a maybe</span>
+
+                        }
+                        else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.None)
+                        {
+                            <img src="~/content/images/dot-unknown.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+                            <span style="vertical-align:middle; letter-spacing:normal;">Undecided</span>
+
+                        }
+                        else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.No)
+                        {
+                            <img src="~/content/images/dot-no.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+                            <span style="vertical-align:middle; letter-spacing:normal;">No way</span>
+
+                        }
+                        else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Yes)
+                        {
+                            <img src="~/content/images/dot-yes.png" style="transform:scale(3,3); max-height:20px; max-width:20px;" />
+                            <span style="vertical-align:middle; letter-spacing:normal;">I'm in</span>
+
+                        }
+                    </h3>
+                }
+                else
+                {
+                    <h3 class="centered" style="text-transform:none; font-size:110%; margin-top:4px;">
+                        <span>by </span>
+                        @foreach (var org in Model.Organizers)
+                        {
+                            <a href="@Url.Action("View", "Account", new { userId = org.Id })">@org.Name</a> @:&nbsp;
+                        }
+                    </h3>
+
+                }
+
+            </div>*@
         <div class="row centered" style="margin-top:5px;" data-summary-type="notifications">
 
-            <img sc style="width:50px; height:50px;" src="~/content/images/news-icon.jpg" />
+            @*<img sc style="width:50px; height:50px;" src="~/content/images/news-icon.jpg" />*@
             <h3 style="font-size:13px; font-weight:600;">News</h3>
             @if (Model.Notifications.Notifications.Any())
             {
@@ -250,14 +296,15 @@ else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Yes)
     </div>
 
     <div class="col span-1-of-9"></div>
-    <div class="col span-5-of-9">
+    <div class="col span-6-of-9">
         <div id="details-view-container" style="display:none; margin-top:40px;" data-view-type="none">
             <div class="row" id="details-view"></div>
             <div class="row centered" style="margin-top:40px;">
                 @if (Model.IsOrganizer)
                 {
-                    <span class="save-links" style="border-right: 1px solid black; padding-right:20px;">Save</span>
-                    <span class="close-links" style="padding-left:20px;">Close</span>
+
+                    <span class="close-links" style="border-right: 1px solid black; ">Cancel</span>
+                    <span class="save-links" style="padding-left:20px;">Save</span>
                 }
                 else
                 {
@@ -272,19 +319,29 @@ else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Yes)
             <div class="row centered">
                 <h3 style="font-weight:600;">Group</h3>
             </div>
-            <div class="row centered" style="margin-top:40px;">
+            <div class="row centered" id="divViewAttendees" style="margin-top:40px;">
                 @Html.Partial("_ViewEventAttendees", Model.Attendees)
             </div>
+            @if (Model.IsOrganizer)
+            {
+                <div id="divEditAttendees" class="row" style="display:none;">
+                    @*@Html.Partial("_EditEventAttendees", Model.Attendees)*@
+                </div>
+                <div class="row centered" style="margin-top:30px;">
+                    <span class="edit-attendee-links edit-links" id="edit-attendees">Edit</span>
+                    <span class="edit-attendee-links close-links" id="cancel-attendee-changes" style="display:none;">Cancel</span>
+                    <span class="edit-attendee-links save-links" id="save-attendee-changes" style="display:none; margin-left:20px;">Save</span>
+                </div>
+
+            }
+
         </div>
-        @if (Model.IsOrganizer)
-        {
-            <div id="divEditEventAttendees" class="row" style="display:none;">
-                @Html.Partial("_EditEventAttendees", Model.Details)
-
-            </div>
+        @*@if (Model.IsOrganizer)
+            {
 
 
-        }
+
+            }*@
     </div>
 </div>
 
@@ -330,10 +387,11 @@ else if (Model.RSVPResponse.Status == ElGroupo.Domain.Enums.RSVPTypes.Yes)
 @section Scripts{
     <script type="text/javascript" src="~/content/scripts/events/view-event-new-again.js"></script>
     <script type="text/javascript" src="~/content/scripts/events/message-board.js"></script>
-    <script type="text/javascript" src="~/content/scripts/events/view-event-notifications.js"></script>
-    <script type="text/javascript" src="~/content/scripts/events/edit-event-attendees-new.js"></script>
+    @*<script type="text/javascript" src="~/content/scripts/events/view-event-notifications.js"></script>*@
+
     @if (Model.IsOrganizer)
     {
+        <script type="text/javascript" src="~/content/scripts/events/edit-event-attendees-new.js"></script>
         <script type="text/javascript" src="~/content/scripts/events/edit-event-notifications-new.js"></script>
         <script type="text/javascript" src="~/content/scripts/events/edit-event-new-again.js"></script>
 

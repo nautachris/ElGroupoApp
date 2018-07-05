@@ -23,7 +23,8 @@ namespace ElGroupo.Domain.Data.Configurations
             HasMany(x => x.Activities).WithOne(x => x.User).HasForeignKey(x=>x.UserId);
             HasMany(x => x.Departments).WithOne(x => x.User).HasForeignKey(x=>x.UserId);
             HasMany(x => x.OrganizedActivities).WithOne(x => x.User).HasForeignKey(x => x.UserId);
-
+            HasMany(x => x.CustomRecordItems).WithOne(x => x.User).HasForeignKey(x => x.UserId);
+            HasMany(x => x.RecordItems).WithOne(x => x.User).HasForeignKey(x => x.UserId);
             //for "private" activity groups
             HasMany(x => x.ActivityGroups).WithOne(x => x.User).HasForeignKey(x => x.UserId);
         }

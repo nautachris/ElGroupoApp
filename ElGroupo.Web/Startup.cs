@@ -40,6 +40,7 @@ namespace ElGroupo.Web
         {
             services.AddDbContext<ElGroupoDbContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddTransient<DbContext>(p => p.GetService<ElGroupoDbContext>());
+            services.AddSingleton(p => new LookupTableService(p.GetService<ElGroupoDbContext>()));
             services.AddIdentity<User, IdentityRole<long>>(opts =>
             {
                 opts.User.RequireUniqueEmail = true;
@@ -79,6 +80,7 @@ namespace ElGroupo.Web
             services.AddTransient<AccountService, AccountService>();
             services.AddTransient<UserService, UserService>();
             services.AddTransient<ActivitiesService, ActivitiesService>();
+            services.AddTransient<RecordsService, RecordsService>();
 
             services.AddSingleton(EngineFactory.CreateEmbedded(typeof(Mail.Templates.TemplatePointer)));
             services.AddSingleton<IEmailService, MailService>();
@@ -126,7 +128,8 @@ namespace ElGroupo.Web
 
 
             //var sm = app.ApplicationServices.GetRequiredService<SignInManager<User>>();
-
+            //ElGroupoDbContext.SeedDataTypes(app.ApplicationServices).Wait();
+            //ElGroupoDbContext.SeedRecordTables(app.ApplicationServices).Wait();
            //ElGroupoDbContext.PopulateRealActivities(app.ApplicationServices).Wait();
             //Models.Configuration.EmailConfigOptions.SendTestEmail().Wait();
             //ElGroupoDbContext.CreateAdminAccount(app.ApplicationServices, Configuration).Wait();

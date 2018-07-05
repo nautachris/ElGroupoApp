@@ -33,7 +33,7 @@
                             @if (group.ActivityGroups[x].Id == -1)
                             {
                                 <a asp-controller="Activities" asp-action="CreateActivityGroup" asp-route-groupId="@group.Id">
-                                    <div class="user-dashboard-link">
+                                    <div class="user-dashboard-link" style="border:none;">
                                         <img src="~/content/images/add-new-activity.png" style="height:40px; width:40px;" />
                                         
                                         <div>@group.ActivityGroups[x].Name</div>
@@ -65,7 +65,7 @@
                                 @if (group.ActivityGroups[x + 1].Id == -1)
                                         {
                                     <a asp-controller="Activities" asp-action="CreateActivityGroup" asp-route-groupId="@group.Id">
-                                        <div class="user-dashboard-link">
+                                        <div class="user-dashboard-link" style="border:none;">
                                             <img src="~/content/images/add-new-activity.png" style="height:40px; width:40px;" />
                                             <div>@group.ActivityGroups[x + 1].Name</div>
 
@@ -114,7 +114,7 @@
                     @if (Model.PrivateActivities[x].Id == -1)
                     {
                         <a asp-controller="Activities" asp-action="CreateActivityGroup">
-                            <div class="user-dashboard-link">
+                            <div class="user-dashboard-link" style="border:none;">
                                 <img src="~/content/images/add-new-activity.png" style="height:40px; width:40px;" />
                                 <div>@Model.PrivateActivities[x].Name</div>
                             </div>
@@ -141,7 +141,7 @@
                         @if (Model.PrivateActivities[x + 1].Id == -1)
                         {
                             <a asp-controller="Activities" asp-action="CreateActivityGroup">
-                                <div class="user-dashboard-link">
+                                <div class="user-dashboard-link" style="border:none;">
                                     <img src="~/content/images/add-new-activity.png" style="height:50px; width:50px;" />
                                     <div>@Model.PrivateActivities[x + 1].Name</div>
                                 </div>

@@ -12,14 +12,22 @@
 
     }
 
-    <div class="row">
-        <div class="centered" style="font-family:Raleway; font-size:20px; color:#161616;">Welcome, @Model.FirstName</div>
-        <div id="divImg" class="image-circle-100" style="background-image: url('/Users/UserPhoto/@Model.UserId')">
-        </div>
-        <div class="centered" style="margin-top:27px; font-size:16px; font-weight:bold"></div>
-    </div>
+        <div class="row">
+            @*<div class="centered" style="font-family:Raleway; font-size:20px; color:#161616;">Welcome, @Model.FirstName</div>
+            <div id="divImg" class="image-circle-100" style="background-image: url('/Users/UserPhoto/@Model.UserId')">
 
-    <div class="row" style="height:186px; margin-top:66px;">
+            </div>*@
+
+            <div class="width-100 centered">
+                <img src="/Users/UserPhoto/@Model.UserId" style="border-radius:100%; height:80px; width:80px; vertical-align:middle; line-height:80px;" />
+                <span style="font-family:Raleway; font-size:20px; color:#161616; vertical-align:middle; line-height:80px;">Welcome, @Model.FirstName</span>
+            </div>
+            
+
+
+        </div>
+
+    <div class="row" style="height:186px; margin-top:26px;">
         <div class="col span-1-of-3">
             <a asp-controller="Activities" asp-action="Dashboard" class="no-decoration">
                 <div class="user-dashboard-link">

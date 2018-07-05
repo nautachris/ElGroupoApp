@@ -7,7 +7,7 @@
 }
 
 <div class="row contact-form">
-    @if (Model.Any())
+    @if (Model != null && Model.Any())
     {
         <h3>Related Recurring Events</h3>
         <ul style="list-style:none;">
@@ -29,10 +29,6 @@
             }
         </ul>
     }
-    else
-    {
-        <h2>There should be recurring events here...</h2>
 
-    }
 
 </div>

@@ -8,7 +8,7 @@ namespace ElGroupo.Web.Models.Events
 {
     public class CreateEventModel: EventDateModel
     {
-
+        public string GoogleApiKey { get; set; }
         public bool IsRecurring { get; set; } = false;
         public EventRecurrenceModel Recurrence { get; set; } = new EventRecurrenceModel();
 

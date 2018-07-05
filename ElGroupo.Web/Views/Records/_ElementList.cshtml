@@ -1,0 +1,41 @@
+﻿@using ElGroupo.Web.Models.Records
+@model IEnumerable<ViewElementModel>
+
+@{
+    Layout = null;
+}
+
+<div style="text-align:center;">
+    <table style="margin:0 auto; text-align:center;">
+        <thead>
+            <tr>
+                <th style="min-width:200px; text-align:center;">Name</th>
+                <th style="text-align:center;">Is Primary?</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+
+                <tr>
+                    <td>@item.Name</td>
+                    <td>
+                    @if (item.PrimaryDisplay)
+                    {
+                        <span>@item.PrimaryDisplay</span>
+
+                    }
+                    else
+                    {
+                        <a data-element-id="@item.Id" data-toggle-primary>@item.PrimaryDisplay</a>
+
+                    }
+                    </td>
+                    <td><a data-remove-element data-element-id="@item.Id">Remove</a></td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+</div>

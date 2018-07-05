@@ -52,7 +52,7 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> Create()
         {
 
-            return View(new CreateEventModel());
+            return View(eventService.GetCreateEventModel());
         }
 
         [HttpGet, HttpPost]
@@ -77,6 +77,19 @@ namespace ElGroupo.Web.Controllers
             return View("_PendingAttendeeList", models);
         }
 
+
+
+        [Authorize]
+        [HttpPost]
+        [Route("GetAttendeeListItemHTML")]
+        public IActionResult GetAttendeeListItemHTML([FromBody]EventAttendeeModel model)
+        {
+            //we will have added the new one on the client side
+            eventService.PopulateEventAttendeeName(model);
+            return View("_EditEventAttendeeListItem", model);
+        }
+
+
         [HttpPost, HttpGet]
         [Authorize]
         [Route("ViewEventAttendees/{eventId}", Name = "ViewEventAttendees")]
@@ -86,6 +99,37 @@ namespace ElGroupo.Web.Controllers
             var model = await eventService.GetEventAttendees(eventId, accessCheck.userId);
             model.IsOrganizer = accessCheck.accessType == EditAccessTypes.Edit;
             return View("_ViewEventAttendees", model);
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("EditEventAttendees/{eventId}", Name = "EditEventAttendees")]
+        public async Task<IActionResult> EditEventAttendees([FromRoute]long eventId)
+        {
+            var accessCheck = await eventService.CheckEventAccess(HttpContext.User, eventId);
+            var model = await eventService.GetEventAttendees(eventId, accessCheck.userId);
+            model.IsOrganizer = accessCheck.accessType == EditAccessTypes.Edit;
+            return View("_EditEventAttendees", model);
+        }
+
+
+        [HttpPost]
+        [Authorize]
+        [Route("EditEventAttendees")]
+        public async Task<IActionResult> EditEventAttendees([FromBody]UpdateEventAttendeesModel model)
+        {
+            var accessCheck = await eventService.CheckEventAccess(HttpContext.User, model.EventId);
+            var response = model.UpdateRecurring ? await eventService.UpdateRecurringEventAttendees(model) : await eventService.UpdateEventAttendees(model);
+            if (response.Success)
+            {
+                return RedirectToRoute("ViewEventAttendees", new { eventId = model.EventId });
+            }
+            else
+            {
+                return BadRequest(new { message = response.ErrorMessage });
+            }
+            //var model = await eventService.GetEventAttendees(eventId, accessCheck.userId);
+            //model.IsOrganizer = accessCheck.accessType == EditAccessTypes.Edit;
+            return View("_EditEventAttendees", model);
         }
 
 
@@ -136,23 +180,6 @@ namespace ElGroupo.Web.Controllers
 
 
 
-        [HttpPost]
-        [Authorize]
-        [Route("SavePendingAttendees")]
-        public async Task<IActionResult> SavePendingAttendees([FromBody]SavePendingAttendeesModel model)
-        {
-
-            var user = await CurrentUser();
-            var response = model.UpdateRecurring ? await eventService.UpdateRecurringEventAttendees(model) : await eventService.UpdateEventAttendees(model);
-            if (response.Success)
-            {
-                return RedirectToRoute("ViewEventAttendees", new { eventId = model.EventId });
-            }
-            else
-            {
-                return BadRequest(new { message = response.ErrorMessage });
-            }
-        }
 
 
         [HttpPost]
@@ -239,7 +266,7 @@ namespace ElGroupo.Web.Controllers
                 else response = await this.eventService.CreateRecurringEvent(model, user.Id);
                 if (response.Success)
                 {
-                    return RedirectToRoute("ViewEvent", new { eid = Convert.ToInt64(response.ResponseData) });
+                    return RedirectToRoute("ViewNewAgain", new { eid = Convert.ToInt64(response.ResponseData) });
                 }
                 else
                 {
@@ -353,6 +380,17 @@ namespace ElGroupo.Web.Controllers
             var model = await this.eventService.GetEventViewModel(eid, accessLevel.userId, accessLevel.accessType);
             return View("View_New_Again", model);
         }
+
+        //[Authorize]
+        //[HttpGet]
+        //[Route("{eid}/EditEventAttendees", Name = "EditEventAttendees")]
+        //public async Task<IActionResult> EditEventAttendees([FromRoute]long eid)
+        //{
+        //    var accessLevel = await eventService.CheckEventAccess(HttpContext.User, eid);
+        //    var model = await this.eventService.GetEventViewModel(eid, accessLevel.userId, accessLevel.accessType);
+        //    return View("View_New_Again", model);
+        //}
+
         [Authorize]
         [HttpGet]
         [Route("{eid}/CheckIn", Name = "CheckIn")]
@@ -678,34 +716,34 @@ namespace ElGroupo.Web.Controllers
             return metadata;
         }
 
-        [Authorize]
-        [HttpPost]
-        [Route("AddUnregisteredAttendee")]
-        public async Task<IActionResult> AddUnregisteredEventAttendee([FromBody]UnregisteredEventAttendeeModel model)
-        {
-            var e = await eventService.GetEvent(model.EventId);
-            var u = await CurrentUser();
+        //[Authorize]
+        //[HttpPost]
+        //[Route("AddUnregisteredAttendee")]
+        //public async Task<IActionResult> AddUnregisteredEventAttendee([FromBody]EventAttendeeModel model)
+        //{
+        //    var e = await eventService.GetEvent(model.EventId);
+        //    var u = await CurrentUser();
 
-            //make sure this user doesn't exist in the system
-            var userCheck = await _userService.GetUserByEmail(model.Email);
-            if (userCheck != null)
-            {
-                return RedirectToAction("AddRegisteredAttendee", new { eid = e.Id, uid = userCheck.Id });
-            }
+        //    //make sure this user doesn't exist in the system
+        //    var userCheck = await _userService.GetUserByEmail(model.Email);
+        //    if (userCheck != null)
+        //    {
+        //        return RedirectToAction("AddRegisteredAttendee", new { eid = e.Id, uid = userCheck.Id });
+        //    }
 
-            var token = await this.eventService.AddUnregisteredAttendee(u, e, model);
-            if (e.Status == Domain.Enums.EventStatus.Active) await this.mailService.SendEmail(CreateMailMetadata(model.Email, "Welcome to ElGroupo!  You'be been invited to a new event!"), new EventUnregisteredAttendeeMailModel
-            {
-                Recipient = model.Name,
-                EventName = e.Name,
-                Location = e.LocationName,
-                StartTime = e.StartTime,
-                EndTime = e.EndTime,
-                CallbackUrl = Url.Action("Create", "Account", new { id = (Guid)token.ResponseData }, HttpContext.Request.Scheme)
-            });
+        //    var token = await this.eventService.AddUnregisteredAttendee(u, e, model);
+        //    if (e.Status == Domain.Enums.EventStatus.Active) await this.mailService.SendEmail(CreateMailMetadata(model.Email, "Welcome to ElGroupo!  You'be been invited to a new event!"), new EventUnregisteredAttendeeMailModel
+        //    {
+        //        Recipient = model.Name,
+        //        EventName = e.Name,
+        //        Location = e.LocationName,
+        //        StartTime = e.StartTime,
+        //        EndTime = e.EndTime,
+        //        CallbackUrl = Url.Action("Create", "Account", new { id = (Guid)token.ResponseData }, HttpContext.Request.Scheme)
+        //    });
 
-            return RedirectToAction("AttendeesList", new { id = model.EventId });
-        }
+        //    return RedirectToAction("AttendeesList", new { id = model.EventId });
+        //}
 
 
         [Authorize]

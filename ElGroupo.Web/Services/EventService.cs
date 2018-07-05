@@ -43,6 +43,13 @@ namespace ElGroupo.Web.Services
         //    return EditAccessTypes.None;
         //}
 
+        public CreateEventModel GetCreateEventModel()
+        {
+            var model = new CreateEventModel();
+            model.GoogleApiKey = this.googleOptions.GoogleMapsApiKey;
+            return model;
+        }
+
         public EventDashboardModel GetDashboardModel(long userId, string userTimeZone)
         {
             var model = new EventDashboardModel();
@@ -162,32 +169,7 @@ namespace ElGroupo.Web.Services
             await _dbContext.SaveChangesAsync();
             return SaveDataResponse.Ok();
         }
-        public async Task<SaveDataResponse> AddUnregisteredAttendee(User u, Event e, UnregisteredEventAttendeeModel model)
-        {
-            try
-            {
-                var uea = new UnregisteredEventAttendee
-                {
-                    Event = e,
-                    Name = model.Name,
-                    Email = model.Email,
-                    DateCreated = DateTime.Now,
-                    UserCreated = u.UserName,
-                    RegisterToken = Guid.NewGuid(),
 
-                };
-                _dbContext.UnregisteredEventAttendees.Add(uea);
-                await _dbContext.SaveChangesAsync();
-
-                return new SaveDataResponse { Success = true, ResponseData = uea.RegisterToken };
-            }
-            catch (Exception ex)
-            {
-                return new SaveDataResponse { Success = false, ErrorMessage = ex.ToString() };
-            }
-
-
-        }
 
 
 
@@ -227,9 +209,8 @@ namespace ElGroupo.Web.Services
             {
                 model.Attendees.Add(new EventAttendeeModel
                 {
-                    FirstName = att.User.FirstName,
-                    LastName = att.User.LastName,
-                    Id = att.Id,
+                    Name = att.User.FirstName,
+                    EventAttendeeId = att.Id,
                     RSVPStatus = att.ResponseStatus,
                     UserId = att.User.Id,
                     PhoneNumber = att.User.PhoneNumber
@@ -322,24 +303,56 @@ namespace ElGroupo.Web.Services
 
 
         }
-        public async Task<SaveDataResponse> UpdateRecurringEventAttendees(SavePendingAttendeesModel model)
+        public async Task<SaveDataResponse> UpdateRecurringEventAttendees(UpdateEventAttendeesModel model)
         {
             try
             {
-                var ev = await _dbContext.Events.Include(x => x.Recurrence).ThenInclude(x => x.Events).FirstOrDefaultAsync(x => x.Id == model.EventId);
-                if (ev == null) return new SaveDataResponse { Success = false, ErrorMessage = "Could not find event with id = " + model.EventId };
-                foreach (var recurringEvent in ev.Recurrence.Events)
+                var originalEvent = await _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.Recurrence).FirstOrDefaultAsync(x => x.Id == model.EventId);
+
+                if (originalEvent == null) return new SaveDataResponse { Success = false, ErrorMessage = "Could not find event with id = " + model.EventId };
+                bool changesMade = false;
+                foreach (var recurringEvent in _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.UnregisteredAttendees).Include(x => x.Recurrence).Where(x => x.Recurrence.Id == originalEvent.Recurrence.Id))
                 {
-                    foreach (var attendee in model.Attendees)
+                    bool currentChangeMade = false;
+                    if (recurringEvent.Id != model.EventId)
                     {
-                        await AddEventAttendee(recurringEvent, attendee);
+                        var updatedAttendees = new List<EventAttendeeModel>();
+                        foreach (var att in model.Attendees)
+                        {
+                            if (att.EventAttendeeId.HasValue)
+                            {
+                                var originalUserId = originalEvent.Attendees.First(x => x.Id == att.EventAttendeeId.Value).User.Id;
+                                if (recurringEvent.Attendees.Any(x => x.User.Id == originalUserId))
+                                {
+                                    updatedAttendees.Add(new EventAttendeeModel
+                                    {
+                                        EventAttendeeId = recurringEvent.Attendees.First(x => x.User.Id == originalUserId).Id,
+                                        IsOrganizer = att.IsOrganizer
+                                    });
+                                }
+                                //if there is no matching user in this recurreing event, we're not going to add it b/c the user didn't explicitly add
+                                //the user
+                            }
+                            else
+                            {
+                                //adds 
+                                updatedAttendees.Add(att);
+                            }
+                        }
+                        currentChangeMade = await ProcessEventAttendeeChanges(recurringEvent, updatedAttendees.ToArray());
+
                     }
-                    if (recurringEvent.Status == EventStatus.Active)
+                    else
                     {
-                        //send emails
+                        currentChangeMade = await ProcessEventAttendeeChanges(recurringEvent, model.Attendees);
+
                     }
+                    if (!changesMade && currentChangeMade) changesMade = true;
                 }
-                await _dbContext.SaveChangesAsync();
+                if (changesMade)
+                {
+                    await _dbContext.SaveChangesAsync();
+                }
                 return new SaveDataResponse { Success = true };
             }
             catch (Exception ex)
@@ -395,90 +408,164 @@ namespace ElGroupo.Web.Services
             return await _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        private async Task AddEventAttendee(Event e, PendingEventAttendeeModel model)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="model"></param>
+        /// <returns>returns true if any information is changed, false if no action is taken</returns>
+        private async Task<bool> UpdateEventAttendee(Event e, EventAttendeeModel model)
         {
-            if (model.Id == -1)
+            if (model.EventAttendeeId.HasValue)
             {
-                //new user
-                //check for email
-                var emailCheck = await _dbContext.Users.AnyAsync(x => x.Email == model.Email);
-                if (emailCheck)
+                //what if we're passing in an event from the original event recurrence?  the eventAttendeeId will not be the same
+                //only updating 
+                var ea = e.Attendees.First(x => x.Id == model.EventAttendeeId.Value);
+                if (ea.IsOrganizer != model.IsOrganizer)
+                {
+                    ea.IsOrganizer = model.IsOrganizer;
+                    _dbContext.Update(ea);
+                    return true;
+                }
+                return false;
+            }
+            else if (model.UserId.HasValue)
+            {
+                if (!e.Attendees.Any(x => x.User.Id == model.UserId.Value))
                 {
                     var newAttendee = new EventAttendee
                     {
-                        User = _dbContext.Find<User>(model.Id),
+                        User = _dbContext.Find<User>(model.UserId.Value),
                         Event = e,
-                        IsOrganizer = model.Owner,
+                        IsOrganizer = model.IsOrganizer,
                         ResponseStatus = Domain.Enums.RSVPTypes.None
-
                     };
                     _dbContext.Add(newAttendee);
                 }
-                else
+                return true;
+            }
+            else if (model.UserGroupId.HasValue)
+            {
+                //adding entire user group
+                var attGroup = await _dbContext.AttendeeGroups.Include(x => x.Attendees).ThenInclude(x => x.User).FirstAsync(x => x.Id == model.UserGroupId.Value);
+                foreach (var user in attGroup.Attendees)
                 {
-
-
-                    var unregisteredAttendee = new UnregisteredEventAttendee
+                    var newAttendee = new EventAttendee
                     {
-                        Email = model.Email,
+                        User = user.User,
                         Event = e,
-                        RegisterToken = Guid.NewGuid(),
+                        IsOrganizer = model.IsOrganizer,
+                        ResponseStatus = Domain.Enums.RSVPTypes.None
                     };
-                    _dbContext.Add(unregisteredAttendee);
+                    _dbContext.Add(newAttendee);
                     if (e.Status == Domain.Enums.EventStatus.Active)
                     {
                         //send email
                     }
-
-
-
                 }
+                return true;
             }
-            else
+            else if (!model.IsRegistered)
             {
-                //check to see if this attendee has already been added
-                if (model.Group)
+                //new invitee - check if this has already been added
+                if (!e.UnregisteredAttendees.Any(x => x.Email == model.Email && x.Name == model.Name))
                 {
-                    var attGroup = await _dbContext.AttendeeGroups.Include(x => x.Attendees).ThenInclude(x => x.User).FirstAsync(x => x.Id == model.Id);
-                    foreach (var user in attGroup.Attendees)
+                    var emailCheck = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == model.Email);
+                    if (emailCheck != null)
                     {
+                        //email entered is already in the system
                         var newAttendee = new EventAttendee
                         {
-                            User = user.User,
+                            User = emailCheck,
                             Event = e,
-                            IsOrganizer = false,
+                            IsOrganizer = model.IsOrganizer,
                             ResponseStatus = Domain.Enums.RSVPTypes.None
+
                         };
                         _dbContext.Add(newAttendee);
+                    }
+                    else
+                    {
+                        var unregisteredAttendee = new UnregisteredEventAttendee
+                        {
+                            Name = model.Name,
+                            Email = model.Email,
+                            Event = e,
+                            RegisterToken = Guid.NewGuid(),
+                        };
+                        _dbContext.Add(unregisteredAttendee);
                         if (e.Status == Domain.Enums.EventStatus.Active)
                         {
                             //send email
                         }
                     }
+                    return true;
                 }
                 else
                 {
-                    var emailCheck = await _dbContext.EventAttendees.AnyAsync(x => x.EventId == e.Id && x.User.Id == model.Id);
-                    if (!emailCheck)
-                    {
-                        var newAttendee = new EventAttendee
-                        {
-                            User = _dbContext.Find<User>(model.Id),
-                            Event = e,
-                            IsOrganizer = model.Owner,
-                            ResponseStatus = Domain.Enums.RSVPTypes.None
-                        };
-                        _dbContext.Add(newAttendee);
-                    }
+                    return false;
                 }
 
             }
+            else
+            {
+                return false;
+            }
+
+
         }
-        public async Task<SaveDataResponse> UpdateEventAttendees(SavePendingAttendeesModel model)
+
+
+        private async Task<bool> ProcessEventAttendeeChanges(Event e, EventAttendeeModel[] attendees)
         {
             try
             {
-                var e = _dbContext.Find<Event>(model.EventId);
+                bool foundChanges = false;                
+                var modelEventAttendeeIds = attendees.Where(x => x.EventAttendeeId.HasValue).Select(x => x.EventAttendeeId.Value).ToList();
+                var eventAttendeeIdsToDelete = e.Attendees.Where(x => !modelEventAttendeeIds.Contains(x.Id)).Select(x => x.Id).ToList();
+                if (eventAttendeeIdsToDelete.Count > 0)
+                {
+                    foundChanges = true;
+                    foreach (var eaToDelete in _dbContext.EventAttendees.Where(x => eventAttendeeIdsToDelete.Contains(x.Id)))
+                    {
+                        _dbContext.Remove(eaToDelete);
+                    }
+                }
+
+                foreach (var att in attendees)
+                {
+                    bool changeFound = await UpdateEventAttendee(e, att);
+                    if (!foundChanges && changeFound) foundChanges = true;
+                }
+                //what if they delete unregistered attendees?
+                foreach (var unregEmail in e.UnregisteredAttendees.Select(x => x.Email))
+                {
+                    if (!attendees.Any(x => !x.IsRegistered && x.Email == unregEmail))
+                    {
+                        //remove this unregistered
+                        var toDelete = _dbContext.UnregisteredEventAttendees.Include(x => x.Event).FirstOrDefault(x => x.Event.Id == e.Id && x.Email == unregEmail);
+                        if (toDelete != null)
+                        {
+                            foundChanges = true;
+                            _dbContext.Remove(toDelete);
+                        }
+                    }
+                }
+                return foundChanges;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
+
+        public async Task<SaveDataResponse> UpdateEventAttendees(UpdateEventAttendeesModel model)
+        {
+            try
+            {
+                var e = _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.UnregisteredAttendees).FirstOrDefault(x => x.Id == model.EventId);
                 if (e == null)
                 {
                     return new SaveDataResponse
@@ -487,13 +574,16 @@ namespace ElGroupo.Web.Services
                         ErrorMessage = "could not find event with id = " + model.EventId
                     };
                 }
+                bool foundChanges = await ProcessEventAttendeeChanges(e, model.Attendees);
 
-                foreach (var att in model.Attendees)
+                //look for deletes
+
+
+                if (foundChanges)
                 {
-                    await AddEventAttendee(e, att);
+                    await _dbContext.SaveChangesAsync();
                 }
 
-                await _dbContext.SaveChangesAsync();
                 if (e.Status == Domain.Enums.EventStatus.Active)
                 {
                     //send emails
@@ -504,8 +594,8 @@ namespace ElGroupo.Web.Services
             {
                 return new SaveDataResponse { Success = false, ErrorMessage = ex.ToString() };
             }
-
         }
+
         public async Task<SaveDataResponse> UpdateRecurringRSVP(User user, UpdateRSVPStatusModel model)
         {
             try
@@ -1701,7 +1791,7 @@ namespace ElGroupo.Web.Services
             var user = this.GetActiveUser(userId);
 
             var e = await _dbContext.Events.Include(x => x.Recurrence).Include(x => x.Attendees).ThenInclude(x => x.User).
-                Include(x => x.Attendees).FirstOrDefaultAsync(x => x.Id == eventId);
+                Include(x => x.Attendees).Include(x => x.UnregisteredAttendees).FirstOrDefaultAsync(x => x.Id == eventId);
             var thisAttendee = e.Attendees.FirstOrDefault(x => x.User.Id == userId);
             if (thisAttendee.Viewed == false)
             {
@@ -1724,19 +1814,28 @@ namespace ElGroupo.Web.Services
             else model.CheckInType = "Password/Location";
             model.RSVPResponse = new EventAttendeeRSVPModel { Status = thisAttendee.ResponseStatus };
             model.IsOrganizer = accessLevel == EditAccessTypes.Edit;
-            model.Attendees = new ViewEventAttendeesModel();
-            foreach (var att in e.Attendees.Where(x => x.User.Id != userId).OrderBy(x => x.IsOrganizer).ThenBy(x => x.User.Name))
+            model.Attendees = new EventAttendeesModel(eventId);
+            foreach (var att in e.Attendees.OrderByDescending(x => x.IsOrganizer).ThenBy(x => x.User.FirstName))
             {
                 model.Attendees.Attendees.Add(new EventAttendeeModel
                 {
-                    Id = att.Id,
+                    EventAttendeeId = att.Id,
                     UserId = att.User.Id,
                     RSVPStatus = att.ResponseStatus,
-                    FirstName = att.User.FirstName,
-                    LastName = att.User.LastName,
-                    IsOrganizer = att.IsOrganizer
+                    Name = att.User.FirstName,
+                    IsOrganizer = att.IsOrganizer,
+                    IsRegistered = true,
+                    IsEditable = att.User.Id != userId
                 });
             }
+            model.Attendees.Attendees.AddRange(e.UnregisteredAttendees.Select(x => new EventAttendeeModel
+            {
+                Name = x.Name,
+                RSVPStatus = RSVPTypes.PendingRegistration,
+                Email = x.Email,
+                IsRegistered = false
+            }));
+
             model.Attendees.IsOrganizer = model.IsOrganizer;
 
             model.Organizers = e.Attendees.Where(x => x.IsOrganizer).Select(y => new EventOrganizerModel { Name = y.User.Name, Id = y.User.Id }).ToList();
@@ -1752,22 +1851,30 @@ namespace ElGroupo.Web.Services
                     StartedBy = topic.StartedBy.Name,
                     Id = topic.Id
                 };
-                foreach (var msg in topic.Messages)
+                try
                 {
-                    var localPostedDate = msg.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(thisAttendee.User.TimeZoneId));
-                    topicModel.Messages.Add(new EventMessageModel
+                    foreach (var msg in topic.Messages)
                     {
-                        TopicName = topic.Subject,
-                        MessageText = msg.MessageText,
-                        CanEdit = msg.PostedBy.Id == userId,
-                        PostedBy = msg.PostedBy.Name,
-                        PostedById = msg.PostedBy.Id,
-                        Id = msg.Attendees.First(x => x.Attendee.Id == thisAttendee.Id).Id,
-                        DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
-                        IsNew = msg.Attendees.Any(x => x.Attendee.Id == thisAttendee.Id && !x.Viewed),
-                        PostedDate = localPostedDate
-                    });
+                        var localPostedDate = msg.PostedDate.FromUTC(TimeZoneInfo.FindSystemTimeZoneById(thisAttendee.User.TimeZoneId));
+                        topicModel.Messages.Add(new EventMessageModel
+                        {
+                            TopicName = topic.Subject,
+                            MessageText = msg.MessageText,
+                            CanEdit = msg.PostedBy.Id == userId,
+                            PostedBy = msg.PostedBy.Name,
+                            PostedById = msg.PostedBy.Id,
+                            Id = msg.Attendees.First(x => x.Attendee.Id == thisAttendee.Id).Id,
+                            DateText = localPostedDate.DayOfWeek.ToString() + " " + localPostedDate.ToString("d") + " " + localPostedDate.ToString("t"),
+                            IsNew = msg.Attendees.Any(x => x.Attendee.Id == thisAttendee.Id && !x.Viewed),
+                            PostedDate = localPostedDate
+                        });
+                    }
                 }
+                catch (Exception ex)
+                {
+                    var dddd = 4;
+                }
+
                 model.Messages.Topics.Add(topicModel);
             }
 
@@ -1848,16 +1955,55 @@ namespace ElGroupo.Web.Services
 
         //}
 
-        public async Task<ViewEventAttendeesModel> GetEventAttendees(long eventId, long activeId)
+
+        public void PopulateEventAttendeeName(EventAttendeeModel model)
+        {
+            if (model.EventAttendeeId.HasValue)
+            {
+                var item = _dbContext.EventAttendees.Include(x => x.User).FirstOrDefault(x => x.Id == model.EventAttendeeId.Value);
+                if (item != null) model.Name = item.User.FirstName;
+            }
+            else if (model.UserId.HasValue)
+            {
+                var user = _dbContext.Users.FirstOrDefault(x => x.Id == model.UserId.Value);
+                if (user != null) model.Name = user.FirstName;
+            }
+            else if (model.UserGroupId.HasValue)
+            {
+                var groupItem = _dbContext.AttendeeGroups.FirstOrDefault(x => x.Id == model.UserGroupId.Value);
+                if (groupItem != null) model.Name = groupItem.Name;
+            }
+
+
+        }
+
+        public async Task<EventAttendeesModel> GetEventAttendees(long eventId, long activeId)
         {
             var atts = await _dbContext.Events.Include(x => x.Attendees).ThenInclude(x => x.User).Include(x => x.UnregisteredAttendees).FirstOrDefaultAsync(x => x.Id == eventId);
             if (atts == null) throw new Exception("Event Not Found");
-            var model = new ViewEventAttendeesModel();
-            atts.Attendees.ToList().Where(x => x.User.Id != activeId).ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { Id = x.Id, FirstName = x.User.Name, LastName = x.User.LastName, PhoneNumber = x.User.PhoneNumber, UserId = x.User.Id, RSVPStatus = x.ResponseStatus }));
-            model.Attendees = model.Attendees.OrderBy(x => x.IsOrganizer).ThenBy(x => x.FirstName).ToList();
+            var model = new EventAttendeesModel(eventId);
+            //we should include the person viewing for now
+            model.Attendees = atts.Attendees.OrderByDescending(x=>x.IsOrganizer).ThenBy(x=>x.User.FirstName).Select(x => new EventAttendeeModel
+            {
+                EventAttendeeId = x.Id,
+                Name = x.User.FirstName,
+                PhoneNumber = x.User.PhoneNumber,
+                UserId = x.User.Id,
+                RSVPStatus = x.ResponseStatus,
+                IsRegistered = true,
+                IsOrganizer = x.IsOrganizer,
+                IsEditable = x.User.Id != activeId
+            }).ToList();
+            //model.Attendees = model.Attendees.OrderBy(x => x.IsOrganizer).ThenBy(x => x.Name).ToList();
 
 
-            atts.UnregisteredAttendees.ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel { FirstName = x.Name, LastName = x.Name, Email = x.Email, RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration }));
+            atts.UnregisteredAttendees.ToList().ForEach(x => model.Attendees.Add(new EventAttendeeModel
+            {
+                Name = x.Name,
+                Email = x.Email,
+                RSVPStatus = Domain.Enums.RSVPTypes.PendingRegistration,
+                IsRegistered = false
+            }));
 
             return model;
 

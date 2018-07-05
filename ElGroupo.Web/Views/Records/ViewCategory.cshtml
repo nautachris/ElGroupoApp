@@ -1,0 +1,26 @@
+﻿@using ElGroupo.Web.Models.Records
+@using ElGroupo.Web.Models.Shared
+@model UserCategoryModel
+
+<section class="create-activity-group" style="padding:20px;">
+    <h2>@Model.Name</h2>
+    @if (Model.SubCategories.Any())
+    {
+
+
+    }
+
+    <ul>
+        <li>
+            <div style="float:left;">@Model.NameColumnHeader</div>
+            <div style="float:right;">@Model.ValueColumnHeader</div>
+        </li>
+        @foreach (var item in Model.Items)
+        {
+            <div style="float:left;">@item.Name</div>
+            <div style="float:right;">@item.Value</div>
+
+        }
+    </ul>
+
+</section>

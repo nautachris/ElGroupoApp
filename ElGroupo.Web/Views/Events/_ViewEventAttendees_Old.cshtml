@@ -1,0 +1,92 @@
+﻿@using ElGroupo.Web.Models.Events
+@using ElGroupo.Domain.Enums
+@model ViewEventAttendeesModel
+@{
+    Layout = null;
+}
+@functions{
+    public List<List<T>> SplitList<T>(IEnumerable<T> values, int groupSize, int? maxCount = null)
+    {
+        List<List<T>> result = new List<List<T>>();
+        // Quick and special scenario
+        if (values.Count() <= groupSize)
+        {
+            result.Add(values.ToList());
+        }
+        else
+        {
+            List<T> valueList = values.ToList();
+            int startIndex = 0;
+            int count = valueList.Count;
+            int elementCount = 0;
+
+            while (startIndex < count && (!maxCount.HasValue || (maxCount.HasValue && startIndex < maxCount)))
+            {
+                elementCount = (startIndex + groupSize > count) ? count - startIndex : groupSize;
+                result.Add(valueList.GetRange(startIndex, elementCount));
+                startIndex += elementCount;
+            }
+        }
+
+
+        return result;
+
+    }
+    public string GetImageUrl(long id)
+    {
+        var url = Url.Action("UserPhoto", "Users", new { id = id });
+        return url;
+    }
+    public string GetUserViewLink(long id)
+    {
+        var url = Url.Action("View", "Account", new { id = id });
+        return url;
+
+    }
+
+}
+@if (Model.Attendees.Count > 0)
+{
+    @*justify-content:center;*@
+    <div style="display:flex; flex-wrap:wrap; ">
+        @foreach (var att in Model.Attendees)
+        {
+            <div data-user-id="@att.UserId" class="centered rounded-border attendee-container" style="text-align:center; position:relative; display:flex; cursor:pointer; margin-left:50px; margin-bottom:30px;">
+
+                <div class="attendee-info add-attendee-link" style="z-index:2;">
+
+                    <img class="image-circle-200" style="background-image:url('@GetImageUrl(att.UserId)')" />
+                    @if (att.IsOrganizer)
+                    {
+                        <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.FirstName*</span>
+                    }
+                    else
+                    {
+                        <span class="attendee-name @att.RSVPStatus.ToString().ToLower()">@att.FirstName</span>
+
+                    }
+                    
+                    <div><img style="width:40px; height:40px;" src="~/content/images/delete.png" /></div>
+                </div>
+                <div class="attendee-links centered" style="z-index:4; display:none; position:absolute; top: 25%; left:5%; right:5%;">
+                    <a style="width:100%;" data-action="profile" data-profile-link="@GetUserViewLink(att.UserId)">View</a>
+                    @if (Model.IsOrganizer)
+                    {
+                        <a data-action="remove" style="display:inline-block;width:100%;">Remove</a>
+                    }
+                </div>
+
+            </div>
+
+        }
+    </div>
+
+
+
+
+}
+else
+{
+    <h3 style="text-align:center;">This event has no attendees...</h3>
+
+}

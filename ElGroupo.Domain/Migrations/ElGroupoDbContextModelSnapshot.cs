@@ -27,10 +27,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("ContentType");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Description")
                         .HasColumnName("Description")
                         .HasMaxLength(255);
@@ -40,10 +36,6 @@ namespace ElGroupo.Domain.Migrations
                         .HasMaxLength(255);
 
                     b.Property<byte[]>("ImageData");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -57,10 +49,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("ActivityGroupId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Description");
 
                     b.Property<DateTime?>("EndDate");
@@ -72,10 +60,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<string>("Notes");
 
                     b.Property<DateTime?>("StartDate");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -95,14 +79,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("CreditTypeCategoryId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ActivityId");
@@ -112,25 +88,38 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("ActivityCredits");
                 });
 
+            modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityDocument", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long>("ActivityId");
+
+                    b.Property<string>("ContentType");
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("FileName");
+
+                    b.Property<byte[]>("ImageData");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityId");
+
+                    b.ToTable("ActivityDocuments");
+                });
+
             modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityGroup", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated")
-                        .HasMaxLength(255);
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long?>("DepartmentId");
 
                     b.Property<string>("Name");
 
-                    b.Property<string>("UserCreated");
-
                     b.Property<long?>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -148,15 +137,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("ActivityGroupId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
                     b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -174,15 +155,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("ActivityId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
                     b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -198,17 +171,9 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255);
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -226,17 +191,9 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("CreditTypeId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255);
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -250,19 +207,11 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255);
 
                     b.Property<long>("OrganizationId");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -276,17 +225,9 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("DepartmentId");
 
-                    b.Property<string>("UserCreated");
-
                     b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -302,19 +243,11 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("DepartmentId");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255);
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -330,15 +263,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("ActivityGroupId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
                     b.Property<long>("UserGroupId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -354,19 +279,11 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<bool>("IsOwner");
-
-                    b.Property<string>("UserCreated");
 
                     b.Property<long>("UserGroupId");
 
                     b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -390,18 +307,10 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("City");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Name")
                         .IsRequired();
 
                     b.Property<string>("State");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.Property<string>("Zip");
 
@@ -419,15 +328,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("CreditTypeId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("OrganizationId");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -447,21 +348,13 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("AttendanceTypeId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<bool>("IsPresenting");
 
                     b.Property<string>("Notes");
 
                     b.Property<string>("PresentationName");
 
-                    b.Property<string>("UserCreated");
-
                     b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -483,15 +376,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("CreditTypeCategoryId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("UserActivityId");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -507,17 +392,9 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("DocumentId");
 
                     b.Property<long>("UserActivityId");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -533,17 +410,9 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Name");
 
-                    b.Property<string>("UserCreated");
-
                     b.Property<long?>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -559,15 +428,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long?>("AttendeeGroupId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
                     b.Property<long?>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -600,10 +461,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<double>("CoordinateY");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Description");
 
                     b.Property<DateTime>("EndTime");
@@ -627,10 +484,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValue(0);
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.Property<string>("VerificationCode")
                         .HasMaxLength(10);
@@ -666,10 +519,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<bool>("CheckedIn");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("EventId");
 
                     b.Property<bool>("IsOrganizer");
@@ -682,11 +531,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<bool?>("ShowRSVPReminder");
 
-                    b.Property<string>("UserCreated");
-
                     b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.Property<bool>("Viewed");
 
@@ -706,15 +551,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("AttendeeId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("NotificationId");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.Property<bool>("Viewed");
 
@@ -732,10 +569,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("EventId");
 
                     b.Property<int>("Importance");
@@ -747,10 +580,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<DateTime>("PostedDate");
 
                     b.Property<string>("Subject");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -766,14 +595,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
-
                     b.Property<string>("Value");
 
                     b.HasKey("Id");
@@ -786,10 +607,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("MessageText")
                         .IsRequired();
 
@@ -798,10 +615,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<DateTime>("PostedDate");
 
                     b.Property<long>("TopicId");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -819,15 +632,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("AttendeeId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("MessageBoardItemId");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.Property<bool>("Viewed");
 
@@ -845,10 +650,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<long>("EventId");
 
                     b.Property<long>("StartedById");
@@ -856,10 +657,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<DateTime>("StartedDate");
 
                     b.Property<string>("Subject");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -870,14 +667,277 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("MessageBoardTopics");
                 });
 
-            modelBuilder.Entity("ElGroupo.Domain.RecurringEvent", b =>
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordCategory", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
+                    b.Property<string>("ItemDescriptionColumnHeader");
 
-                    b.Property<DateTime>("DateUpdated");
+                    b.Property<string>("ItemValueColumnHeader");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RecordCategories");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordDefaultElement", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("CategoryId");
+
+                    b.Property<long>("ElementId");
+
+                    b.Property<bool>("PrimaryDisplay");
+
+                    b.Property<long?>("SubCategoryId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ElementId");
+
+                    b.HasIndex("SubCategoryId");
+
+                    b.ToTable("RecordDefaultElements");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordElement", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long>("DataTypeId");
+
+                    b.Property<string>("DisplayName");
+
+                    b.Property<long>("InputTypeId");
+
+                    b.Property<long?>("LookupTableFieldTypeId");
+
+                    b.Property<long?>("LookupTableId");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DataTypeId");
+
+                    b.HasIndex("InputTypeId");
+
+                    b.HasIndex("LookupTableFieldTypeId");
+
+                    b.HasIndex("LookupTableId");
+
+                    b.ToTable("RecordElements");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordElementDataType", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RecordElementDataTypes");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordElementDataTypeInputType", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long>("DataTypeId");
+
+                    b.Property<long>("InputTypeId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DataTypeId");
+
+                    b.HasIndex("InputTypeId");
+
+                    b.ToTable("RecordElementDataTypeInputTypes");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordElementInputType", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RecordElementInputTypes");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordElementLookupTable", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("TableName");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RecordElementLookupTables");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordElementLookupTableFieldType", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RecordElementLookupTableFieldTypes");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("CategoryId");
+
+                    b.Property<string>("Name");
+
+                    b.Property<long?>("SubCategoryId");
+
+                    b.Property<long?>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("SubCategoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RecordItems");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemElement", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long>("ElementId");
+
+                    b.Property<long>("ItemId");
+
+                    b.Property<bool>("PrimaryDisplay");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ElementId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("RecordItemElements");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUser", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long>("ItemId");
+
+                    b.Property<long>("UserId");
+
+                    b.Property<bool>("Visible")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(true);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RecordItemUsers");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUserData", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long>("ElementId");
+
+                    b.Property<long>("ItemUserId");
+
+                    b.Property<string>("Value")
+                        .HasMaxLength(255);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ElementId");
+
+                    b.HasIndex("ItemUserId");
+
+                    b.ToTable("RecordItemUserData");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUserDocument", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ContentType");
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("FileName");
+
+                    b.Property<byte[]>("ImageData");
+
+                    b.Property<long>("ItemUserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemUserId");
+
+                    b.ToTable("RecordItemUserDocuments");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordSubCategory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ItemDescriptionColumnHeader");
+
+                    b.Property<string>("ItemValueColumnHeader");
+
+                    b.Property<string>("Name");
+
+                    b.Property<long>("ParentCategoryId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.ToTable("RecordSubCategories");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.RecurringEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("DaysInMonth");
 
@@ -889,10 +949,6 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<int>("RecurrenceLimit");
 
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
-
                     b.HasKey("Id");
 
                     b.ToTable("RecurringEvent");
@@ -903,10 +959,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<string>("Email");
 
                     b.Property<long>("EventId");
@@ -914,10 +966,6 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<string>("Name");
 
                     b.Property<Guid>("RegisterToken");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -930,10 +978,6 @@ namespace ElGroupo.Domain.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
 
                     b.Property<string>("Email")
                         .HasColumnName("Email");
@@ -953,11 +997,7 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<string>("Phone2Value")
                         .HasColumnName("Phone2Value");
 
-                    b.Property<string>("UserCreated");
-
                     b.Property<long?>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -1052,15 +1092,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("ConnectedUserId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
                     b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -1078,15 +1110,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("ContactMethodId");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
-                    b.Property<string>("UserCreated");
-
                     b.Property<long>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.Property<string>("Value");
 
@@ -1106,15 +1130,7 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<string>("ContentType");
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<byte[]>("ImageData");
-
-                    b.Property<string>("UserCreated");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -1126,19 +1142,11 @@ namespace ElGroupo.Domain.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("DateCreated");
-
-                    b.Property<DateTime>("DateUpdated");
-
                     b.Property<Guid>("Token");
 
                     b.Property<int>("TokenType");
 
-                    b.Property<string>("UserCreated");
-
                     b.Property<long?>("UserId");
-
-                    b.Property<string>("UserUpdated");
 
                     b.HasKey("Id");
 
@@ -1269,6 +1277,14 @@ namespace ElGroupo.Domain.Migrations
                     b.HasOne("ElGroupo.Domain.Activities.CreditTypeCategory", "CreditTypeCategory")
                         .WithMany()
                         .HasForeignKey("CreditTypeCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Activities.ActivityDocument", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Activities.Activity", "Activity")
+                        .WithMany("Documents")
+                        .HasForeignKey("ActivityId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -1516,6 +1532,125 @@ namespace ElGroupo.Domain.Migrations
                     b.HasOne("ElGroupo.Domain.User", "StartedBy")
                         .WithMany()
                         .HasForeignKey("StartedById")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordDefaultElement", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordCategory", "Category")
+                        .WithMany("DefaultElements")
+                        .HasForeignKey("CategoryId");
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordElement", "Element")
+                        .WithMany("DefaultElements")
+                        .HasForeignKey("ElementId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordSubCategory", "SubCategory")
+                        .WithMany("DefaultElements")
+                        .HasForeignKey("SubCategoryId");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordElement", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordElementDataType", "DataType")
+                        .WithMany("RecordElements")
+                        .HasForeignKey("DataTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordElementInputType", "InputType")
+                        .WithMany("RecordElements")
+                        .HasForeignKey("InputTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordElementLookupTableFieldType", "LookupTableFieldType")
+                        .WithMany("RecordElements")
+                        .HasForeignKey("LookupTableFieldTypeId");
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordElementLookupTable", "LookupTable")
+                        .WithMany("RecordElements")
+                        .HasForeignKey("LookupTableId");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordElementDataTypeInputType", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordElementDataType", "DataType")
+                        .WithMany("InputTypes")
+                        .HasForeignKey("DataTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordElementInputType", "InputType")
+                        .WithMany("DataTypes")
+                        .HasForeignKey("InputTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItem", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordCategory", "Category")
+                        .WithMany("Items")
+                        .HasForeignKey("CategoryId");
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordSubCategory", "SubCategory")
+                        .WithMany("Items")
+                        .HasForeignKey("SubCategoryId");
+
+                    b.HasOne("ElGroupo.Domain.User", "User")
+                        .WithMany("CustomRecordItems")
+                        .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemElement", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordElement", "Element")
+                        .WithMany("Items")
+                        .HasForeignKey("ElementId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordItem", "Item")
+                        .WithMany("Elements")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUser", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordItem", "Item")
+                        .WithMany("Users")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ElGroupo.Domain.User", "User")
+                        .WithMany("RecordItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUserData", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordItemElement", "Element")
+                        .WithMany("UserData")
+                        .HasForeignKey("ElementId");
+
+                    b.HasOne("ElGroupo.Domain.Records.RecordItemUser", "ItemUser")
+                        .WithMany("UserData")
+                        .HasForeignKey("ItemUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUserDocument", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordItemUser", "ItemUser")
+                        .WithMany("Documents")
+                        .HasForeignKey("ItemUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordSubCategory", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordCategory", "ParentCategory")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

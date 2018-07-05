@@ -28,9 +28,9 @@ namespace ElGroupo.Web.Services
 
         public async Task<List<AutoCompleteModel>> SearchAllUsers(string search)
         {
-            var users = _dbContext.Users.Where(x => x.Name.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
+            var users = _dbContext.Users.Where(x => x.Name.ToUpper().Contains(search.ToUpper()) || x.FirstName.ToUpper().Contains(search.ToUpper()) || x.LastName.ToUpper().Contains(search.ToUpper()) || x.Email.ToUpper().Contains(search.ToUpper()));
             var list = new List<AutoCompleteModel>();
-            await users.ForEachAsync(x => list.Add(new AutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.Name }));
+            await users.ForEachAsync(x => list.Add(new AutoCompleteModel { Email = x.Email, Id = x.Id, Name = x.FirstName + " " + x.LastName }));
             return list;
         }
 

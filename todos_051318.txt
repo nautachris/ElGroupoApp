@@ -16,7 +16,7 @@ when logging attendence to an activity that was alredady created, the user shoul
 
 **done** user needs to click "add unique title" to add a description - text box will be borderless
 
-add logic to make time/date selection work better (if start time > end time, reset end to time = start time)
+**done** add logic to make time/date selection work better (if start time > end time, reset end to time = start time)
 
 AMEP credits are booleans, not number of hours
 
@@ -30,15 +30,43 @@ AMEP credits are booleans, not number of hours
 
 **added to schema** add lecture/presentation title to useractivity - only show if "are you presenting" is true
 
-change "cancel" button to small "link" beneath the save buttons
+**done** change "cancel" button to small "link" beneath the save buttons
 
-activity dashboard - remove border for "add new" tile
+**done** activity dashboard - remove border for "add new" tile
 
-create activity/activity group - left justify
+**done** create activity/activity group - left justify
 
-view activity group activities - make look more like a list instead of buttons - make "create new activity" button look like the "return to dashbard", change "return to dashboard" button to cancel link
+**done** view activity group activities - make look more like a list instead of buttons - 
+**done** view activity group activities - make "create new activity" button look like the "return to dashbard", 
+**done** view activity group activities - change "return to dashboard" button to cancel link
 
-add attendence log, make it look like create activity
+**done*  add attendence log, make it look like create activity
 
 top links - move into hamburger menu (like we have on top right) or write some simple responsive styling to hide these when the width shrinks beneath x
 
+SHARED ACTIVITY DOCUMENTS - duplicate the documents section to have a shared document and my documents
+
+
+early june
+
+**done** activity - merge custom title and description - center description underneath group name 
+**done** change "ENTER TITLE HERE" as default "custom title" - change to initials of activity plus the date (i.e. for Brandt Helms Conference - BHC 6/18/18)
+**done** all activity cancel button - redirect back to http://localhost:46657/Activities/Dashboard
+**done** after any save or edit, redirecect back to http://localhost:46657/Home/UserDashboard
+**done** activitygroup/create - alignment is fucked up
+**done** change "delete activity group" to "delete"
+**done** create activity group - need cancel button
+**done** userdashboard - reduce picture size, move "welcome jessica" on to same line, reduce distance b/w pic and tiles
+**done** after create EVENT - redirect to "viewnewagain"
+
+**done** create activity group - duplicate "Acvitity Name" with "Add Unique Titile"
+**done** remove "Add Unique Title" from create workflows, replace with text input "Unique Title"
+**done** AddAttendanceLog = move "Group Notes" below "Activity Date", change "Group Notes" to "Notes"
+**done** change time increments to 15
+
+**done** after create event, redirect to view event, but have the new "add attendees" panel activee
+**done** add attendees panel is the same as the existing "view" event view "add attendees" tab
+**done** viewnewagain - move the title, status dot, created by, etc. above everything else and center - add horizontal rule below
+
+
+aa n/s 8:37 AM $321 fc

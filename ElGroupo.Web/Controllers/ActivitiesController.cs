@@ -17,11 +17,13 @@ namespace ElGroupo.Web.Controllers
     [Route("Activities")]
     public class ActivitiesController : ControllerBase
     {
+        private LookupTableService _lookupTableService = null;
         private ActivitiesService _activitiesService = null;
-        public ActivitiesController(UserManager<User> userMgr, ActivitiesService activitiesService) : base(userMgr)
+        public ActivitiesController(UserManager<User> userMgr, ActivitiesService activitiesService, LookupTableService lts) : base(userMgr)
         {
 
             _activitiesService = activitiesService;
+            _lookupTableService = lts;
         }
         [HttpGet("Dashboard")]
         public async Task<IActionResult> Dashboard()
@@ -102,7 +104,13 @@ namespace ElGroupo.Web.Controllers
         public async Task<IActionResult> DeleteDocument([FromRoute]long userActivityDocumentId)
         {
             var response = await _activitiesService.DeleteDocument(userActivityDocumentId);
-            if (response.Success) return Ok();
+            if (response.Success)
+            {
+                var userActivityId = Convert.ToInt64(response.ResponseData);
+                var docs = _activitiesService.GetDocumentsByUserActivityId(userActivityId);
+                return PartialView("_ActivityDocumentTable", docs);
+
+            }
             else return BadRequest();
         }
 
@@ -112,10 +120,18 @@ namespace ElGroupo.Web.Controllers
         {
             var doc = _activitiesService.GetDocument(documentId);
             if (doc == null) return BadRequest();
-            
+
             return File(doc.ImageData, doc.ContentType);
         }
+        
+        [HttpGet("GetActivityDocument/{documentId}")]
+        public async Task<IActionResult> GetActivityDocument([FromRoute]long documentId)
+        {
+            var doc = _activitiesService.GetActivityDocument(documentId);
+            if (doc == null) return BadRequest();
 
+            return File(doc.ImageData, doc.ContentType);
+        }
 
         [HttpGet("DownloadRecords")]
         public async Task<IActionResult> DownloadRecords()
@@ -131,10 +147,24 @@ namespace ElGroupo.Web.Controllers
             try
             {
                 if (Request.Form.Files.Count == 0) return BadRequest();
-                
+
                 if (!Request.Form.Keys.Contains("userActivityId")) return BadRequest("userActivityId was not included in the form data");
+                var userActivityId = Convert.ToInt64(Request.Form["userActivityId"]);
+                var returnTable = Request.Form.Keys.Contains("returnTable");
                 var response = await _activitiesService.SaveDocument(ParseDocumentRequest(Request));
-                if (response.Success) return Ok();
+                if (response.Success)
+                {
+                    if (returnTable)
+                    {
+                        var docs = _activitiesService.GetDocumentsByUserActivityId(userActivityId);
+                        return PartialView("_ActivityDocumentTable", docs);
+                    }
+                    else
+                    {
+                        return Ok();
+                    }
+
+                }
                 else return BadRequest(new { error = response.ErrorMessage });
             }
             catch (Exception ex)
@@ -148,7 +178,7 @@ namespace ElGroupo.Web.Controllers
         {
             var model = new SaveDocumentsModel();
             model.UserActivityId = Convert.ToInt64(request.Form["userActivityId"]);
-            foreach(var file in request.Form.Files)
+            foreach (var file in request.Form.Files)
             {
                 var doc = new DocumentListModel();
                 //i.e. file_0
@@ -159,6 +189,8 @@ namespace ElGroupo.Web.Controllers
                 var ms = new MemoryStream();
                 file.CopyTo(ms);
                 doc.Data = ms.ToArray();
+                if (request.Form["type_" + id].ToString() == "personal") doc.Shared = false;
+                else doc.Shared = true;
                 model.Documents.Add(doc);
             }
             return model;
@@ -265,7 +297,7 @@ namespace ElGroupo.Web.Controllers
         {
             var user = await CurrentUser();
             var response = await _activitiesService.EditAttendenceLog(model, user.Id);
-            if (response.Success) return Ok(new { userActivityId = model.UserActivityId});
+            if (response.Success) return Ok(new { userActivityId = model.UserActivityId });
             else return BadRequest(new { error = response.ErrorMessage });
         }
 

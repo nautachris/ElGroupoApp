@@ -5,10 +5,13 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using ElGroupo.Domain.Lookups;
 using ElGroupo.Domain.Activities;
+using ElGroupo.Domain.Records;
 namespace ElGroupo.Domain
 {
     public class User : IdentityUser<long>
     {
+        public virtual ICollection<RecordItem> CustomRecordItems { get; set; }
+        public virtual ICollection<RecordItemUser> RecordItems { get; set; }
         public virtual ICollection<DepartmentUser> Departments { get; set; }
         public virtual ICollection<ActivityGroupOrganizer> OrganizedActivityGroups { get; set; }
         public virtual ICollection<ActivityOrganizer> OrganizedActivities { get; set; }

@@ -1,0 +1,32 @@
+﻿@using ElGroupo.Web.Models.Records
+@model IEnumerable<ViewLookupTableModel>
+
+<section style="text-align:center">
+    <a asp-controller="Records" asp-action="Admin">Return to Admin</a>
+    <h3>Lookup Tables</h3>
+    <div id="lookup-table-list">
+        @Html.Partial("_LookupTableList", Model)
+    </div>
+
+    <button class="btn btn-primary add-lookup-table-btn">Add New Lookup Table</button>
+    <div class="add-lookup-table" style="display:none;">
+        <div style="width:100%;">
+            <label for="txtAddLookupTableName">Lookup Table Name:</label>
+            <input type="text" id="txtAddLookupTableName" style="width:300px;" />
+        </div>
+        <div style="width:100%;">
+            <label for="txtAddLookupTableDescription">Lookup Table Description:</label>
+            <input type="text" id="txtAddLookupTableDescription" style="width:300px;" />
+        </div>
+       
+        <button class="cancel-add-lookup-table">Cancel</button>
+        <button class="confirm-add-lookup-table">Add</button>
+    </div>
+</section>
+
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/records/records-admin.js"></script>
+    <script type="text/javascript" src="~/content/scripts/records/edit-lookup-tables.js"></script>
+
+}

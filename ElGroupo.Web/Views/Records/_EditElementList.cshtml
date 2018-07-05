@@ -1,0 +1,60 @@
+﻿@using ElGroupo.Web.Models.Records
+@model IEnumerable<ViewElementModel>
+
+@{
+    Layout = null;
+}
+
+
+<table style="margin:0 auto; text-align:center;">
+    <thead>
+        <tr>
+            <th style="min-width:125px; text-align:center;">Name</th>
+            <th style="min-width:125px; text-align:center;">Display Name</th>
+            <th style="min-width:150px; text-align:center;">Data Type</th>
+            <th style="min-width:150px; text-align:center;">Input Control</th>
+            <th style="min-width:150px; text-align:center;">Lookup Table</th>
+            <th style="min-width:150px; text-align:center;"></th>
+            <th style="min-width:150px; text-align:center;"></th>
+        </tr>
+    </thead>
+    @foreach (var item in Model)
+    {
+    <tr data-element-id="@item.Id">
+        <td>
+            <div id="divElementNameView">@item.Name</div>
+            <div id="divElementNameEdit" style="display:none">
+
+            </div>
+        </td>
+        <td>
+            <div id="divDisplayNameView">@item.DisplayName</div>
+            <div id="divDisplayNameEdit" style="display:none">
+
+            </div>
+        </td>
+        <td data-data-type-id="@item.DataType.Id">
+            <div id="divDataTypeView">@item.DataType.Name</div>
+            <div id="divDataTypeEdit" style="display:none">
+            </div>
+        </td>
+        <td data-input-type-id="@item.InputType.Id">
+            <div id="divInputTypeView">@item.InputType.Name</div>
+            <div id="divInputTypeEdit" style="display:none">
+            </div>
+        </td>
+        <td data-lookup-table-id="@item.LookupTable?.Id">
+            <div id="divLookupTableView">@item.LookupTable?.Description</div>
+            <div id="divLookupTableEdit" style="display:none">
+            </div>
+        </td>
+        <td>
+            <div>
+                <a data-edit>Edit</a><a data-cancel style="display:none;">Cancel</a><a data-save style="display:none; margin-left:25px;">Save</a>
+            </div>
+        </td>
+        <td><a data-delete>Delete</a></td>
+    </tr>
+
+    }
+</table>

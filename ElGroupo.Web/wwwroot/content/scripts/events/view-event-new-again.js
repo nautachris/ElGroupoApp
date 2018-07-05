@@ -72,9 +72,6 @@ ViewEvent = {
                             data: JSON.stringify(model),
                             success: function success() {
                                 window.location.reload();
-                                //$("#OriginalStatus").val(newStatus);
-                                //console.log('success');
-                                //$("#divMessages").html(results);
                             },
                             error: function error(err) {
                                 console.log('error in saving response');
@@ -96,9 +93,6 @@ ViewEvent = {
                         data: JSON.stringify(model),
                         success: function success() {
                             window.location.reload();
-                            //console.log('success');
-                            //$("#OriginalStatus").val(newStatus);
-                            //$("#divMessages").html(results);
                         },
                         error: function error(err) {
                             console.log('error in saving response');

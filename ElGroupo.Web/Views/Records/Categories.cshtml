@@ -1,0 +1,27 @@
+﻿@using ElGroupo.Web.Models.Shared
+@model IEnumerable<IdValueModel>
+
+<section style="text-align:center">
+    <a asp-controller="Records" asp-action="Admin">Return to Admin</a>
+    <h3>Record Categories</h3>
+    <div id="category-list">
+        @Html.Partial("_CategoryList", Model)
+    </div>
+
+
+    <button class="btn btn-primary add-category-btn">Add New Category</button>
+    <div class="add-category" style="display:none;">
+        <label for="txtAddCategory">Category Name:</label>
+        <input type="text" id="txtAddCategory" style="width:300px;" />
+        <button class="cancel-add-category">Cancel</button>
+        <button class="confirm-add-category">Add</button>
+    </div>
+</section>
+
+
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/records/records-admin.js"></script>
+    <script type="text/javascript" src="~/content/scripts/records/edit-categories.js"></script>
+
+}

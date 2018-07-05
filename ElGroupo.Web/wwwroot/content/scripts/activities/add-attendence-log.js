@@ -50,26 +50,13 @@ AddAttendenceLog = {
 
     },
     Init: function () {
-        //click on any credit type checkboxes
-        $("#divCreditTypes :checkbox").on("change", function () {
-            if ($("#divCreditTypes :checkbox:checked").length > 0) {
-                $("#divCreditCategories").show();
-            }
-            else {
-                $("#divCreditCategories").hide();
-            }
 
-
-            var creditTypeId = Number($(this).attr('data-credit-type-id'));
-            var isChecked = $(this).is(':checked');
-
-            if (isChecked) {
-                $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").show();
-            }
-            else {
-                $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").hide();
-            }
+        $("#divCreditTypes input[type=text]").on("click", function () {
+            console.log('input clicked');
+            $(this).select();
         });
+
+
         $("#btnAddDocuments").on("click", function () {
             $("#iptFile").click();
         });
@@ -88,25 +75,6 @@ AddAttendenceLog = {
         //$("#btnUpload").on("click", AddAttendenceLog.Upload);
         $("#btnCreate").on("click", AddAttendenceLog.Create);
 
-        //$("#divCreditTypes :checkbox:checked").each(function () {
-        //    $("#divCreditCategories").show();
-        //    var creditTypeId = Number($(this).attr('data-credit-type-id'));
-        //    $("#divCreditCategories div[data-credit-type-id=" + creditTypeId.toString() + "]").show();
-        //});
-
-
-        //$("#iptFile").on("change", function (evt) {
-        //    if (evt.target.files.length > 0) {
-        //        $("#divFileDescription").show();
-        //    }
-        //    else {
-        //        $("#divFileDescription").hide();
-        //    }
-        //    //var file = evt.target.files[0];
-        //    //console.log(evt.target.files[0]);
-
-
-        //});
 
     },
 
@@ -121,12 +89,13 @@ AddAttendenceLog = {
         model.activityId = Number($("#ActivityId").val());
         model.userActivityId = Number($("#UserActivityId").val());
         model.credits = [];
-        $("div[data-credit-category-id]").each(function () {
-            if ($(this).find(':checkbox').is(':checked')) {
-                var hours = Number($(this).find('input[type=number]').val());
+        $("#divCreditTypes input[type=text]").each(function () {
+                var hours = Number($(this).val());
                 model.credits.push({ CreditTypeCategoryId: Number($(this).attr('data-credit-category-id')), NumberOfCredits: hours});
-            }
+            
         });
+
+
         $.ajax({
             url: "/Activities/AddAttendenceLog",
             type: 'POST',

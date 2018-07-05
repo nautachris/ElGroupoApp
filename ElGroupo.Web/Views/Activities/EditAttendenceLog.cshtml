@@ -8,7 +8,12 @@
 
     }
 
+    public string GetDocumentDisplay(bool anyDocs)
+    {
+        if (anyDocs) return "";
+        else return "none";
 
+    }
     public bool HasCreditType(List<long>
     selectedCategories, List<CreditCategoryModel>
         allCategories, long creditTypeId)
@@ -21,216 +26,217 @@
 
 }
 
-<section class="create-activity-group" style="background-color:#2d2d2d; color:white; text-transform:uppercase; text-align:center; padding:20px;">
-    <h2>@Model.ActivityGroupName</h2>
-    <input type="hidden" asp-for="ActivityId" />
-    <input type="hidden" asp-for="ActivityGroupId" />
-    <input type="hidden" asp-for="UserActivityId" />
+<section class="create-activity-group" style="padding:20px;">
+
     <div class="row">
-        <label>Register For Activity</label>
-
-
+        <h4>@Model.ActivityGroupName</h4>
+        <div class="row centered" style="font-size:0.7em;">@Model.ActivityDescription</div>
+        <input type="hidden" asp-for="ActivityId" />
+        <input type="hidden" asp-for="ActivityGroupId" />
+        <input type="hidden" asp-for="UserActivityId" />
     </div>
-    <div class="row">
-        <label>Activity Description</label>
-        <div class="width-100">
-            @Model.ActivityDescription
-        </div>
+    <div class="divider"></div>
 
-    </div>
+
+    @*<div class="row">
+            <label style="margin-left:25%;">Description</label>
+            <div class="row" style="width:50%;">
+                @Model.ActivityDescription
+            </div>
+
+        </div>*@
     <div class="row">
-        <label>Activity Location</label>
-        <div class="width-100">
+        <label style="margin-left:25%;">Location</label>
+        <div class="row" style="width:50%;">
             @Model.ActivityLocation
         </div>
 
     </div>
-    @if (Model.ActivityStartTimeText != null)
+    @if (Model.ActivityTimeText != null)
     {
         <div class="row">
-            <label>Activity Date</label>
-            <div class="width-100">
-                @Model.ActivityStartTimeText
+            <label style="margin-left:25%;">Date</label>
+            <div class="row" style="width:50%;">
+                @Model.ActivityTimeText
             </div>
 
         </div>
 
     }
+    @if (Model.PublicNotes != null)
+    {
+        <div class="row">
+            <label style="margin-left:25%;">Notes</label>
+            <div class="row" style="width:50%;">
+                @Model.PublicNotes
+            </div>
 
+        </div>
 
+    }
+    <div class="divider"></div>
     <div class="row" id="divCreditTypes" style="margin-top:25px;">
-        <label>Credit Types</label>
-        @foreach (var creditType in Model.CreditTypes)
-        {
-            <div class="width-100">
-
-                @if (Model.Credits != null)
-                {
-
-                    if (HasCreditType(Model.Credits.Select(x => x.CreditTypeCategoryId).ToList(), Model.CreditCategories, creditType.Id))
-                    {
-                        <input type="checkbox" checked id="@GenerateId(" rbCreditType", creditType.Id)" data-credit-type-id="@creditType.Id" />
-
-                    }
-                    else
-                    {
-                        <input type="checkbox" id="@GenerateId(" rbCreditType", creditType.Id)" data-credit-type-id="@creditType.Id" />
-
-                    }
-                }
-                else
-                {
-                    <input type="checkbox" id="@GenerateId(" rbCreditType", creditType.Id)" data-credit-type-id="@creditType.Id" />
-
-                }
-
-
-                <label style="cursor:pointer;margin-left:20px;" for="@GenerateId(" rbCreditType", creditType.Id)">@creditType.Description</label>
-            </div>
-        }
-    </div>
-    <div class="row" id="divCreditCategories" style="display:none;">
-        <label>Credit Categories</label>
-        @foreach (var creditCategory in Model.CreditCategories)
-        {
-            <div style="display:none; width:75%;" class="row line-after" data-credit-type-id="@creditCategory.CreditTypeId" data-credit-category-id="@creditCategory.Id">
-
-                @if (Model.Credits != null && Model.Credits.Any(x => x.CreditTypeCategoryId == creditCategory.Id))
-                {
-                    <div class="col span-1-of-8"><input checked type="checkbox" id="@GenerateId(" rbCreditCategory", creditCategory.Id)" /></div>
-                    <div class="col span-5-of-8" style="text-align:left;"><label style="cursor:pointer;" for="@GenerateId(" rbCreditCategory", creditCategory.Id)">@creditCategory.Description</label></div>
-                    <div class="col span-1-of-8"><input type="number" style="width:50px;" min="0" max="24" value="@Model.Credits.First(x=>x.CreditTypeCategoryId == creditCategory.Id).NumberOfCredits" /></div>
-                    <div class="col span-1-of-8" style="text-align:left;"><span>Credits</span></div>
-
-                }
-                else
-                {
-                    <div class="col span-1-of-8"><input type="checkbox" id="@GenerateId(" rbCreditCategory", creditCategory.Id)" /></div>
-                    <div class="col span-5-of-8" style="text-align:left;"><label style="cursor:pointer;" for="@GenerateId(" rbCreditCategory", creditCategory.Id)">@creditCategory.Description</label></div>
-                    <div class="col span-1-of-8"><input type="number" style="width:50px;" min="0" max="24" value="0" /></div>
-                    <div class="col span-1-of-8" style="text-align:left;"><span>Credits</span></div>
-
-                }
-
-
-
-
-
-            </div>
-
-        }
-    </div>
-    <div class="row" id="divAttendenceType">
-        <label>Presenting?</label>
-        @if (Model.IsPresenting)
-        {
-            <div class="width-100">
-                <input type="radio" name="group" id="rbPresentingNo" />
-                <label style="cursor:pointer;margin-left:20px;" for="rbPresentingNo">No</label>
-            </div>
-            <div class="width-100">
-                <input type="radio" name="group" checked id="rbPresentingYes" />
-                <label style="cursor:pointer;margin-left:20px;" for="rbPresentingYes">Yes</label>
-            </div>
-
-        }
-        else
-        {
-            <div class="width-100">
-                <input type="radio" name="group" checked id="rbPresentingNo" />
-                <label style="cursor:pointer;margin-left:20px;" for="rbPresentingNo">No</label>
-            </div>
-            <div class="width-100">
-                <input type="radio" name="group" id="rbPresentingYes" />
-                <label style="cursor:pointer;margin-left:20px;" for="rbPresentingYes">Yes</label>
-            </div>
-
-        }
-
-    </div>
-
-    <div class="row" id="divPresentationName" style="display:none;">
-        <label>Presentation Name</label>
-        <div class="width-100">
-            <input type="text" id="txtPresentationName" class="width-100" />
-        </div>
-
-    </div>
-    <div class="row">
-        <label for="txtDescription">My Notes</label>
-        <div class="width-100">
-            <textarea style="width:75%; height:100px;" id="txtMyNotes">@Model.PersonalNotes</textarea>
-        </div>
-
-    </div>
-    <div class="row">
-        <label>View Existing Documentation</label>
-
-        <div id="divExistingDocuments" style="display: table; margin-left:5%; margin-right:5%; width:90%; border-collapse:collapse;">
-            <header style="display: table-row;border:1px solid white;">
-                <div style="display: table-cell; width:30%;">File Name</div>
-                <div style="display: table-cell; width:50%;">Description</div>
-                <div style="display: table-cell; width:10%;"></div>
-                <div style="display: table-cell; width:10%;"></div>
-            </header>
-            @foreach (var doc in Model.Documents)
+        <label style="margin-left:25%;">Credit Types</label>
+        <div style="display:table; margin-left:25%; margin-right:25%; width:50%; border-collapse:collapse">
+            @for (var groupCount = 0; groupCount < Model.AllowedCredits.Count; groupCount += 3)
             {
-                <div data-document-id="@doc.UserActivityDocumentId" style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white;border-right:1px solid white;">
-                    <div style="display: table-cell; vertical-align:middle;">@doc.FileName</div>
-                    <div style="display: table-cell; vertical-align:middle;">@doc.Description</div>
-                    <div style="display: table-cell; vertical-align:middle;"><a target="_blank" asp-controller="Activities" asp-action="GetDocument" asp-route-documentId="@doc.Id" style="color:white;">View</a></div>
-                    <div style="display: table-cell; vertical-align:middle;" data-delete-document><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></div>
+                <div style="display: table-row; word-wrap:break-word; vertical-align:middle; margin-bottom:10px;">
+                    @foreach (var creditCategory in Model.AllowedCredits.Skip(groupCount).Take(3))
+                    {
+                        <div style="display: table-cell; width:30%; vertical-align:middle;">
+                            <div class="width-100 centered">
+                                @if (Model.Credits.Any(x => x.CreditTypeCategoryId == creditCategory.CreditTypeCategoryId))
+                                {
+                                    <input type="text" style="text-align:center;font-family: 'Raleway'; margin-top:31px; width:40%; background-color:transparent; font-size:38px; border:none;" value="@Model.Credits.First(x=>x.CreditTypeCategoryId == creditCategory.CreditTypeCategoryId).NumberOfCredits" data-credit-category-id="@creditCategory.CreditTypeCategoryId" />
+
+                                }
+                                else
+                                {
+
+                                    <input type="text" style="text-align:center;font-family: 'Raleway'; margin-top:31px; width:40%; background-color:transparent; font-size:38px; border:none;" value="0" data-credit-category-id="@creditCategory.CreditTypeCategoryId" />
+                                }
+
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div style="display: table-row; word-wrap:break-word; vertical-align:middle; margin-bottom:10px;">
+                    @foreach (var creditCategory in Model.AllowedCredits.Skip(groupCount).Take(3))
+                    {
+
+
+                        <div style="display: table-cell; width:30%; vertical-align:middle;">
+                            <div class="centered" style="margin-top:10px; text-transform:none; margin-left:20%; margin-right:20%;">@creditCategory.CreditTypeName &nbsp; @creditCategory.CreditTypeCategoryName</div>
+                        </div>
+                    }
                 </div>
 
             }
+        </div>
+    </div>
+
+    <div class="row" id="divAttendenceType">
+        <label style="margin-left:25%;">Presenting?</label>
+        <div class="row centered" id="divAttendenceType">
+            @if (Model.IsPresenting)
+            {
+                <input type="radio" name="group" id="rbPresentingNo" />
+                <label style="cursor:pointer;margin-left:10px; font-size:14px;" for="rbPresentingNo">No</label>
+                <input type="radio" name="group" checked style="margin-left:40px;" id="rbPresentingYes" />
+                <label style="cursor:pointer;margin-left:10px; font-size:14px;" for="rbPresentingYes">Yes</label>
+
+            }
+            else
+            {
+                <input type="radio" name="group" checked id="rbPresentingNo" />
+                <label style="cursor:pointer;margin-left:10px; font-size:14px;" for="rbPresentingNo">No</label>
+                <input type="radio" name="group" style="margin-left:40px;" id="rbPresentingYes" />
+                <label style="cursor:pointer;margin-left:10px; font-size:14px;" for="rbPresentingYes">Yes</label>
+
+            }
+
+
+        </div>
+    </div>
+
+    @if (Model.IsPresenting)
+    {
+        <div class="row" id="divPresentationName">
+            <label style="margin-left:25%">Presentation Name</label>
+            <div class="width-100 centered">
+                <input type="text" style="width:50%;" id="txtPresentationName" />
+            </div>
 
         </div>
 
+    }
+    else
+    {
+        <div class="row" id="divPresentationName" style="display:none;">
+            <label style="margin-left:25%">Presentation Name</label>
+            <div class="width-100 centered">
+                <input type="text" style="width:50%;" id="txtPresentationName" />
+            </div>
+
+        </div>
+
+
+    }
+    <div class="divider"></div>
+    <div class="row">
+        <label style="margin-left:25%;" for="txtDescription">My Notes</label>
+        <div class="width-100 centered">
+            <textarea style="width:50%; height:100px;" id="txtMyNotes"></textarea>
+        </div>
 
     </div>
 
-    <div class="row" id="divNewDocuments">
-        <label>Add New Documentation</label>
-        <div style="display:none;" id="divRowTemplate">
-            <div style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white; border-right:1px solid white;">
-                <div style="display: table-cell; vertical-align:middle;"></div>
-                <div style="display: table-cell; vertical-align:middle;"><input placeholder="Enter a File Description..." style="width:100%;" type="text" /></div>
-                <div style="display: table-cell; vertical-align:middle;"><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></div>
-            </div>
-        </div>
-        <div id="divDocumentTable" style="display:none;" class="row centered">
-            <div id="divTable" style="display: table; margin-left:5%; margin-right:5%; width:90%; border-collapse:collapse;">
-                <header style="display: table-row;">
-                    <div style="display: table-cell; width:30%; border:1px solid white;">File Name</div>
-                    <div style="display: table-cell; width:60%; border:1px solid white;">Description</div>
-                    <div style="display: table-cell; width:10%; border:1px solid white;"></div>
+
+    @if (Model.ActivityDocuments.Any())
+    {
+        <div class="row centered" style="width:50%;">
+            <label>Group Documents</label>
+
+            <div style="display: table; margin-left:5%; margin-right:5%; width:90%; border-collapse:collapse;">
+                <header style="display: table-row;border:1px solid white;">
+                    <div style="display: table-cell; width:30%;">File Name</div>
+                    <div style="display: table-cell; width:50%;">Description</div>
+                    <div style="display: table-cell; width:20%;"></div>
                 </header>
+                @foreach (var doc in Model.ActivityDocuments)
+                {
+                    <div data-document-id="@doc.Id" style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white;border-right:1px solid white;">
+                        <div style="display: table-cell; vertical-align:middle;">@doc.FileName</div>
+                        <div style="display: table-cell; vertical-align:middle;">@doc.Description</div>
+                        <div style="display: table-cell; vertical-align:middle;"><a target="_blank" asp-controller="Activities" asp-action="GetActivityDocument" asp-route-documentId="@doc.Id">View</a></div>
+
+                    </div>
+
+                }
             </div>
         </div>
-        <div class="row" style="width:75%; margin-top:25px;">
-            <input style="display:none;" type="file" multiple id="iptFile" />
-            <button id="btnAddDocuments" class="btn btn-primary">Add Document(s)</button>
+
+
+    }
+
+    <div class="row centered" id="divDocumentsContainer" style="display:@GetDocumentDisplay(Model.Documents.Any()); width:50%;">
+        <label>My Documents</label>
+
+        <div id="divDocuments" style="display: table; margin-left:5%; margin-right:5%; width:90%; border-collapse:collapse;">
+            @Html.Partial("_ActivityDocumentTable", Model.Documents)
         </div>
     </div>
-    @*<div class="row centered">
-            <table style="width:80%;">
-                <thead>
-                    <tr>
-                        <th>File Name</th>
-                        <th>Description</th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>bears.csv</td>
-                        <td>bears.csv</td>
-                        <td><a>View</a></td>
-                        <td><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="row centered" style="width:75%; margin-top:25px;">
+        <input style="display:none;" type="file" multiple id="iptFile" />
+        <button id="btnAddDocuments" class="btn btn-ghost">Add Document(s)</button>
+    </div>
+
+
+
+
+
+    @*<div class="row centered" id="divNewDocuments">
+
+            <div style="display:none;" id="divRowTemplate">
+                <div style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white; border-right:1px solid white;">
+                    <div style="display: table-cell; vertical-align:middle;"></div>
+                    <div style="display: table-cell; vertical-align:middle;"><input placeholder="Enter a File Description..." style="width:100%;" type="text" /></div>
+                    <div style="display: table-cell; vertical-align:middle;"><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></div>
+                </div>
+            </div>
+            <div id="divDocumentTable" style="display:none;" class="row centered">
+                <div id="divTable" style="display: table; margin-left:5%; margin-right:5%; width:90%; border-collapse:collapse;">
+                    <header style="display: table-row;">
+                        <div style="display: table-cell; width:30%; border:1px solid white;">File Name</div>
+                        <div style="display: table-cell; width:60%; border:1px solid white;">Description</div>
+                        <div style="display: table-cell; width:10%; border:1px solid white;"></div>
+                    </header>
+                </div>
+            </div>
+            <div class="row centered" style="width:75%; margin-top:25px;">
+                <input style="display:none;" type="file" multiple id="iptFile" />
+                <button id="btnAddDocuments" class="btn btn-ghost">Add Document(s)</button>
+            </div>
         </div>*@
 
 
@@ -238,13 +244,51 @@
 
 
 
-    <div class="row">
-        <a class="btn btn-primary" asp-controller="Activities" asp-action="Group" asp-route-activityGroupId="@Model.ActivityGroupId">Cancel</a>
 
+    <div class="row centered">
         <button id="btnCreate" class="btn btn-primary">Update Attendence Log</button>
+    </div>
+    <div class="row centered" style="margin-top:0px;">
+        <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+            <a asp-controller="Activities" asp-action="Group" asp-route-activityGroupId="@Model.ActivityGroupId">Cancel</a>
+        </div>
+    </div>
 
 
+    <div id="divAddDocuments" style="display:none; z-index:1000; height:100%; width:100%; position:fixed; top:0px;left:0px;">
+        <div style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);padding:60px; border:4px solid gray; border-radius:25px; background-color:white;">
+            <div class="row">
+                <div class="col span-2-of-2 centered">
+                    <h4>Upload Documents</h4>
+                </div>
+            </div>
+            <div style="display:none;">
+                <div id="divUploadDocumentRowTemplate" style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white;border-right:1px solid white;">
+                    <div style="display: table-cell; vertical-align:middle;" data-file-name></div>
+                    <div style="display: table-cell; vertical-align:middle; "><input data-file-description type="text" style="width:100%;" /></div>
+                    <div style="display: table-cell; vertical-align:middle;" data-delete-pending-document><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></div>
+                </div>
+            </div>
 
+            <div id="divUploadDocumentsTable" style="display: table; border-collapse:collapse;">
+
+                <header style="display: table-row;border:1px solid white;" id="divUploadDocumentHeader">
+                    <div style="display: table-cell; width:40%; font-weight:bold; text-align:center;">File Name</div>
+                    <div style="display: table-cell; width:50%;font-weight:bold; text-align:center;">Description</div>
+
+                    <div style="display: table-cell; width:10%;"></div>
+                </header>
+            </div>
+            <div class="row centered" style="margin-top:30px;">
+
+                <button id="btnUploadDocuments" class="btn btn-primary">Upload</button>
+            </div>
+            <div class="row centered" style="margin-top:0px;">
+                <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+                    <a id="btnCancelAddDocuments">Cancel</a>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 @section Scripts{

@@ -25,6 +25,8 @@ namespace ElGroupo.Web.Services
             var existingUserActivity = _dbContext.UserActivities.Include(x => x.Credits).First(x => x.Id == model.UserActivityId);
             //existingUserActivity.AttendanceTypeId = model.AttendenceType;
             existingUserActivity.IsPresenting = model.IsPresenting;
+            existingUserActivity.Notes = model.PersonalNotes;
+            existingUserActivity.PresentationName = model.PresentationName;
 
             //check for modified
             foreach (var credit in model.Credits)
@@ -139,7 +141,7 @@ namespace ElGroupo.Web.Services
                         CreditCategory = credit.CreditTypeCategory.Description,
                         CreditType = credit.CreditTypeCategory.CreditType.Description,
                         IsPresenting = record.IsPresenting,
-                        Department = record.Activity.ActivityGroup.Department.Name,
+                        Department = record.Activity.ActivityGroup.Department?.Name,
                         GroupName = record.Activity.ActivityGroup.Name,
                         Id = record.Id,
                         CreditHours = credit.CreditHours
@@ -369,13 +371,18 @@ namespace ElGroupo.Web.Services
             return model;
         }
 
-        public string GetSimpleDateText(string timeZoneId, DateTime? date)
+        public string GetSimpleDateText(string timeZoneId, DateTime? startDate, DateTime? endDate)
         {
-            if (date == null) return null;
+            if (startDate == null && endDate == null) return null;
             var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
-            var localTime = TimeZoneInfo.ConvertTimeFromUtc(date.Value, tz);
-            return localTime.ToString("d") + " " + localTime.ToString("t");
+            var localStartTime = TimeZoneInfo.ConvertTimeFromUtc(startDate.Value, tz);
+            var timeText = localStartTime.ToString("d") + " " + localStartTime.ToString("t");
+            if (endDate == null) return timeText;
+
+            var localEndTime = TimeZoneInfo.ConvertTimeFromUtc(endDate.Value, tz);
+            if (localStartTime.Date.DayOfYear == localEndTime.Date.DayOfYear) return timeText += " - " + localEndTime.ToString("t");
+            else return timeText += " - " + localEndTime.ToString("d") + " " + localEndTime.ToString("t");
 
         }
         public CreateActivityModel GetCreateActivityModel(long userId, long groupId)
@@ -397,17 +404,32 @@ namespace ElGroupo.Web.Services
             var doc = _dbContext.AccreditationDocuments.First(x => x.Id == id);
             return doc;
         }
-
+        public ActivityDocument GetActivityDocument(long id)
+        {
+            var doc = _dbContext.ActivityDocuments.First(x => x.Id == id);
+            return doc;
+        }
+        public List<ViewUserActivityDocumentModel> GetDocumentsByUserActivityId(long userActivityId)
+        {
+            return _dbContext.UserActivityDocuments.Include(x => x.UserActivity).Include(x => x.Document).Where(x => x.UserActivity.Id == userActivityId).Select(x => new ViewUserActivityDocumentModel
+            {
+                FileName = x.Document.FileName,
+                Description = x.Document.Description,
+                Id = x.Document.Id,
+                UserActivityDocumentId = x.Id
+            }).ToList();
+        }
         public async Task<SaveDataResponse> DeleteDocument(long userActivityDocumentId)
         {
             try
             {
-                var doc = _dbContext.UserActivityDocuments.Include(x => x.Document).ThenInclude(x => x.Activities).FirstOrDefault(x => x.Id == userActivityDocumentId);
+                var doc = _dbContext.UserActivityDocuments.Include(x => x.UserActivity).Include(x => x.Document).ThenInclude(x => x.Activities).FirstOrDefault(x => x.Id == userActivityDocumentId);
+                var userActivityId = doc.UserActivity.Id;
                 bool deleteDocument = doc.Document.Activities.Count == 1;
                 _dbContext.Remove(doc);
                 if (deleteDocument) _dbContext.Remove(doc.Document);
                 await _dbContext.SaveChangesAsync();
-                return SaveDataResponse.Ok();
+                return SaveDataResponse.IncludeData(userActivityId);
             }
             catch (Exception ex)
             {
@@ -420,19 +442,36 @@ namespace ElGroupo.Web.Services
         {
             try
             {
-                var userActivity = _dbContext.UserActivities.First(x => x.Id == model.UserActivityId);
+                var userActivity = _dbContext.UserActivities.Include(x => x.Activity).First(x => x.Id == model.UserActivityId);
                 foreach (var doc in model.Documents)
                 {
-                    AccreditationDocument newDocument = new AccreditationDocument
+                    if (doc.Shared)
                     {
-                        ImageData = doc.Data,
-                        ContentType = doc.ContentType,
-                        Description = doc.Description,
-                        FileName = doc.FileName,
-                        Activities = new List<UserActivityDocument>()
-                    };
-                    newDocument.Activities.Add(new UserActivityDocument { UserActivity = userActivity });
-                    _dbContext.Add(newDocument);
+                        ActivityDocument activityDocument = new ActivityDocument
+                        {
+                            ImageData = doc.Data,
+                            Activity = userActivity.Activity,
+                            ContentType = doc.ContentType,
+                            Description = doc.Description,
+                            FileName = doc.FileName
+                        };
+                        _dbContext.Add(activityDocument);
+
+                    }
+                    else
+                    {
+                        AccreditationDocument newDocument = new AccreditationDocument
+                        {
+                            ImageData = doc.Data,
+                            ContentType = doc.ContentType,
+                            Description = doc.Description,
+                            FileName = doc.FileName,
+                            Activities = new List<UserActivityDocument>()
+                        };
+                        newDocument.Activities.Add(new UserActivityDocument { UserActivity = userActivity });
+                        _dbContext.Add(newDocument);
+                    }
+
                 }
                 await _dbContext.SaveChangesAsync();
                 return SaveDataResponse.Ok();
@@ -447,7 +486,7 @@ namespace ElGroupo.Web.Services
         {
             //if groupId has value, that means the user clicked "Other" from within a group, therefore that group will by default be selected and "Is Public" will be true
             var model = new LogAttendenceModel();
-            var activity = _dbContext.Activities.Include(x => x.ActivityGroup).FirstOrDefault(x => x.Id == activityId);
+            var activity = _dbContext.Activities.Include(x => x.ActivityGroup).Include(x=>x.Documents).Include(x => x.Credits).ThenInclude(x => x.CreditTypeCategory).ThenInclude(x => x.CreditType).FirstOrDefault(x => x.Id == activityId);
 
             //check if user previously logged
             //var existingRecord = _dbContext.UserActivities.FirstOrDefault(x => x.UserId == userId && x.ActivityId == activityId);
@@ -459,18 +498,32 @@ namespace ElGroupo.Web.Services
 
             //    //_dbContext.UserActivityDocuments.Include(x=>x.Document).Where(x=>x.UserActivityId == existingRecord.Id)
             //}
+            model.PublicNotes = activity.Notes;
             model.ActivityDescription = activity.Description;
             model.ActivityLocation = activity.Location;
             model.ActivityGroupName = activity.ActivityGroup.Name;
             model.ActivityId = activity.Id;
             model.ActivityGroupId = activity.ActivityGroup.Id;
-            model.ActivityStartTimeText = GetSimpleDateText(timeZoneId, activity.StartDate);
+            model.ActivityTimeText = GetSimpleDateText(timeZoneId, activity.StartDate, activity.EndDate);
             //model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
             model.IsPresenting = false;
-            model.CreditTypes = _dbContext.CreditTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
-            model.CreditCategories = _dbContext.CreditTypeCategories.Select(x => new CreditCategoryModel { Id = x.Id, CreditTypeId = x.CreditTypeId, Description = x.Description }).OrderBy(x => x.Description).ToList();
-            ;
 
+            //this comes from what the activity creator initially allowed
+            model.AllowedCredits = activity.Credits.Select(x => new ActivityCreditListModel
+            {
+                CreditTypeCategoryId = x.CreditTypeCategoryId,
+                CreditTypeCategoryName = x.CreditTypeCategory.Description,
+                CreditTypeName = x.CreditTypeCategory.CreditType.Description,
+                CreditTypeId = x.CreditTypeCategory.CreditTypeId,
+                Hours = x.CreditHours
+            }).ToList();
+
+            model.Documents = activity.Documents.Select(x => new ViewActivityDocumentModel
+            {
+                FileName = x.FileName,
+                Description = x.Description,
+                Id = x.Id
+            }).ToList();
             return model;
 
         }
@@ -482,7 +535,7 @@ namespace ElGroupo.Web.Services
 
 
             //check if user previously logged
-            var existingRecord = _dbContext.UserActivities.Include(x => x.Activity).ThenInclude(x => x.ActivityGroup).FirstOrDefault(x => x.Id == userActivityId);
+            var existingRecord = _dbContext.UserActivities.Include(x => x.Activity).ThenInclude(x => x.ActivityGroup).Include(x => x.Activity).ThenInclude(x => x.Documents).Include(x => x.Credits).ThenInclude(x => x.CreditTypeCategory).ThenInclude(x => x.CreditType).FirstOrDefault(x => x.Id == userActivityId);
             if (existingRecord == null) throw new Exception("record is null");
             if (existingRecord.UserId != userId) throw new Exception("user ids do not match");
 
@@ -497,18 +550,35 @@ namespace ElGroupo.Web.Services
             model.ActivityGroupName = existingRecord.Activity.ActivityGroup.Name;
             model.ActivityId = existingRecord.Activity.Id;
             model.ActivityGroupId = existingRecord.Activity.ActivityGroup.Id;
-            model.ActivityStartTimeText = GetSimpleDateText(timeZoneId, existingRecord.Activity.StartDate);
-            //model.AttendenceTypes = _dbContext.ActivityAttendanceTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
+            model.ActivityTimeText = GetSimpleDateText(timeZoneId, existingRecord.Activity.StartDate, existingRecord.Activity.EndDate);
+            model.PublicNotes = existingRecord.Activity.Notes;
             model.IsPresenting = existingRecord.IsPresenting;
-            model.CreditTypes = _dbContext.CreditTypes.Select(x => new LookupModel { Id = x.Id, Description = x.Description }).OrderBy(x => x.Description).ToList();
-            model.CreditCategories = _dbContext.CreditTypeCategories.Select(x => new CreditCategoryModel { Id = x.Id, CreditTypeId = x.CreditTypeId, Description = x.Description }).OrderBy(x => x.Description).ToList();
-            ;
-            model.Documents = _dbContext.UserActivityDocuments.Include(x => x.UserActivity).Include(x => x.Document).Where(x => x.UserActivity.Id == userActivityId).Select(x => new ViewDocumentModel
+
+            var allowedCreditRecords = _dbContext.ActivityCredits.Include(x => x.CreditTypeCategory).ThenInclude(x => x.CreditType).Where(x => x.Activity.Id == existingRecord.Activity.Id);
+            model.AllowedCredits = allowedCreditRecords.Select(x => new ActivityCreditListModel
+            {
+                CreditTypeCategoryId = x.CreditTypeCategoryId,
+                CreditTypeCategoryName = x.CreditTypeCategory.Description,
+                CreditTypeName = x.CreditTypeCategory.CreditType.Description,
+                CreditTypeId = x.CreditTypeCategory.CreditTypeId,
+                Hours = x.CreditHours
+            }).ToList();
+
+            model.Credits = existingRecord.Credits.Select(x => new ActivityCreditModel { CreditTypeCategoryId = x.CreditTypeCategoryId, NumberOfCredits = x.CreditHours }).ToList();
+
+            model.Documents = _dbContext.UserActivityDocuments.Include(x => x.UserActivity).Include(x => x.Document).Where(x => x.UserActivity.Id == userActivityId).Select(x => new ViewUserActivityDocumentModel
             {
                 FileName = x.Document.FileName,
                 Description = x.Document.Description,
                 Id = x.Document.Id,
                 UserActivityDocumentId = x.Id
+            }).ToList();
+
+            model.ActivityDocuments = existingRecord.Activity.Documents.Select(x => new ViewActivityDocumentModel
+            {
+                FileName = x.FileName,
+                Description = x.Description,
+                Id = x.Id
             }).ToList();
 
             return model;

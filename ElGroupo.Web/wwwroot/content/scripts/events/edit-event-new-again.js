@@ -16,7 +16,7 @@ EditEvent = {
         });
 
         $(".edit-links").on("click", function () {
-            
+            console.log('edit links clicked: ' + $(this).attr('data-edit-type'));
             switch ($(this).attr('data-edit-type')) {
                 case 'time':
                     EditEvent.LoadEventDates();
@@ -27,8 +27,11 @@ EditEvent = {
                 case 'location':
                     EditEvent.LoadEventLocation();
                     break;
-                case 'news':
+                case 'notifications':
                     EditEvent.LoadEventNotifications();
+                    break;
+                case 'messages':
+                    EditEvent.LoadEventMessages();
                     break;
             }
 
@@ -60,6 +63,54 @@ EditEvent = {
         $("html").on("click", "#btnDeleteEvent", EditEvent.EventHandlers.HandleDeleteEventClick);
         $("html").on("change", ".event-status input[type=radio]", EditEvent.EventHandlers.HandleEventStatusChanged);
         $("html").on("click", ".switch-container.checkin-type > span", EditEvent.EventHandlers.HandleCheckinTypeChanged);
+
+        $("#edit-attendees").on("click", function () {
+            
+            $.ajax({
+                url: "/Events/EditEventAttendees/" + $("#EventId").val(),
+                type: 'GET',
+                async: true,
+                cache: false,
+                success: function success(results) {
+                    //$("#edit-attendees").hide();
+                    //$("#cancel-attendee-changes").show();
+                    //$("#save-attendee-changes").show();
+                    $(".edit-links").hide();
+                    $(".save-links").show();
+                    $(".close-links").show();
+                    $("#divEditAttendees").empty().html(results).show();
+                    EditEventAttendees.Init();
+                    $("#divViewAttendees").hide();
+                },
+                error: function error(err) {
+                    alert('error');
+                }
+            });
+
+
+
+           
+
+            
+        });
+
+        $("#save-attendee-changes").on("click", function () {
+            EditEventAttendees.ConfirmSave();
+        });
+        $("#cancel-attendee-changes").on("click", function () {
+
+            Confirm('Do you want to cancel any attendee edits you made?', function () {
+                $("#divViewAttendees").show();
+                $("#divEditAttendees").hide();
+                $(".edit-links").show();
+                $(".save-links").hide();
+
+                $("#cancel-attendee-changes").hide();
+                $("#edit-attendees").show();
+                $("#save-attendee-changes").hide();
+            });
+            
+        });
     },
 
     MapSelectionModeChanged: function () {
@@ -110,7 +161,8 @@ EditEvent = {
         $("#details-view").empty();
         $("#details-view-container").hide();
         $(".edit-links").show();
-        $(".save-links").show();
+        $(".save-links").hide();
+        $(".close-links").hide();
         $("#divAttendees").show();
         //data-summary-type
         $("div[data-summary-type]").removeClass('summary-selected');
@@ -186,7 +238,7 @@ EditEvent = {
     },
     LoadEventMessages: function () {
         Ajax.Get("/Events/" + EditEvent.EventId + "/LoadMessages").done(function (results) {
-            EditEvent.PopulateDetails(results, 'new');
+            EditEvent.PopulateDetails(results, 'messages');
             //SwitchContainer.init("#frmEditEventDates");
             //init map here
         });

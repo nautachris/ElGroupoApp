@@ -16,6 +16,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using ElGroupo.Domain.Enums;
 using ElGroupo.Domain.Activities;
+using ElGroupo.Domain.Records;
+
 namespace ElGroupo.Domain.Data
 {
 
@@ -50,7 +52,7 @@ namespace ElGroupo.Domain.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<EventAttendee> EventAttendees { get; set; }
         public DbSet<AttendeeGroup> AttendeeGroups { get; set; }
-
+        public DbSet<ActivityDocument> ActivityDocuments { get; set; }
 
         public DbSet<MessageBoardItem> MessageBoardItems { get; set; }
         public DbSet<MessageBoardTopic> MessageBoardTopics { get; set; }
@@ -67,6 +69,22 @@ namespace ElGroupo.Domain.Data
         public DbSet<UserConnection> UserConnections { get; set; }
         public DbSet<UserValidationToken> UserValidationTokens { get; set; }
 
+        public DbSet<RecordCategory> RecordCategories { get; set; }
+        public DbSet<RecordSubCategory> RecordSubCategories { get; set; }
+        public DbSet<RecordElement> RecordElements { get; set; }
+        public DbSet<RecordItemElement> RecordItemElements { get; set; }
+        public DbSet<RecordItem> RecordItems { get; set; }
+        public DbSet<RecordItemUserData> RecordItemUserData { get; set; }
+        public DbSet<RecordItemUserDocument> RecordItemUserDocuments { get; set; }
+        public DbSet<RecordItemUser> RecordItemUsers { get; set; }
+
+        public DbSet<RecordElementDataType> RecordElementDataTypes { get; set; }
+        public DbSet<RecordElementLookupTable> RecordElementLookupTables { get; set; }
+        public DbSet<RecordElementInputType> RecordElementInputTypes { get; set; }
+
+        public DbSet<RecordDefaultElement> RecordDefaultElements { get; set; }
+        public DbSet<RecordElementDataTypeInputType> RecordElementDataTypeInputTypes { get; set; }
+        public DbSet<RecordElementLookupTableFieldType> RecordElementLookupTableFieldTypes { get; set; }
 
         public ElGroupoDbContext(DbContextOptions<ElGroupoDbContext> options) : base(options)
         {
@@ -171,7 +189,13 @@ namespace ElGroupo.Domain.Data
             builder.Entity<Activity>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<Activity>().HasMany(x => x.Credits).WithOne(x => x.Activity).HasForeignKey(x => x.ActivityId);
             builder.Entity<Activity>().HasMany(x => x.Users).WithOne(x => x.Activity).HasForeignKey(x => x.ActivityId);
+            builder.Entity<Activity>().HasMany(x => x.Documents).WithOne(x => x.Activity).HasForeignKey(x => x.ActivityId);
             builder.Entity<Activity>().HasOne(x => x.ActivityGroup).WithMany(x => x.Activities).HasForeignKey(x => x.ActivityGroupId).IsRequired();
+
+            builder.Entity<ActivityDocument>().ToTable("ActivityDocuments");
+            builder.Entity<ActivityDocument>().HasKey(x => x.Id);
+            builder.Entity<ActivityDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<ActivityDocument>().HasOne(x => x.Activity).WithMany(x => x.Documents).HasForeignKey(x => x.ActivityId);
 
             //builder.Entity<ActivityAttendanceType>().ToTable("ActivityAttendanceTypes");
             //builder.Entity<ActivityAttendanceType>().HasKey(x => x.Id);
@@ -189,7 +213,6 @@ namespace ElGroupo.Domain.Data
             builder.Entity<ActivityGroup>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<ActivityGroup>().HasOne(x => x.Department).WithMany(x => x.ActivityGroups).HasForeignKey(x => x.DepartmentId);
             builder.Entity<ActivityGroup>().HasOne(x => x.User).WithMany(x => x.ActivityGroups).HasForeignKey(x => x.UserId);
-            builder.Entity<ActivityGroup>().Property(x => x.DateCreated).HasMaxLength(255).IsRequired();
             builder.Entity<ActivityGroup>().HasMany(x => x.Activities).WithOne(x => x.ActivityGroup).HasForeignKey(x => x.ActivityGroupId);
             builder.Entity<ActivityGroup>().HasMany(x => x.UserGroups).WithOne(x => x.ActivityGroup).HasForeignKey(x => x.ActivityGroupId);
             builder.Entity<ActivityGroup>().HasMany(x => x.Organizers).WithOne(x => x.ActivityGroup).HasForeignKey(x => x.ActivityGroupId);
@@ -290,7 +313,527 @@ namespace ElGroupo.Domain.Data
             builder.Entity<UserActivityDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<UserActivityDocument>().HasOne(x => x.UserActivity).WithMany(x => x.Documents).HasForeignKey(x => x.UserActivityId);
             builder.Entity<UserActivityDocument>().HasOne(x => x.Document).WithMany(x => x.Activities).HasForeignKey(x => x.DocumentId);
+
+            //categories - IDs, Education
+            builder.Entity<RecordCategory>().ToTable("RecordCategories");
+            builder.Entity<RecordCategory>().HasKey(x => x.Id);
+            builder.Entity<RecordCategory>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordCategory>().HasMany(x => x.Items).WithOne(x => x.Category).HasForeignKey(x => x.CategoryId);
+            builder.Entity<RecordCategory>().HasMany(x => x.DefaultElements).WithOne(x => x.Category).HasForeignKey(x => x.CategoryId);
+
+            builder.Entity<RecordSubCategory>().ToTable("RecordSubCategories");
+            builder.Entity<RecordSubCategory>().HasKey(x => x.Id);
+            builder.Entity<RecordSubCategory>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordSubCategory>().HasMany(x => x.Items).WithOne(x => x.SubCategory).HasForeignKey(x => x.SubCategoryId);
+            builder.Entity<RecordSubCategory>().HasOne(x => x.ParentCategory).WithMany(x => x.SubCategories).HasForeignKey(x => x.ParentCategoryId);
+            builder.Entity<RecordSubCategory>().HasMany(x => x.DefaultElements).WithOne(x => x.SubCategory).HasForeignKey(x => x.SubCategoryId);
+
+            //this is something like -IDs->Social Security or Education->Graduate School
+            builder.Entity<RecordItem>().ToTable("RecordItems");
+            builder.Entity<RecordItem>().HasKey(x => x.Id);
+            builder.Entity<RecordItem>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordItem>().HasOne(x => x.Category).WithMany(x => x.Items).HasForeignKey(x => x.CategoryId);
+            builder.Entity<RecordItem>().HasOne(x => x.SubCategory).WithMany(x => x.Items).HasForeignKey(x => x.SubCategoryId);
+            builder.Entity<RecordItem>().HasOne(x => x.User).WithMany(x => x.CustomRecordItems).HasForeignKey(x => x.UserId);
+            builder.Entity<RecordItem>().HasMany(x => x.Elements).WithOne(x => x.Item).HasForeignKey(x => x.ItemId);
+
+            builder.Entity<RecordElement>().ToTable("RecordElements");
+            builder.Entity<RecordElement>().HasKey(x => x.Id);
+            builder.Entity<RecordElement>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordElement>().HasOne(x => x.DataType).WithMany(x => x.RecordElements).HasForeignKey(x => x.DataTypeId);
+            builder.Entity<RecordElement>().HasOne(x => x.InputType).WithMany(x => x.RecordElements).HasForeignKey(x => x.InputTypeId);
+            builder.Entity<RecordElement>().HasOne(x => x.LookupTableFieldType).WithMany(x => x.RecordElements).HasForeignKey(x => x.LookupTableFieldTypeId);
+
+
+            builder.Entity<RecordElementInputType>().ToTable("RecordElementInputTypes");
+            builder.Entity<RecordElementInputType>().HasKey(x => x.Id);
+            builder.Entity<RecordElementInputType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordElementInputType>().HasMany(x => x.RecordElements).WithOne(x => x.InputType).HasForeignKey(x => x.InputTypeId);
+            builder.Entity<RecordElementInputType>().HasMany(x => x.DataTypes).WithOne(x => x.InputType).HasForeignKey(x => x.InputTypeId);
+
+            builder.Entity<RecordElementDataType>().ToTable("RecordElementDataTypes");
+            builder.Entity<RecordElementDataType>().HasKey(x => x.Id);
+            builder.Entity<RecordElementDataType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordElementDataType>().HasMany(x => x.InputTypes).WithOne(x => x.DataType).HasForeignKey(x => x.DataTypeId);
+
+            builder.Entity<RecordElementDataTypeInputType>().ToTable("RecordElementDataTypeInputTypes");
+            builder.Entity<RecordElementDataTypeInputType>().HasKey(x => x.Id);
+            builder.Entity<RecordElementDataTypeInputType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordElementDataTypeInputType>().HasOne(x => x.DataType).WithMany(x => x.InputTypes).HasForeignKey(x => x.DataTypeId);
+            builder.Entity<RecordElementDataTypeInputType>().HasOne(x => x.InputType).WithMany(x => x.DataTypes).HasForeignKey(x => x.InputTypeId);
+
+            //individual attributes describing a record item (name, number, start date, end date)
+
+
+
+
+            builder.Entity<RecordElementLookupTable>().ToTable("RecordElementLookupTables");
+            builder.Entity<RecordElementLookupTable>().HasKey(x => x.Id);
+            builder.Entity<RecordElementLookupTable>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+
+
+            //maps a record item (i.e. SSN) to attributes (number, assigned date, etc)
+            builder.Entity<RecordItemElement>().ToTable("RecordItemElements");
+            builder.Entity<RecordItemElement>().HasKey(x => x.Id);
+            builder.Entity<RecordItemElement>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordItemElement>().HasOne(x => x.Element).WithMany(x => x.Items).HasForeignKey(x => x.ElementId);
+            builder.Entity<RecordItemElement>().HasOne(x => x.Item).WithMany(x => x.Elements).HasForeignKey(x => x.ItemId);
+            builder.Entity<RecordItemElement>().HasMany(x => x.UserData).WithOne(x => x.Element).HasForeignKey(x => x.ElementId).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+
+
+
+            //maps a user to a record item - i.e. Chris's Undergraduate (may have multiple)
+            builder.Entity<RecordItemUser>().ToTable("RecordItemUsers");
+            builder.Entity<RecordItemUser>().HasKey(x => x.Id);
+            builder.Entity<RecordItemUser>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordItemUser>().Property(x => x.Visible).IsRequired().HasDefaultValue(true);
+            builder.Entity<RecordItemUser>().HasOne(x => x.Item).WithMany(x => x.Users).HasForeignKey(x => x.ItemId);
+            builder.Entity<RecordItemUser>().HasOne(x => x.User).WithMany(x => x.RecordItems).HasForeignKey(x => x.UserId);
+            builder.Entity<RecordItemUser>().HasMany(x => x.UserData).WithOne(x => x.ItemUser).HasForeignKey(x => x.ItemUserId);
+            builder.Entity<RecordItemUser>().HasMany(x => x.Documents).WithOne(x => x.ItemUser).HasForeignKey(x => x.ItemUserId);
+
+            //documents associated with Chris's Undergrad
+            builder.Entity<RecordItemUserDocument>().ToTable("RecordItemUserDocuments");
+            builder.Entity<RecordItemUserDocument>().HasKey(x => x.Id);
+            builder.Entity<RecordItemUserDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordItemUserDocument>().HasOne(x => x.ItemUser).WithMany(x => x.Documents).HasForeignKey(x => x.ItemUserId);
+
+
+
+            builder.Entity<RecordItemUserData>().ToTable("RecordItemUserData");
+            builder.Entity<RecordItemUserData>().HasKey(x => x.Id);
+            builder.Entity<RecordItemUserData>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordItemUserData>().Property(x => x.Value).HasMaxLength(255);
+            builder.Entity<RecordItemUserData>().HasOne(x => x.ItemUser).WithMany(x => x.UserData).HasForeignKey(x => x.ItemUserId);
+
+            //maps that this data item (i.e. 4/22/2011) maps to a record element (i.e. graduation date)
+            builder.Entity<RecordItemUserData>().HasOne(x => x.Element).WithMany(x => x.UserData).HasForeignKey(x => x.ElementId);
+
+
+
+            builder.Entity<RecordElementLookupTableFieldType>().ToTable("RecordElementLookupTableFieldTypes");
+            builder.Entity<RecordElementLookupTableFieldType>().HasKey(x => x.Id);
+            builder.Entity<RecordElementLookupTableFieldType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordElementLookupTableFieldType>().HasMany(x => x.RecordElements).WithOne(x => x.LookupTableFieldType).HasForeignKey(x => x.LookupTableFieldTypeId);
+
+
+            builder.Entity<RecordDefaultElement>().ToTable("RecordDefaultElements");
+            builder.Entity<RecordDefaultElement>().HasKey(x => x.Id);
+            builder.Entity<RecordDefaultElement>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordDefaultElement>().HasOne(x => x.Category).WithMany(x => x.DefaultElements).HasForeignKey(x => x.CategoryId);
+            builder.Entity<RecordDefaultElement>().HasOne(x => x.SubCategory).WithMany(x => x.DefaultElements).HasForeignKey(x => x.SubCategoryId);
+            builder.Entity<RecordDefaultElement>().HasOne(x => x.Element).WithMany(x => x.DefaultElements).HasForeignKey(x => x.ElementId);
         }
+
+        public static async Task SeedDataTypes(IServiceProvider provider)
+        {
+
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+            RecordElementDataType dateDt = new RecordElementDataType { Name = "Date" };
+            ctx.Add(dateDt);
+
+            RecordElementDataType dateTimeDt = new RecordElementDataType { Name = "DateTime" };
+            ctx.Add(dateTimeDt);
+
+            RecordElementDataType stringDt = new RecordElementDataType { Name = "Text" };
+            ctx.Add(stringDt);
+
+            RecordElementDataType intDt = new RecordElementDataType { Name = "Integer" };
+            ctx.Add(intDt);
+
+            RecordElementDataType dblDt = new RecordElementDataType { Name = "Double" };
+            ctx.Add(dblDt);
+
+            RecordElementDataType boolDt = new RecordElementDataType { Name = "Boolean" };
+            ctx.Add(boolDt);
+
+
+            RecordElementInputType tbIt = new RecordElementInputType { Name = "Text Box" };
+            ctx.Add(tbIt);
+
+            RecordElementInputType ntbIt = new RecordElementInputType { Name = "Numeric Text Box" };
+            ctx.Add(ntbIt);
+
+            RecordElementInputType dpIt = new RecordElementInputType { Name = "Date Picker" };
+            ctx.Add(dpIt);
+
+            RecordElementInputType dtIt = new RecordElementInputType { Name = "Date Time Picker" };
+            ctx.Add(dtIt);
+
+            RecordElementInputType cbIt = new RecordElementInputType { Name = "Checkbox" };
+            ctx.Add(cbIt);
+
+            RecordElementInputType ddIt = new RecordElementInputType { Name = "Dropdown List" };
+            ctx.Add(ddIt);
+
+            RecordElementInputType rblIt = new RecordElementInputType { Name = "Radio Button List" };
+            ctx.Add(rblIt);
+
+
+            //integer
+            RecordElementDataTypeInputType rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = intDt,
+                InputType = ddIt
+            };
+            ctx.Add(rdtit);
+
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = intDt,
+                InputType = rblIt
+            };
+            ctx.Add(rdtit);
+
+            //rdtit = new RecordElementDataTypeInputType
+            //{
+            //    DataType = intDt,
+            //    InputType = rblIt
+            //};
+            //ctx.Add(rdtit);
+
+            //decimal/double
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = dblDt,
+                InputType = ntbIt
+            };
+            ctx.Add(rdtit);
+
+            //truefalse
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = boolDt,
+                InputType = cbIt
+            };
+            ctx.Add(rdtit);
+
+            //text
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = stringDt,
+                InputType = tbIt
+            };
+            ctx.Add(rdtit);
+
+            //date
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = dateDt,
+                InputType = dpIt
+            };
+            ctx.Add(rdtit);
+
+            //datetime
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = dateTimeDt,
+                InputType = dtIt
+            };
+            ctx.Add(rdtit);
+
+            await ctx.SaveChangesAsync();
+        }
+        public static async Task SeedRecordTables(IServiceProvider provider)
+        {
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+            var cat = new RecordCategory { Name = "IDs & Licenses", ItemDescriptionColumnHeader = "License", ItemValueColumnHeader = "#" };
+            ctx.Add(cat);
+            var item = new RecordItem { Name = "Social Security #", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Drivers License", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "National Provider Identification #", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Tax Identification #", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "State License #", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "State Controlled Substances License #", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "DEA Registration #", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "School ID #", Category = cat };
+            ctx.Add(item);
+
+            cat = new RecordCategory { Name = "Education History", ItemDescriptionColumnHeader = "Education", ItemValueColumnHeader = "Institution" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "Fellowship", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Residency", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Medical School", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Undergraduate Education", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Graduate School", Category = cat };
+            ctx.Add(item);
+
+            var subCat = new RecordSubCategory { Name = "USMLE Board Exams", ParentCategory = cat };
+            ctx.Add(subCat);
+            item = new RecordItem { Name = "Step 3", SubCategory = subCat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Step 2 CK", SubCategory = subCat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Step 2 CS", SubCategory = subCat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Step 1", SubCategory = subCat };
+            ctx.Add(item);
+
+            subCat = new RecordSubCategory { Name = "COMLEX Exams", ParentCategory = cat };
+            ctx.Add(subCat);
+            item = new RecordItem { Name = "COMLEX 3", SubCategory = subCat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "2PE", SubCategory = subCat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "2CE", SubCategory = subCat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Level 1", SubCategory = subCat };
+            ctx.Add(item);
+
+            subCat = new RecordSubCategory { Name = "Standardized Testing", ParentCategory = cat };
+            ctx.Add(subCat);
+            item = new RecordItem { Name = "MCAT", SubCategory = subCat };
+            ctx.Add(item);
+
+
+            cat = new RecordCategory { Name = "Certifications" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "MRI Safety", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Board Certification", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Basic Life Support (BLS)", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Advanced Cardiovascular Life Support", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "PALS", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "First Aid Certification", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Research certifications", Category = cat };
+            ctx.Add(item);
+
+
+            cat = new RecordCategory { Name = "Lectures/Presentations" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "M&M", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Journal Club", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Grand Rounds", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Other Teachings", Category = cat };
+            ctx.Add(item);
+
+
+            cat = new RecordCategory { Name = "Research/Publications" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "Abstracts", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Posters", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Articles", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Chapters/Textbooks", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "IRB Submission", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Research Protocol", Category = cat };
+            ctx.Add(item);
+
+
+            cat = new RecordCategory { Name = "Contracts/Fundraising" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "Contracts", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Grants", Category = cat };
+            ctx.Add(item);
+
+            cat = new RecordCategory { Name = "Employment History" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "Employment", Category = cat };
+            ctx.Add(item);
+
+            cat = new RecordCategory { Name = "Committees/Memberships" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "Committe/Membership", Category = cat };
+            ctx.Add(item);
+
+            cat = new RecordCategory { Name = "Awards/Honors" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "Award", Category = cat };
+            ctx.Add(item);
+
+            cat = new RecordCategory { Name = "Extracurriculars" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "Mentoring", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Volunteering", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Preceptorship", Category = cat };
+            ctx.Add(item);
+            item = new RecordItem { Name = "Extracurriculars", Category = cat };
+            ctx.Add(item);
+
+            cat = new RecordCategory { Name = "Other Accomplishments" };
+            ctx.Add(cat);
+            item = new RecordItem { Name = "Accomplishment", Category = cat };
+            ctx.Add(item);
+
+
+            var xxx = new RecordElementLookupTableFieldType { Name = "Id" };
+            ctx.Add(xxx);
+
+            xxx = new RecordElementLookupTableFieldType { Name = "Value" };
+            ctx.Add(xxx);
+
+            await ctx.SaveChangesAsync();
+
+
+
+
+
+            RecordElementDataType dateDt = new RecordElementDataType { Name = "Date" };
+            ctx.Add(dateDt);
+
+            RecordElementDataType dateTimeDt = new RecordElementDataType { Name = "DateTime" };
+            ctx.Add(dateTimeDt);
+
+            RecordElementDataType stringDt = new RecordElementDataType { Name = "Text" };
+            ctx.Add(stringDt);
+
+            RecordElementDataType intDt = new RecordElementDataType { Name = "Integer" };
+            ctx.Add(intDt);
+
+            RecordElementDataType dblDt = new RecordElementDataType { Name = "Double" };
+            ctx.Add(dblDt);
+
+            RecordElementDataType boolDt = new RecordElementDataType { Name = "Boolean" };
+            ctx.Add(boolDt);
+
+
+            RecordElementInputType tbIt = new RecordElementInputType { Name = "Text Box" };
+            ctx.Add(tbIt);
+
+            RecordElementInputType ntbIt = new RecordElementInputType { Name = "Numeric Text Box" };
+            ctx.Add(ntbIt);
+
+            RecordElementInputType dpIt = new RecordElementInputType { Name = "Date Picker" };
+            ctx.Add(dpIt);
+
+            RecordElementInputType dtIt = new RecordElementInputType { Name = "Date Time Picker" };
+            ctx.Add(dtIt);
+
+            RecordElementInputType cbIt = new RecordElementInputType { Name = "Checkbox" };
+            ctx.Add(cbIt);
+
+            RecordElementInputType ddIt = new RecordElementInputType { Name = "Dropdown List" };
+            ctx.Add(ddIt);
+
+            RecordElementInputType rblIt = new RecordElementInputType { Name = "Radio Button List" };
+            ctx.Add(rblIt);
+
+
+            //integer
+            RecordElementDataTypeInputType rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = intDt,
+                InputType = ddIt
+            };
+            ctx.Add(rdtit);
+
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = intDt,
+                InputType = rblIt
+            };
+            ctx.Add(rdtit);
+
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = intDt,
+                InputType = rblIt
+            };
+            ctx.Add(rdtit);
+
+            //decimal/double
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = dblDt,
+                InputType = ntbIt
+            };
+            ctx.Add(rdtit);
+
+            //truefalse
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = boolDt,
+                InputType = cbIt
+            };
+            ctx.Add(rdtit);
+
+            //text
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = stringDt,
+                InputType = tbIt
+            };
+            ctx.Add(rdtit);
+
+            //date
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = dateDt,
+                InputType = dpIt
+            };
+            ctx.Add(rdtit);
+
+            //datetime
+            rdtit = new RecordElementDataTypeInputType
+            {
+                DataType = dateTimeDt,
+                InputType = dtIt
+            };
+            ctx.Add(rdtit);
+
+            RecordElement recEl = new RecordElement { Name = "Start Date", DataType = dateDt, InputType = dpIt };
+            ctx.Add(recEl);
+            recEl = new RecordElement { Name = "End Date", DataType = stringDt, InputType = dtIt };
+            ctx.Add(recEl);
+            recEl = new RecordElement { Name = "Name", DataType = stringDt, InputType = tbIt };
+            ctx.Add(recEl);
+            recEl = new RecordElement { Name = "License #", DataType = stringDt, InputType = tbIt };
+            ctx.Add(recEl);
+            recEl = new RecordElement { Name = "Cost", DataType = dblDt, InputType = ntbIt };
+            ctx.Add(recEl);
+            await ctx.SaveChangesAsync();
+
+            foreach (var cat1 in ctx.RecordCategories)
+            {
+                //var item1 = new RecordDefaultElement { Category = cat1}
+                foreach (var el1 in ctx.RecordElements)
+                {
+                    var item1 = new RecordDefaultElement { Category = cat1, Element = el1 };
+                    ctx.Add(item1);
+                }
+            }
+
+
+            foreach (var ri in ctx.RecordItems)
+            {
+                //ri.Elements.Add(new RecordItemElement)
+                foreach (var recordEl in ctx.RecordElements)
+                {
+                    var rie = new RecordItemElement { Element = recordEl, Item = ri };
+                    ctx.Add(rie);
+                }
+
+            }
+
+            await ctx.SaveChangesAsync();
+        }
+
         public static async Task SeedActivityTables2(IServiceProvider provider)
         {
             try
@@ -688,15 +1231,16 @@ namespace ElGroupo.Domain.Data
             //await ctx.SaveChangesAsync();
             var resGroup = ctx.DepartmentUserGroups.First(x => x.Id == 4277);
             var users = ReadUsers("C:\\Projects\\ElGroupo\\ElGroupoApp\\radiology_residents.csv");
-            
+
             foreach (var u in users)
             {
                 var user = ctx.Users.FirstOrDefault(x => x.Email == u.Email);
-                if (user == null) {
+                if (user == null)
+                {
                     await userManager.CreateAsync(u, "scatterbrain1");
                     user = ctx.Users.FirstOrDefault(x => x.Email == u.Email);
                 }
-                var deptUser = ctx.DepartmentUsers.Include(x=>x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Department.Id == 4042);
+                var deptUser = ctx.DepartmentUsers.Include(x => x.User).FirstOrDefault(x => x.User.Id == user.Id && x.Department.Id == 4042);
                 if (deptUser == null)
                 {
                     deptUser = new DepartmentUser { User = user, Department = ctx.Departments.First(x => x.Id == 4042) };

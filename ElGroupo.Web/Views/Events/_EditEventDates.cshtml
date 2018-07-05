@@ -16,10 +16,10 @@
     </div>
     <div class="row centered">
         <div class="col span-3-of-6">
-            <input asp-for="StartDate" type="text" class="width-100" placeholder="Enter Event Start Date...">
+            <input data-start-date asp-for="StartDate" type="text" class="width-100" placeholder="Enter Event Start Date...">
         </div>
         <div class="col span-1-of-6">
-            <select asp-for="StartHour">
+            <select data-start-hour asp-for="StartHour">
                 <option value="12" selected>12</option>
                 @for (int hour = 1; hour <= 11; hour++)
                 {
@@ -27,7 +27,7 @@
                 }
             </select>
         </div>
-        <div class="col span-1-of-6">
+        <div data-start-min class="col span-1-of-6">
             <select asp-for="StartMinute">
                 @for (var min = 0; min <60; min++)
                 {
@@ -37,7 +37,7 @@
             </select>
         </div>
         <div class="col span-1-of-6">
-            <select asp-for="StartAMPM">
+            <select data-start-am-pm asp-for="StartAMPM">
                 <option value="AM">AM</option>
                 <option value="PM">PM</option>
             </select>
@@ -48,10 +48,10 @@
     </div>
     <div class="row centered">
         <div class="col span-3-of-6">
-            <input asp-for="EndDate" type="text" class="width-100" placeholder="Enter Event End Date...">
+            <input data-end-date asp-for="EndDate" type="text" class="width-100" placeholder="Enter Event End Date...">
         </div>
         <div class="col span-1-of-6">
-            <select asp-for="EndHour">
+            <select data-end-hour asp-for="EndHour">
                 <option value="12" selected>12</option>
                 @for (int hour = 1; hour <= 11; hour++)
                 {
@@ -60,7 +60,7 @@
             </select>
         </div>
         <div class="col span-1-of-6">
-            <select asp-for="EndMinute">
+            <select data-end-min asp-for="EndMinute">
                 @for (var min = 0; min < 60; min++)
                 {
                     <option value="@min">@min.ToString()</option>
@@ -69,7 +69,7 @@
             </select>
         </div>
         <div class="col span-1-of-6">
-            <select asp-for="EndAMPM">
+            <select data-end-am-pm asp-for="EndAMPM">
                 <option value="AM">AM</option>
                 <option value="PM">PM</option>
             </select>

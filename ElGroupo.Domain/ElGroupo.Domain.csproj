@@ -17,6 +17,8 @@
     <Compile Remove="Migrations\20180412214310_wtfidunno.cs" />
     <Compile Remove="Migrations\20180412215230_activityworkflow.cs" />
     <Compile Remove="Migrations\20180412220352_activityworkflow.cs" />
+    <Compile Remove="Migrations\20180628150803_addrecords.cs" />
+    <Compile Remove="Migrations\20180704194704_blah.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +28,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
   </ItemGroup>

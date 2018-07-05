@@ -1,0 +1,19 @@
+﻿@using ElGroupo.Web.Models.Records
+@model IEnumerable<ViewElementModel>
+
+@{
+    Layout = null;
+}
+
+<div style="text-align:center;">
+    <table style="margin:0 auto; text-align:center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><a asp-controller="Records" asp-action="EditRecordItem" asp-route-itemId="@item.Id">@item.Name</a></td>
+                <td><a>Remove</a></td>
+            </tr>
+
+        }
+    </table>
+</div>

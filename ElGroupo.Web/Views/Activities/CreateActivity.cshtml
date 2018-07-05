@@ -10,24 +10,17 @@
 
 
 }
-@*<section class="create-activity-group" style="background-color:#2d2d2d; color:white; text-transform:uppercase; text-align:center; padding:20px;">*@
-<section class="create-activity-group" style="text-align:center; padding:20px;">
+
+<section class="create-activity-group" style="padding:20px;">
     <div class="row">
         <h4 id="divGroupName">@Model.ActivityGroupName</h4>
-        <div class="row" style="font-size:0.7em;">
-            <a id="aEditTitle">Add Unique Title</a>
-        </div>
+
     </div>
 
     <input type="hidden" asp-for="ActivityGroupId" />
-    @*<div class="row">
-            <label>Create New Activity</label>
 
-
-        </div>*@
-@Html.Partial("_CreateActivity", Model)
-    <div class="row">
-        @*<a class="btn btn-primary" asp-controller="Activities" asp-action="Group" asp-route-activityGroupId="@Model.ActivityGroupId">Cancel</a>*@
+    @Html.Partial("_CreateActivity", Model)
+    <div class="row centered">
         <button id="btnCreate" class="btn btn-primary">Create Activity</button>
 
     </div>
@@ -39,5 +32,13 @@
 </section>
 @section Scripts{
     <script type="text/javascript" src="~/content/scripts/activities/create-activity.js"></script>
+    <script type="text/javascript" src="~/content/scripts/shared/start-end-dates.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () { 
+            StartEndDates.Init('section.create-activity-group');
+        });
+        
+    </script>
 
 }

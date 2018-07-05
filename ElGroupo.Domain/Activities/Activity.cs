@@ -20,6 +20,8 @@ namespace ElGroupo.Domain.Activities
         /// these are the types/categories of credits OFFERED by the activity - not the number of hours of each
         /// </summary>
         public virtual ICollection<ActivityCredit> Credits { get; set; }
+
+        public virtual ICollection<ActivityDocument> Documents { get; set; }
         public string Location { get; set; }
         public string Description { get; set; }
         public DateTime? StartDate { get; set; }

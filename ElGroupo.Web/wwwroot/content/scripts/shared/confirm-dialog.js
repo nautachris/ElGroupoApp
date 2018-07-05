@@ -25,6 +25,12 @@
 }
 
 var MessageDialog = function (message, callback) {
+    //if (!callback) {
+    //    $("#btnMessageDialogOK").hide();
+    //}
+    //else {
+    //    $("#btnMessageDialogOK").show();
+    //}
     var cb = callback;
     $("#divConfirm").hide();
     $("#main").css('opacity', 0.2);

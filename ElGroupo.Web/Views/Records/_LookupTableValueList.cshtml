@@ -1,0 +1,19 @@
+﻿@using ElGroupo.Web.Models.Shared
+@model IEnumerable<IdValueModel>
+
+@{
+    Layout = null;
+}
+
+<div style="text-align:center;">
+    <table style="margin:0 auto; text-align:center;">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Value</td>
+                <td style="margin-left:20px;"><a style="margin-left:20px;" data-remove-value data-value-id="@item.Id">Remove</a></td>
+            </tr>
+
+        }
+    </table>
+</div>

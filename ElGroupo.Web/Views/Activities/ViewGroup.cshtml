@@ -1,6 +1,15 @@
 ﻿@using ElGroupo.Web.Models.Activities
 @model ActivityGroupActivitiesModel
 
+
+@functions{
+
+    public string GetLinkColor(bool alreadyLogged)
+    {
+        return alreadyLogged ? "darkgreen" : "#2d2d2d";
+
+    }
+}
 <section class="view-activity-group" style="color:#2d2d2d; text-transform:uppercase; text-align:center; padding-bottom:100px;">
     <input type="hidden" asp-for="ActivityGroupId" />
 
@@ -8,10 +17,15 @@
     <div class="row centered">
         <label id="lblActivityGroupName">@Model.ActivityGroupName</label>
     </div>
-    <div class="row" style="margin-top:25px;">
-        <label style="font-size:14px;" for="txtSearch">Search:</label>
-        <input style="color: #2d2d2d; border:none;" placeholder="Enter Name of Session..." class="no-border" type="text" id="txtSearch" />
-    </div>
+    @if (Model.Activities.Count > 5)
+    {
+
+        <div class="row" style="margin-top:25px;">
+            <label style="font-size:14px;" for="txtSearch">Search:</label>
+            <input style="color: #2d2d2d; border:none;" placeholder="Enter Name of Session..." class="no-border" type="text" id="txtSearch" />
+        </div>
+    }
+
     @if (Model.CanEditGroup)
     {
         <div class="row">
@@ -19,69 +33,98 @@
         </div>
 
     }
-    @foreach (var activity in Model.Activities)
-    {
-        <div class="row activity-list-item-container" data-activity-id="@activity.Id">
-            @if (activity.AttendenceLogged)
-            {
+
+
+
+    <ul style="margin-top:30px; margin-bottom:10px;">
+
+
+        @foreach (var activity in Model.Activities)
+        {
+            <li style="list-style:none;" class="row" data-activity-id="@activity.Id">
+
+
+                <div style="width:50%;" class="row line-after" data-activity-name="@activity.Description">
+                    <div>
+                        <div style="text-align:left;">
+
+
+                            @if (activity.AttendenceLogged)
+                            {
+                                //style = "color:@GetLinkColor(activity.AttendenceLogged);"
+                                <a asp-controller="Activities" asp-action="EditAttendenceLog" asp-route-userActivityId="@activity.UserActivityId">@activity.Description</a>
+                                <img style="height:30px; width:30px;" src="~/content/images/yes.png" />
+
+                            }
+                            else
+                            {
+                                <a asp-controller="Activities" asp-action="AddAttendenceLog" asp-route-activityId="@activity.Id">@activity.Description</a>
+
+                            }
+                        </div>
+
+                        @*@if (activity.CanEditActivity)
+                            {
+                                <div style="float:right;">
+                                    <a style="text-align:right;" class="delete-activity">Delete Activity</a>
+                                </div>
+
+
+                            }*@
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+            </li>
+
+        }
+
+    </ul>
+
+
+    @*@foreach (var activity in Model.Activities)
+        {
+            <div class="row activity-list-item-container" data-activity-id="@activity.Id">
 
                 <a style="color:white;" asp-controller="Activities" asp-action="EditAttendenceLog" asp-route-userActivityId="@activity.UserActivityId">
                     <div style="width:50%;" class="row line-after activity-list-item" data-activity-name="@activity.Description">
-                        <div class="user-dashboard-link-small"><div style="color:lightgreen">@activity.Description</div></div>
+                        <div class="user-dashboard-link-small">
+                            <div style="color:@GetLinkColor(activity.AttendenceLogged)">@activity.Description</div>
+                            @if (activity.CanEditActivity)
+                            {
+                                <a class="delete-activity" style="color:white">Delete</a>
 
-                        @if (activity.CanEditActivity)
-                        {
-                            <a class="delete-activity" style="color:white">Delete</a>
-
-                        }
-
-                    </div>
-                </a>
-            }
-            else
-            {
-                <a style="color:white;" asp-controller="Activities" asp-action="AddAttendenceLog" asp-route-activityId="@activity.Id">
-                    <div style="width:50%;" class="row line-after activity-list-item" data-activity-name="@activity.Description">
-                        <div class="user-dashboard-link-small"><div>@activity.Description</div></div>
-                        @if (activity.CanEditActivity)
-                        {
-                            <a class="delete-activity" style="color:white">Delete</a>
-
-                        }
+                            }
+                        </div>
 
                     </div>
                 </a>
+            </div>
 
-            }
+        }*@
 
+    <div class="row" style="margin-top:70px;">
+        <div class="row" style="width:50%;">
+            <a class="btn btn-primary" asp-controller="Activities" asp-action="CreateActivity" asp-route-groupId="@Model.ActivityGroupId">Create New Activity</a>
+        </div>
+    </div>
+
+    <div class="row centered" style="margin-top:0px;">
+        <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+            <a asp-controller="Activities" asp-action="Dashboard">Cancel</a>
+        </div>
+    </div>
+    @if (Model.CanEditGroup)
+    {
+        <div class="row centered" style="margin-top:0px;">
+            <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+                <a id="btnDeleteActivityGroup">Delete</a>
+            </div>
         </div>
 
     }
-    <div class="row">
-        <div class="row" style="width:50%;">
-            <a style="color:white;" asp-controller="Activities" asp-action="CreateActivity" asp-route-groupId="@Model.ActivityGroupId">
-                <div class="user-dashboard-link-small"><div>Add Document(s) For Multiple Activities</div></div>
-            </a>
-        </div>
-    </div>
-    <div class="row">
-        <div class="row" style="width:50%;">
-            <a style="color:white;" asp-controller="Activities" asp-action="CreateActivity" asp-route-groupId="@Model.ActivityGroupId">
-                <div class="user-dashboard-link-small"><div>Create New Activity</div></div>
-            </a>
-        </div>
-    </div>
-
-    <div class="row centered">
-        <a class="btn btn-primary" asp-controller="Activities" asp-action="Dashboard">Return to Dashboard</a>
-        @if (Model.CanEditGroup)
-        {
-            <a class="btn btn-primary" id="btnDeleteActivityGroup">Delete Activity Group</a>
-
-        }
-    </div>
 </section>
 
-@section Scripts{ 
+@section Scripts{
     <script type="text/javascript" src="~/content/scripts/activities/view-activity-group.js"></script>
 }
