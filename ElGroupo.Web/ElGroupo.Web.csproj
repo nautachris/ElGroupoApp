@@ -130,6 +130,39 @@
       <Content Update="Views\Events\_ViewEventAttendees_Old.cshtml">
         <Pack>$(IncludeRazorContentInPack)</Pack>
       </Content>
+      <Content Update="Views\Records\ItemTypes.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_CreateItemDetails.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemUserListItem.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemUserDataDateTimePicker.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemUserDataDatePicker.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemUserDataAutoComplete.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemUserDataRadioButtonList.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemUserDataDropDownList.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemUserDataNumericTextBox.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemUserDataCheckBox.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
+      <Content Update="Views\Records\_ItemTypeList.cshtml">
+        <Pack>$(IncludeRazorContentInPack)</Pack>
+      </Content>
       <Content Update="wwwroot\content\images\add-128.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>

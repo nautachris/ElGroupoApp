@@ -14,5 +14,6 @@ namespace ElGroupo.Web.Models.Records
         public long? LookupTableId { get; set; }
         public long? LookupTableFieldTypeId { get; set; }
         public long InputTypeId { get; set; }
+        public bool SameRow { get; set; }
     }
 }

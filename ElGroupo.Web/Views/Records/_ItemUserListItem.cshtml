@@ -1,0 +1,32 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model UserItemListModel
+@{
+    Layout = null;
+}
+
+<div class="row" data-record-item-id="@Model.RecordItemId" style="border-radius:10px; padding-left:15px; line-height:40px;">
+    <div class="col span-4-of-10" style="text-align:left; margin: 0 0 0 0;">
+        @Model.Name
+    </div>
+    <div class="col span-5-of-10 primary-display" style="text-align:right;margin: 0 0 0 0;">
+        @Model.Value
+    </div>
+    @if (Model.DocumentId.HasValue)
+    {
+        <div class="col span-1-of-10" style="margin:0 0 0 0;">
+            <a class="no-decoration" asp-controller="Records" asp-action="GetDocument" asp-route-documentId="@Model.DocumentId.Value">
+                <img src="~/content/images/paperclip.png" style="width:16px; height:16px; margin-top:12px;" />
+            </a>
+
+        </div>
+
+    }
+    else
+    {
+        <div class="col span-1-of-10 record-add-document" style="margin:0 0 0 0;">
+            @*<img src="~/content/images/news.png" style="width:16px; height:16px; margin-top:12px;" />*@
+        </div>
+
+    }
+</div>

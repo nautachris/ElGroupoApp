@@ -8,13 +8,58 @@
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
+
+
+div.loader {
+    text-align: center;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    /*width: 100px;*/
+    /*height: 100px;*/
+    margin: 0 auto;
+    /*border: 16px solid #f3f3f3;*/
+    /*border-radius: 50%;*/
+    /*border-top: 16px solid #3498db;*/
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
 .hide-if-create-group-only {
 display:none;
 }
 input[type=text]{
     border-radius:10px;
 }
-
+.add-category-item.active {
+    border: 2px solid black;
+    border-radius: 25px;
+    padding: 30px;
+}
+div[data-item-details-container-id] {
+    border: 2px solid black;
+    border-radius: 25px;
+    padding: 30px;
+}
 .user-dashboard-link {
     margin: 10px;
     color: #232323;
@@ -63,9 +108,17 @@ div.divider {
     margin-top: 34px;
     background-color: #dfdfdf;
 }
+div.divider-record-category {
+    /*width: 30%;
+    margin-left: 35%;*/
+    text-align: center;
+    height: 1px;
+    margin-top: 44px;
+    background-color: #dfdfdf;
+}
 .user-dashboard-link div {
     position: absolute;
-    top: 60%;
+    top: 70%;
     left: 50%;
     transform: translate(-50%, -50%);
     text-transform: uppercase;
@@ -1515,9 +1568,23 @@ img.img-event-organizer{
 }
 
 body {
-    font-family: 'Source Sans Pro';
-    letter-spacing:0.5px;
-    font-size:14px;
+    /*font-family: 'Source Sans Pro';*/
+    font-family: 'PT Sans';
+    letter-spacing: 0.5px;
+    font-size: 14px;
+}
+
+.row[data-record-item-id]:hover{
+    font-weight:bold;
+}
+
+.view-category-items div[data-record-item-id] {
+    padding-top: 0px;
+    cursor: pointer;
+}
+
+.view-category-items div[data-item-user-id]:hover {
+    background-color: lightblue;
 }
 
 .ui-state-active,

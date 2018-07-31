@@ -1,0 +1,14 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model IEnumerable<UserItemListModel>
+@{
+    Layout = null;
+}
+
+
+@foreach (var item in Model)
+{
+
+    @Html.Partial("_ItemUserListItem", item)
+
+}

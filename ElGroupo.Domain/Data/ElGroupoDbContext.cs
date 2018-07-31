@@ -17,6 +17,8 @@ using System.Drawing.Imaging;
 using ElGroupo.Domain.Enums;
 using ElGroupo.Domain.Activities;
 using ElGroupo.Domain.Records;
+using System.Data.SqlClient;
+using ElGroupo.Domain.Lookups;
 
 namespace ElGroupo.Domain.Data
 {
@@ -74,10 +76,10 @@ namespace ElGroupo.Domain.Data
         public DbSet<RecordElement> RecordElements { get; set; }
         public DbSet<RecordItemElement> RecordItemElements { get; set; }
         public DbSet<RecordItem> RecordItems { get; set; }
-        public DbSet<RecordItemUserData> RecordItemUserData { get; set; }
-        public DbSet<RecordItemUserDocument> RecordItemUserDocuments { get; set; }
-        public DbSet<RecordItemUser> RecordItemUsers { get; set; }
-
+        //public DbSet<RecordItemUserData> RecordItemUserData { get; set; }
+        public DbSet<RecordItemDocument> RecordItemDocuments { get; set; }
+        //public DbSet<RecordItemUser> RecordItemUsers { get; set; }
+        public DbSet<RecordItemType> RecordItemTypes { get; set; }
         public DbSet<RecordElementDataType> RecordElementDataTypes { get; set; }
         public DbSet<RecordElementLookupTable> RecordElementLookupTables { get; set; }
         public DbSet<RecordElementInputType> RecordElementInputTypes { get; set; }
@@ -334,8 +336,9 @@ namespace ElGroupo.Domain.Data
             builder.Entity<RecordItem>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<RecordItem>().HasOne(x => x.Category).WithMany(x => x.Items).HasForeignKey(x => x.CategoryId);
             builder.Entity<RecordItem>().HasOne(x => x.SubCategory).WithMany(x => x.Items).HasForeignKey(x => x.SubCategoryId);
-            builder.Entity<RecordItem>().HasOne(x => x.User).WithMany(x => x.CustomRecordItems).HasForeignKey(x => x.UserId);
+            builder.Entity<RecordItem>().HasOne(x => x.User).WithMany(x => x.RecordItems).HasForeignKey(x => x.UserId);
             builder.Entity<RecordItem>().HasMany(x => x.Elements).WithOne(x => x.Item).HasForeignKey(x => x.ItemId);
+            builder.Entity<RecordItem>().HasOne(x => x.ItemType).WithMany(x => x.Items).HasForeignKey(x => x.ItemTypeId);
 
             builder.Entity<RecordElement>().ToTable("RecordElements");
             builder.Entity<RecordElement>().HasKey(x => x.Id);
@@ -378,36 +381,40 @@ namespace ElGroupo.Domain.Data
             builder.Entity<RecordItemElement>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<RecordItemElement>().HasOne(x => x.Element).WithMany(x => x.Items).HasForeignKey(x => x.ElementId);
             builder.Entity<RecordItemElement>().HasOne(x => x.Item).WithMany(x => x.Elements).HasForeignKey(x => x.ItemId);
-            builder.Entity<RecordItemElement>().HasMany(x => x.UserData).WithOne(x => x.Element).HasForeignKey(x => x.ElementId).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
+            //builder.Entity<RecordItemElement>().HasMany(x => x.UserData).WithOne(x => x.Element).HasForeignKey(x => x.ElementId).OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Restrict);
 
 
 
             //maps a user to a record item - i.e. Chris's Undergraduate (may have multiple)
-            builder.Entity<RecordItemUser>().ToTable("RecordItemUsers");
-            builder.Entity<RecordItemUser>().HasKey(x => x.Id);
-            builder.Entity<RecordItemUser>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<RecordItemUser>().Property(x => x.Visible).IsRequired().HasDefaultValue(true);
-            builder.Entity<RecordItemUser>().HasOne(x => x.Item).WithMany(x => x.Users).HasForeignKey(x => x.ItemId);
-            builder.Entity<RecordItemUser>().HasOne(x => x.User).WithMany(x => x.RecordItems).HasForeignKey(x => x.UserId);
-            builder.Entity<RecordItemUser>().HasMany(x => x.UserData).WithOne(x => x.ItemUser).HasForeignKey(x => x.ItemUserId);
-            builder.Entity<RecordItemUser>().HasMany(x => x.Documents).WithOne(x => x.ItemUser).HasForeignKey(x => x.ItemUserId);
+            //builder.Entity<RecordItemUser>().ToTable("RecordItemUsers");
+            //builder.Entity<RecordItemUser>().HasKey(x => x.Id);
+            //builder.Entity<RecordItemUser>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            //builder.Entity<RecordItemUser>().Property(x => x.Visible).IsRequired().HasDefaultValue(true);
+            //builder.Entity<RecordItemUser>().HasOne(x => x.Item).WithMany(x => x.Users).HasForeignKey(x => x.ItemId);
+            //builder.Entity<RecordItemUser>().HasOne(x => x.User).WithMany(x => x.RecordItems).HasForeignKey(x => x.UserId);
+            //builder.Entity<RecordItemUser>().HasMany(x => x.UserData).WithOne(x => x.ItemUser).HasForeignKey(x => x.ItemUserId);
+            //builder.Entity<RecordItemUser>().HasMany(x => x.Documents).WithOne(x => x.ItemUser).HasForeignKey(x => x.ItemUserId);
 
             //documents associated with Chris's Undergrad
-            builder.Entity<RecordItemUserDocument>().ToTable("RecordItemUserDocuments");
-            builder.Entity<RecordItemUserDocument>().HasKey(x => x.Id);
-            builder.Entity<RecordItemUserDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<RecordItemUserDocument>().HasOne(x => x.ItemUser).WithMany(x => x.Documents).HasForeignKey(x => x.ItemUserId);
+            builder.Entity<RecordItemDocument>().ToTable("RecordItemDocuments");
+            builder.Entity<RecordItemDocument>().HasKey(x => x.Id);
+            builder.Entity<RecordItemDocument>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordItemDocument>().HasOne(x => x.Item).WithMany(x => x.Documents).HasForeignKey(x => x.ItemId);
 
+            builder.Entity<RecordItemType>().ToTable("RecordItemTypes");
+            builder.Entity<RecordItemType>().HasKey(x => x.Id);
+            builder.Entity<RecordItemType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            builder.Entity<RecordItemType>().HasOne(x => x.Category).WithMany(x => x.ItemTypes).HasForeignKey(x => x.CategoryId);
+            builder.Entity<RecordItemType>().HasOne(x => x.SubCategory).WithMany(x => x.ItemTypes).HasForeignKey(x=>x.SubCategoryId);
 
-
-            builder.Entity<RecordItemUserData>().ToTable("RecordItemUserData");
-            builder.Entity<RecordItemUserData>().HasKey(x => x.Id);
-            builder.Entity<RecordItemUserData>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            builder.Entity<RecordItemUserData>().Property(x => x.Value).HasMaxLength(255);
-            builder.Entity<RecordItemUserData>().HasOne(x => x.ItemUser).WithMany(x => x.UserData).HasForeignKey(x => x.ItemUserId);
+            //builder.Entity<RecordItemUserData>().ToTable("RecordItemUserData");
+            //builder.Entity<RecordItemUserData>().HasKey(x => x.Id);
+            //builder.Entity<RecordItemUserData>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+            //builder.Entity<RecordItemUserData>().Property(x => x.Value).HasMaxLength(255);
+            //builder.Entity<RecordItemUserData>().HasOne(x => x.ItemUser).WithMany(x => x.UserData).HasForeignKey(x => x.ItemUserId);
 
             //maps that this data item (i.e. 4/22/2011) maps to a record element (i.e. graduation date)
-            builder.Entity<RecordItemUserData>().HasOne(x => x.Element).WithMany(x => x.UserData).HasForeignKey(x => x.ElementId);
+            //builder.Entity<RecordItemUserData>().HasOne(x => x.Element).WithMany(x => x.UserData).HasForeignKey(x => x.ElementId);
 
 
 
@@ -425,6 +432,247 @@ namespace ElGroupo.Domain.Data
             builder.Entity<RecordDefaultElement>().HasOne(x => x.Element).WithMany(x => x.DefaultElements).HasForeignKey(x => x.ElementId);
         }
 
+        public static async Task SeedNewInputTypes(IServiceProvider provider)
+        {
+
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+            RecordElementInputType ddd = new RecordElementInputType
+            {
+                Name = "Auto Complete"
+            };
+            ctx.Add(ddd);
+
+
+            foreach(var aaa in ctx.RecordElements.Include(x=>x.DataType).Include(x=>x.LookupTable).Include(x=>x.InputType).Where(x=>x.LookupTable != null))
+            {
+                aaa.InputType = ddd;
+                ctx.Update(aaa);
+            }
+
+
+            var intDt = ctx.RecordElementDataTypes.First(x => x.Name == "Integer");
+
+            //int->autocomplete
+            var ttt = new RecordElementDataTypeInputType
+            {
+                DataType = intDt,
+                InputType = ddd
+            };
+            ctx.Add(ttt);
+
+            //int -> numeric text box
+            ttt = new RecordElementDataTypeInputType
+            {
+                DataType = intDt,
+                InputType = ctx.RecordElementInputTypes.First(x=>x.Name == "Numeric Text Box")
+            };
+            ctx.Add(ttt);
+
+            //var dblDt = ctx.RecordElementDataTypes.First(x => x.Name == "Double");
+            var boolDt = ctx.RecordElementDataTypes.First(x => x.Name == "Boolean");
+            ttt = new RecordElementDataTypeInputType
+            {
+                DataType = boolDt,
+                InputType = ctx.RecordElementInputTypes.First(x=>x.Name == "Radio Button List")
+            };
+            ctx.Add(ttt);
+            await ctx.SaveChangesAsync();
+
+        }
+        //public static async Task SeedRecordItemUserData(IServiceProvider provider)
+        //{
+
+        //    var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+        //    var conn = ctx.Database.GetDbConnection() as SqlConnection;
+        //    if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+        //    var sqlCmd = new SqlCommand { Connection = conn };
+        //    var lts = new Dictionary<string, List<IdValueModel>>();
+        //    foreach (var item in ctx.RecordElementLookupTables)
+        //    {
+        //        sqlCmd.CommandText = "select * from " + item.TableName + " order by Value asc";
+        //        lts.Add(item.TableName, new List<IdValueModel>());
+        //        try
+        //        {
+        //            var reader = sqlCmd.ExecuteReader();
+        //            while (reader.Read())
+        //            {
+        //                lts[item.TableName].Add(new IdValueModel
+        //                {
+        //                    Id = Convert.ToInt32(reader["Id"]),
+        //                    Value = reader["Value"].ToString()
+        //                });
+        //            }
+        //            reader.Close();
+        //        }
+        //        catch (Exception ex)
+        //        {
+
+        //        }
+
+        //    }
+        //    conn.Close();
+
+
+        //    //foreach (var ri in ctx.RecordItems)
+        //    //{
+        //    //    var cnt = 0;
+        //    //    foreach (var re in ctx.RecordElements)
+        //    //    {
+        //    //        var rie = new RecordItemElement
+        //    //        {
+        //    //            Element = re,
+        //    //            Item = ri
+        //    //        };
+        //    //        if (cnt == 0)
+        //    //        {
+        //    //            rie.PrimaryDisplay = true;
+        //    //        }
+        //    //        ctx.Add(rie);
+        //    //        cnt++;
+        //    //    }
+        //    //}
+
+        //    //await ctx.SaveChangesAsync();
+        //    foreach (var user in ctx.Users.Where(x=>x.Id <= 9))
+        //    {
+        //        foreach (var cat in ctx.RecordCategories.
+        //            Include(x => x.SubCategories).
+        //                ThenInclude(x => x.Items).
+        //                ThenInclude(x => x.Elements).
+        //                ThenInclude(x => x.Element).
+        //                ThenInclude(x => x.DataType).
+        //            Include(x => x.SubCategories).
+        //                ThenInclude(x => x.Items).
+        //                ThenInclude(x => x.Elements).
+        //                ThenInclude(x => x.Element).
+        //                ThenInclude(x => x.LookupTable).
+        //        Include(x => x.Items).
+        //            ThenInclude(x => x.Elements).
+        //            ThenInclude(x => x.Element).
+        //            ThenInclude(x => x.DataType).
+        //        Include(x => x.Items).
+        //            ThenInclude(x => x.Elements).
+        //            ThenInclude(x => x.Element).
+        //            ThenInclude(x => x.LookupTable))
+        //        {
+        //            foreach (var item in cat.Items)
+        //            {
+        //                var iu = new RecordItemUser
+        //                {
+        //                    Item = item,
+        //                    User = user
+        //                };
+        //                ctx.Add(iu);
+        //                foreach (var el in item.Elements)
+        //                {
+        //                    var riud = new RecordItemUserData
+        //                    {
+        //                        Element = el,
+        //                        ItemUser = iu
+        //                    };
+        //                    if (el.Element.LookupTable != null)
+        //                    {
+        //                        if (lts.ContainsKey(el.Element.LookupTable.TableName))
+        //                        {
+        //                            riud.Value = lts[el.Element.LookupTable.TableName].First().Id.ToString();
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        switch (el.Element.DataType.Name)
+        //                        {
+        //                            case "String":
+        //                                riud.Value = "string";
+        //                                break;
+        //                            case "DateTime":
+        //                            case "Date":
+        //                                riud.Value = DateTime.Now.ToString("O");
+        //                                break;
+        //                            case "Int":
+        //                                riud.Value = "23".ToString();
+        //                                break;
+        //                            case "Double":
+        //                                riud.Value = "69.69".ToString();
+        //                                break;
+        //                            case "Boolean":
+        //                                riud.Value = "True";
+        //                                break;
+        //                            case "Text":
+        //                                riud.Value = "This is Text";
+        //                                break;
+
+        //                        }
+        //                    }
+
+        //                    ctx.Add(riud);
+        //                }
+        //            }
+
+
+
+        //            foreach (var subCat in cat.SubCategories)
+        //            {
+        //                foreach (var item in subCat.Items)
+        //                {
+        //                    var iu = new RecordItemUser
+        //                    {
+        //                        Item = item,
+        //                        User = user
+        //                    };
+        //                    ctx.Add(iu);
+        //                    foreach (var el in item.Elements)
+        //                    {
+        //                        var riud = new RecordItemUserData
+        //                        {
+        //                            Element = el,
+        //                            ItemUser = iu
+        //                        };
+        //                        if (el.Element.LookupTable != null)
+        //                        {
+        //                            if (lts.ContainsKey(el.Element.LookupTable.TableName))
+        //                            {
+        //                                riud.Value = lts[el.Element.LookupTable.TableName].First().Id.ToString();
+        //                            }
+        //                        }
+        //                        else
+        //                        {
+        //                            switch (el.Element.DataType.Name)
+        //                            {
+        //                                case "String":
+        //                                    riud.Value = "string";
+        //                                    break;
+        //                                case "DateTime":
+        //                                case "Date":
+        //                                    riud.Value = DateTime.Now.ToString("O");
+        //                                    break;
+        //                                case "Int":
+        //                                    riud.Value = "23".ToString();
+        //                                    break;
+        //                                case "Double":
+        //                                    riud.Value = "69.69".ToString();
+        //                                    break;
+        //                                case "Boolean":
+        //                                    riud.Value = "True";
+        //                                    break;
+        //                                case "Text":
+        //                                    riud.Value = "This is Text";
+        //                                    break;
+        //                                default:
+        //                                    break;
+
+        //                            }
+        //                        }
+
+        //                        ctx.Add(riud);
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    await ctx.SaveChangesAsync();
+
+        //}
         public static async Task SeedDataTypes(IServiceProvider provider)
         {
 

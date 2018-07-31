@@ -7,30 +7,43 @@
     <h2>@Model.Name</h2>
 
 
-    <h3>Items</h3>
-    <div id="item-list">
-        @Html.Partial("_ItemList", Model.RecordItems)
+    @*<h3>Items</h3>
+        <div id="item-list">
+            @Html.Partial("_ItemList", Model.RecordItems)
+        </div>
+
+
+        <button class="btn btn-primary add-item-btn">Add New Item</button>
+        <div class="add-item" style="display:none;">
+            <label for="txtAddItem">Item Name:</label>
+            <input type="text" id="txtAddItem" style="width:300px;" />
+            <button class="cancel-add-item">Cancel</button>
+            <button class="confirm-add-item">Add</button>
+        </div>*@
+    <div class="row" style="width:50%;">
+        <div class="col span-1-of-4">Description Header</div>
+        <div class="col span-2-of-4 view-description-column" id="divDescriptionColumn">@Model.DescriptionColumnHeader</div>
+        <div class="col span-2-of-4 edit-description-column" style="display:none;"><input value="@Model.DescriptionColumnHeader" id="txtDescriptionColumn" type="text" style="width:100%;" /></div>
+        <div class="col span-1-of-4 view-description-column"><a>Edit</a></div>
+        <div class="col span-1-of-4 edit-description-column" style="display:none;"><a class="cancel-description-column">Cancel</a><a class="save-description-column">Save</a></div>
     </div>
-
-
-    <button class="btn btn-primary add-item-btn">Add New Item</button>
-    <div class="add-item" style="display:none;">
-        <label for="txtAddItem">Item Name:</label>
-        <input type="text" id="txtAddItem" style="width:300px;" />
-        <button class="cancel-add-item">Cancel</button>
-        <button class="confirm-add-item">Add</button>
+    <div class="row" style="width:50%;">
+        <div class="col span-1-of-4">Value Header</div>
+        <div class="col span-2-of-4 view-value-column" id="divValueColumn">@Model.ValueColumnHeader</div>
+        <div class="col span-2-of-4 edit-value-column" style="display:none;"><input value="@Model.ValueColumnHeader" id="txtValueColumn" type="text" style="width:100%;" /></div>
+        <div class="col span-1-of-4 view-value-column"><a>Edit</a></div>
+        <div class="col span-1-of-4 edit-value-column" style="display:none;"><a class="cancel-value-column">Cancel</a><a class="save-value-column">Save</a></div>
     </div>
-
 
     <div style="margin:45px;">
-        <h3>Default Elements</h3>
+        <h3>Default Questions</h3>
         <div id="element-list">
             @Html.Partial("_ElementList", Model.DefaultElements)
         </div>
     </div>
 
     <div style="margin:45px;">
-        <button class="btn btn-primary add-element-btn">Add New Default Element</button>
+        <button class="btn btn-primary add-element-btn">Add New Default Question</button>
         <div class="add-element" style="display:none;">
             <div style="width:100%;">
                 <label for="selElement">Element:</label>

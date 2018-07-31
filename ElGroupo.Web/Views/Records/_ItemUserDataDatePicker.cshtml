@@ -1,0 +1,47 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemUserDataModel
+@{
+    Layout = null;
+}
+@functions{
+    public DateTime? TryGetDate(object obj)
+    {
+        if (obj == null) return null;
+        if (string.IsNullOrEmpty(obj.ToString())) return null;
+        DateTime outDate;
+        if (DateTime.TryParse(obj.ToString(), out outDate))
+        {
+            return outDate;
+
+        }
+        return null;
+
+    }
+}
+@if (Model is CreateItemUserDataModel)
+{
+    <div data-element-id="@((Model as CreateItemUserDataModel).ElementId)" data-input-type="datepicker">
+        <input type="text" style="width:100%;" />
+    </div>
+
+}
+else
+{
+    <div data-element-id="@Model.Id" data-input-type="datepicker">
+        @{ var modelDate = TryGetDate(Model.Value);}
+
+        @if (modelDate.HasValue)
+        {
+            <input type="text" value="@modelDate.Value.ToString("MM/dd/yyyy")" style="width:100%;" />
+
+        }
+        else
+        {
+            <input type="text" style="width:100%;" />
+
+        }
+
+    </div>
+
+}

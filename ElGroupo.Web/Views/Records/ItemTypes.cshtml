@@ -1,0 +1,46 @@
+﻿@using ElGroupo.Web.Models.Records
+@model IEnumerable<ViewItemTypeModel>
+
+<section style="text-align:center">
+    <a asp-controller="Records" asp-action="Admin">Return to Admin</a>
+    <h3>Item Types</h3>
+    <div id="item-type-list">
+        @Html.Partial("_ItemTypeList", Model)
+    </div>
+
+    <button class="btn btn-primary add-item-type-btn">Add New Item Type</button>
+    <div class="add-item-type" style="display:none;">
+        <div>
+            <div style="width:100%;">
+                <label for="selItemTypeCategory">Category:</label>
+                <select id="selItemTypeCategory" style="width:300px;"></select>
+            </div>
+        </div>
+        <div>
+            <div style="width:100%;">
+                <label for="selItemTypeSubCategory">Sub Category:</label>
+                <select id="selItemTypeSubCategory" style="width:300px;"></select>
+            </div>
+        </div>
+
+        <div>
+            <div style="width:100%;">
+                <label for="txtAddItemTypeName">Item Description:</label>
+                <input type="text" id="txtAddItemTypeName" style="width:300px;" />
+            </div>
+        </div>
+
+
+
+
+        <button class="cancel-add-item-type">Cancel</button>
+        <button class="confirm-add-item-type">Add</button>
+    </div>
+</section>
+
+
+@section Scripts{
+    <script type="text/javascript" src="~/content/scripts/records/records-admin.js"></script>
+    <script type="text/javascript" src="~/content/scripts/records/edit-item-types.js"></script>
+
+}

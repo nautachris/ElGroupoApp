@@ -1,0 +1,26 @@
+﻿@using ElGroupo.Web.Models.Records
+@model SelectSubcategoryModel
+@{
+    Layout = null;
+}
+
+<div class="row select-sub-category-container">
+    <div class="col span-1-of-3" style="text-align:left;">Select a Category:</div>
+    <div class="col span-2-of-3">
+        <select id="selSubCategory" data-category-id="@Model.ParentCategoryId">
+
+            @foreach (var item in Model.SubCategories)
+            {
+                <option value="@item.Id">@item.Value</option>
+
+            }
+
+
+        </select>
+    </div>
+</div>
+<div class="row centered select-sub-category-cancel" style="width:75%; margin-top:25px;">
+    <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+        <a class="cancel-new-user-data">Cancel</a>
+    </div>
+</div>

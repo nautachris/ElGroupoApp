@@ -49,6 +49,12 @@ namespace ElGroupo.Web.Services
             if (this.Tables.ContainsKey(item.TableName)) return this.Tables[item.TableName];
             return new List<IdValueModel>();
         }
+        public List<IdValueModel> GetValuesByLookupTableName(string name)
+        {
+            if (name == null) return null;
+            if (this.Tables.ContainsKey(name)) return this.Tables[name];
+            return new List<IdValueModel>();
+        }
 
         public SaveDataResponse CreateTable(string tableName)
         {
@@ -119,7 +125,23 @@ namespace ElGroupo.Web.Services
             if (this.Tables.ContainsKey(tableName)) this.Tables.Remove(tableName);
             return SaveDataResponse.Ok();
         }
+        public string GetValue(string tableName, object id)
+        {
+            if (id == null || tableName == null) return null;
+            if (string.IsNullOrEmpty(id.ToString())) return null;
+            int idVal;
+            if (!int.TryParse(id.ToString(), out idVal)) return null;
+            if (!this.Tables.ContainsKey(tableName)) return null;
+            if (!this.Tables[tableName].Any(x => x.Id == idVal)) return null;
+            return this.Tables[tableName].First(x => x.Id == idVal).Value;
+        }
 
+        public List<IdValueModel> LookupSearch(string tableName, string searchText)
+        {
+            var list = new List<IdValueModel>();
+            if (!this.Tables.ContainsKey(tableName.ToUpper())) return list;
+            return this.Tables[tableName.ToUpper()].Where(x => x.Value.ToUpper().Contains(searchText.ToUpper())).ToList();
+        }
         public SaveDataResponse AddValue(string tableName, string value)
         {
             try

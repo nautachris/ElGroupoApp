@@ -1,0 +1,31 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemUserDataModel
+@{
+    Layout = null;
+}
+
+@if (Model is CreateItemUserDataModel)
+{
+    <div data-element-id="@((Model as CreateItemUserDataModel).ElementId)" data-input-type="autocomplete" style="text-align:left;">
+        <input type="text" data-autocomplete-source="@Model.LookupTable" value="@Model.Value" style="width:100%;" />
+    </div>
+
+}
+else
+{
+    <div data-element-id="@Model.Id" data-input-type="autocomplete" style="text-align:left;">
+        @if (Model.LookupText != null)
+        {
+            <input type="text" data-autocomplete-source="@Model.LookupTable" data-lookup-id="@Model.Value" value="@Model.LookupText" style="width:100%;" />
+
+        }
+        else
+        {
+            <input type="text" data-autocomplete-source="@Model.LookupTable" value="@Model.Value" style="width:100%;" />
+
+        }
+
+    </div>
+
+}

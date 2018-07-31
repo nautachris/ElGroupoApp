@@ -126,7 +126,7 @@ namespace ElGroupo.Web
             });
             app.UseMvcWithDefaultRoute();
 
-
+            //ElGroupoDbContext.SeedNewInputTypes(app.ApplicationServices).Wait();
             //var sm = app.ApplicationServices.GetRequiredService<SignInManager<User>>();
             //ElGroupoDbContext.SeedDataTypes(app.ApplicationServices).Wait();
             //ElGroupoDbContext.SeedRecordTables(app.ApplicationServices).Wait();

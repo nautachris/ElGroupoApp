@@ -718,6 +718,8 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long>("InputTypeId");
 
+                    b.Property<bool>("LabelOnSameRow");
+
                     b.Property<long?>("LookupTableFieldTypeId");
 
                     b.Property<long?>("LookupTableId");
@@ -812,21 +814,49 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<long?>("CategoryId");
 
+                    b.Property<long?>("ItemTypeId");
+
                     b.Property<string>("Name");
 
                     b.Property<long?>("SubCategoryId");
 
-                    b.Property<long?>("UserId");
+                    b.Property<long>("UserId");
+
+                    b.Property<bool>("Visible");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("ItemTypeId");
 
                     b.HasIndex("SubCategoryId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("RecordItems");
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemDocument", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ContentType");
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("FileName");
+
+                    b.Property<byte[]>("ImageData");
+
+                    b.Property<long>("ItemId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("RecordItemDocuments");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemElement", b =>
@@ -840,6 +870,8 @@ namespace ElGroupo.Domain.Migrations
 
                     b.Property<bool>("PrimaryDisplay");
 
+                    b.Property<string>("Value");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ElementId");
@@ -849,69 +881,24 @@ namespace ElGroupo.Domain.Migrations
                     b.ToTable("RecordItemElements");
                 });
 
-            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUser", b =>
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemType", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<long>("ItemId");
+                    b.Property<long?>("CategoryId");
 
-                    b.Property<long>("UserId");
+                    b.Property<string>("Name");
 
-                    b.Property<bool>("Visible")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(true);
+                    b.Property<long?>("SubCategoryId");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("CategoryId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("SubCategoryId");
 
-                    b.ToTable("RecordItemUsers");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUserData", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<long>("ElementId");
-
-                    b.Property<long>("ItemUserId");
-
-                    b.Property<string>("Value")
-                        .HasMaxLength(255);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ElementId");
-
-                    b.HasIndex("ItemUserId");
-
-                    b.ToTable("RecordItemUserData");
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUserDocument", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ContentType");
-
-                    b.Property<string>("Description");
-
-                    b.Property<string>("FileName");
-
-                    b.Property<byte[]>("ImageData");
-
-                    b.Property<long>("ItemUserId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemUserId");
-
-                    b.ToTable("RecordItemUserDocuments");
+                    b.ToTable("RecordItemTypes");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Records.RecordSubCategory", b =>
@@ -1591,13 +1578,26 @@ namespace ElGroupo.Domain.Migrations
                         .WithMany("Items")
                         .HasForeignKey("CategoryId");
 
+                    b.HasOne("ElGroupo.Domain.Records.RecordItemType", "ItemType")
+                        .WithMany("Items")
+                        .HasForeignKey("ItemTypeId");
+
                     b.HasOne("ElGroupo.Domain.Records.RecordSubCategory", "SubCategory")
                         .WithMany("Items")
                         .HasForeignKey("SubCategoryId");
 
                     b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany("CustomRecordItems")
-                        .HasForeignKey("UserId");
+                        .WithMany("RecordItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemDocument", b =>
+                {
+                    b.HasOne("ElGroupo.Domain.Records.RecordItem", "Item")
+                        .WithMany("Documents")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemElement", b =>
@@ -1613,37 +1613,15 @@ namespace ElGroupo.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUser", b =>
+            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemType", b =>
                 {
-                    b.HasOne("ElGroupo.Domain.Records.RecordItem", "Item")
-                        .WithMany("Users")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                    b.HasOne("ElGroupo.Domain.Records.RecordCategory", "Category")
+                        .WithMany("ItemTypes")
+                        .HasForeignKey("CategoryId");
 
-                    b.HasOne("ElGroupo.Domain.User", "User")
-                        .WithMany("RecordItems")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUserData", b =>
-                {
-                    b.HasOne("ElGroupo.Domain.Records.RecordItemElement", "Element")
-                        .WithMany("UserData")
-                        .HasForeignKey("ElementId");
-
-                    b.HasOne("ElGroupo.Domain.Records.RecordItemUser", "ItemUser")
-                        .WithMany("UserData")
-                        .HasForeignKey("ItemUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("ElGroupo.Domain.Records.RecordItemUserDocument", b =>
-                {
-                    b.HasOne("ElGroupo.Domain.Records.RecordItemUser", "ItemUser")
-                        .WithMany("Documents")
-                        .HasForeignKey("ItemUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                    b.HasOne("ElGroupo.Domain.Records.RecordSubCategory", "SubCategory")
+                        .WithMany("ItemTypes")
+                        .HasForeignKey("SubCategoryId");
                 });
 
             modelBuilder.Entity("ElGroupo.Domain.Records.RecordSubCategory", b =>

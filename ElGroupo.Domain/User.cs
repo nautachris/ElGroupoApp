@@ -10,8 +10,8 @@ namespace ElGroupo.Domain
 {
     public class User : IdentityUser<long>
     {
-        public virtual ICollection<RecordItem> CustomRecordItems { get; set; }
-        public virtual ICollection<RecordItemUser> RecordItems { get; set; }
+        public virtual ICollection<RecordItem> RecordItems { get; set; }
+        //public virtual ICollection<RecordItemUser> RecordItems { get; set; }
         public virtual ICollection<DepartmentUser> Departments { get; set; }
         public virtual ICollection<ActivityGroupOrganizer> OrganizedActivityGroups { get; set; }
         public virtual ICollection<ActivityOrganizer> OrganizedActivities { get; set; }

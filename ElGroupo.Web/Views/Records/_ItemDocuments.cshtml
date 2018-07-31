@@ -1,0 +1,25 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model IEnumerable<RecordDocumentListModel>
+@{
+    Layout = null;
+}
+
+
+
+<header style="display: table-row;border:1px solid white;">
+    <div style="display: table-cell; width:30%;">File Name</div>
+    <div style="display: table-cell; width:50%;">Description</div>
+    <div style="display: table-cell; width:10%;"></div>
+    <div style="display: table-cell; width:10%;"></div>
+</header>
+@foreach (var doc in Model)
+{
+    <div data-document-id="@doc.Id" style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white;border-right:1px solid white;">
+        <div style="display: table-cell; vertical-align:middle;">@doc.FileName</div>
+        <div style="display: table-cell; vertical-align:middle;">@doc.Description</div>
+        <div style="display: table-cell; vertical-align:middle;"><a target="_blank" asp-controller="Records" asp-action="GetDocument" asp-route-documentId="@doc.Id">View</a></div>
+        <div style="display: table-cell; vertical-align:middle;" data-delete-document><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></div>
+    </div>
+
+}

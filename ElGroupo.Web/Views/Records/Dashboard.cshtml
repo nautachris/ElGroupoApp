@@ -41,12 +41,15 @@
             </div>*@
 
         <div class="width-100 centered">
-            <img src="/Users/UserPhoto/@Model.UserId" style="border-radius:100%; height:80px; width:80px; vertical-align:middle; line-height:80px;" />
-            <span style="font-family:Raleway; font-size:20px; color:#161616; vertical-align:middle; line-height:80px;">Welcome, @Model.FirstName</span>
+            <img src="/Users/UserPhoto/@Model.UserId" style="border-radius:100%; height:30px; width:30px; vertical-align:middle; line-height:30px;" />
+            <span style="font-family:Raleway; font-size:20px; color:#161616; vertical-align:middle; line-height:80px; margin-left:12px;">Welcome @Model.FirstName</span>
         </div>
 
 
 
+    </div>
+    <div class="row centered">
+        <a asp-controller="Records" asp-action="Admin">Records Admin</a>
     </div>
 
     @foreach (var row in SplitList<IdValueModel>(Model.Categories, 4))

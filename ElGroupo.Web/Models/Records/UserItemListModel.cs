@@ -9,6 +9,9 @@ namespace ElGroupo.Web.Models.Records
     {
         public string Name { get; set; }
         public string Value { get; set; }
-        public long RecordItemUserId { get; set; }
+
+        public long RecordItemId { get; set; }
+
+        public long? DocumentId { get; set; }
     }
 }

@@ -13,5 +13,8 @@ namespace ElGroupo.Web.Models.Records
         public List<ViewSubCategoryModel> SubCategories { get; set; }
         public List<ViewElementModel> DefaultElements { get; set; }
         public List<ViewElementModel> AllElements { get; set; }
+
+        public string DescriptionColumnHeader { get; set; }
+        public string ValueColumnHeader { get; set; }
     }
 }

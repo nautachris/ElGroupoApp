@@ -1,0 +1,186 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemModel
+@{
+    Layout = null;
+}
+
+@functions{
+    public string GetDocumentDisplay(bool anyDocs)
+    {
+        if (anyDocs) return "";
+        else return "none";
+
+    }
+
+}
+<div data-item-details-container-id="@Model.ItemId">
+
+
+    @if (Model.CategoryId.HasValue)
+    {
+
+        <input type="hidden" id="iptNewItemCategoryId" asp-for="CategoryId" />
+    }
+
+    @if (Model.SubCategoryId.HasValue)
+    {
+        <input type="hidden" id="iptNewItemSubCategoryId" asp-for="SubCategoryId" />
+
+    }
+
+
+    <h3>Edit Record</h3>
+
+
+    @if (Model.ItemTypes.Count > 1)
+    {
+        <div class="row">
+            <div class="col span-1-of-3" style="text-align:left;">Name:</div>
+            <div class="col span-2-of-3">
+                <select id="selItemType">
+
+                    @foreach (var item in Model.ItemTypes)
+                    {
+                        if (Model.ItemTypeId.HasValue && Model.ItemTypeId.Value == item.Id)
+                        {
+                            <option selected value="@item.Id">@item.Value</option>
+
+                        }
+                        else
+                        {
+
+                            <option value="@item.Id">@item.Value</option>
+                        }
+
+
+                    }
+                    @if (!Model.ItemTypeId.HasValue)
+                    {
+
+                        <option selected value="-1">Other</option>
+                    }
+                    else
+                    {
+                        <option value="-1">Other</option>
+
+                    }
+
+                </select>
+            </div>
+        </div>
+        @if (!Model.ItemTypeId.HasValue)
+        {
+            <div class="row" id="divCustomName">
+                <div class="col span-1-of-3" style="text-align:left;">Name:</div>
+                <div class="col span-2-of-3" style="text-align:left;">
+                    <input type="text" style="width:100%;" id="txtCustomName" value="@Model.Name" />
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row" id="divCustomName" style="display:none;">
+                <div class="col span-1-of-3" style="text-align:left;">Name:</div>
+                <div class="col span-2-of-3" style="text-align:left;">
+                    <input type="text" style="width:100%;" id="txtCustomName" />
+                </div>
+            </div>
+
+        }
+
+
+    }
+    else
+    {
+        <div class="row" id="divCustomName">
+            <div class="col span-1-of-3" style="text-align:left;">Name:</div>
+            <div class="col span-2-of-3" style="text-align:left;">
+                <input type="text" style="width:100%;" id="txtCustomName" value="@Model.Name" />
+            </div>
+        </div>
+
+    }
+
+
+
+    @foreach (var item in Model.UserData)
+    {
+        @Html.Partial("_ItemUserData", item)
+
+    }
+
+    <div class="row centered" id="divDocumentsContainer" style="display:@GetDocumentDisplay(Model.Documents.Any());">
+        <label>My Documents</label>
+
+        <div id="divDocuments" style="display: table; margin-left:5%; margin-right:5%; width:90%; border-collapse:collapse;">
+            @Html.Partial("_ItemDocuments", Model.Documents)
+        </div>
+    </div>
+    <div class="row centered" style="width:75%; margin-top:25px;">
+        <input style="display:none;" type="file" multiple id="iptFileExistingRecord" />
+        <button class="btn btn-ghost add-documents-btn">Add Document(s)</button>
+    </div>
+    <div class="row centered" style="width:75%; margin-top:25px;">
+        <button class="btn btn-primary save-user-data">Save Changes</button>
+    </div>
+    <div class="row centered" style="width:75%; margin-top:25px;">
+        @*<button class="btn btn-primary cancel-user-data">Cancel</button>*@
+        <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+            <a class="cancel-user-data">Cancel</a>
+        </div>
+    </div>
+    <div class="row centered" style="width:75%; margin-top:25px;">
+        <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+            <a class="hide-user-data">Hide</a>
+        </div>
+    </div>
+    <div class="row centered" style="width:75%; margin-top:25px;">
+        <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+            <a class="delete-user-data">Delete</a>
+        </div>
+    </div>
+
+    @*<div class="row centered select-sub-category-cancel" style="width:75%; margin-top:25px;">
+            <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+                <a class="cancel-new-user-data">Cancel</a>
+            </div>
+        </div>*@
+
+
+    <div id="divAddDocuments" style="display:none; z-index:1000; height:100%; width:100%; position:fixed; top:0px;left:0px;">
+        <div style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);padding:60px; border:4px solid gray; border-radius:25px; background-color:white;">
+            <div class="row">
+                <div class="col span-2-of-2 centered">
+                    <h4>Upload Documents</h4>
+                </div>
+            </div>
+            <div style="display:none;">
+                <div id="divUploadDocumentRowTemplate" style="display: table-row; word-wrap:break-word; vertical-align:middle; border-bottom:1px solid white; border-left:1px solid white;border-right:1px solid white;">
+                    <div style="display: table-cell; vertical-align:middle;" data-file-name></div>
+                    <div style="display: table-cell; vertical-align:middle; "><input data-file-description type="text" style="width:100%;" /></div>
+                    <div style="display: table-cell; vertical-align:middle;" data-delete-pending-document><img style="height:40px; width:40px; cursor:pointer;" src="~/content/images/delete.png" /></div>
+                </div>
+            </div>
+
+            <div id="divUploadDocumentsTable" style="display: table; border-collapse:collapse;">
+
+                <header style="display: table-row;border:1px solid white;" id="divUploadDocumentHeader">
+                    <div style="display: table-cell; width:40%; font-weight:bold; text-align:center;">File Name</div>
+                    <div style="display: table-cell; width:50%;font-weight:bold; text-align:center;">Description</div>
+
+                    <div style="display: table-cell; width:10%;"></div>
+                </header>
+            </div>
+            <div class="row centered" style="margin-top:30px;">
+
+                <button id="btnUploadDocuments" class="btn btn-primary">Upload</button>
+            </div>
+            <div class="row centered" style="margin-top:0px;">
+                <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+                    <a id="btnCancelAddDocuments">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

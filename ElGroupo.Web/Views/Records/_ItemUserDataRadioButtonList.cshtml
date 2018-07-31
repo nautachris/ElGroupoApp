@@ -1,0 +1,85 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemUserDataModel
+@{
+    Layout = null;
+}
+
+@functions{
+    public string GetGroupId(long id)
+    {
+        return "rb" + id.ToString();
+
+    }
+
+}
+@if (Model is CreateItemUserDataModel)
+{
+    <div data-element-id="@((Model as CreateItemUserDataModel).ElementId)" data-input-type="radiobuttonlist">
+        @if (Model.DataType == "Boolean")
+        {
+
+            <label><input name="rb@Model.Id" type="radio" value="True" />Yes</label>
+            <label><input name="rb@Model.Id" type="radio" value="False" checked />No</label>
+        }
+        else
+        {
+            @foreach (var opt in Model.Options)
+            {
+
+
+                <label><input name="@GetGroupId(Model.Id)" type="radio" value="@opt.Id" />@opt.Value</label>
+
+
+            }
+
+
+        }
+    </div>
+
+}
+else
+{
+    <div data-element-id="@Model.Id" data-input-type="radiobuttonlist">
+        @if (Model.DataType == "Boolean")
+        {
+            bool boolVal = Convert.ToBoolean(Model.Value);
+            if (boolVal)
+            {
+                <label><input name="@GetGroupId(Model.Id)" type="radio" value="True" checked />Yes</label>
+                <label><input name="@GetGroupId(Model.Id)" type="radio" value="False" />No</label>
+
+            }
+            else
+            {
+                <label><input name="rb@Model.Id" type="radio" value="True" />Yes</label>
+                <label><input name="rb@Model.Id" type="radio" value="False" checked />No</label>
+
+            }
+
+        }
+        else
+        {
+
+            @foreach (var opt in Model.Options)
+            {
+                if (opt.Id.ToString() == Model.Value.ToString())
+                {
+                    <label><input name="@GetGroupId(Model.Id)" type="radio" value="@opt.Id" checked />@opt.Value</label>
+
+
+                }
+                else
+                {
+
+                    <label><input name="@GetGroupId(Model.Id)" type="radio" value="@opt.Id" />@opt.Value</label>
+                }
+
+            }
+
+
+        }
+    </div>
+
+}
+

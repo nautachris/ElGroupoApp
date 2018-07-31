@@ -1,0 +1,31 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemUserDataModel
+@{
+    Layout = null;
+}
+
+@if (Model is CreateItemUserDataModel)
+{
+    <div data-element-id="@((Model as CreateItemUserDataModel).ElementId)" data-input-type="checkbox">
+        <input type="checkbox" />
+    </div>
+
+}
+else
+{
+    <div data-element-id="@Model.Id" data-input-type="checkbox">
+        @if (Convert.ToBoolean(Model.Value))
+        {
+            <input type="checkbox" checked />
+
+        }
+        else
+        {
+            <input type="checkbox" />
+
+        }
+
+    </div>
+
+}

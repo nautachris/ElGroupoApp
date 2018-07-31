@@ -2,25 +2,90 @@
 @using ElGroupo.Web.Models.Shared
 @model UserCategoryModel
 
-<section class="create-activity-group" style="padding:20px;">
-    <h2>@Model.Name</h2>
-    @if (Model.SubCategories.Any())
+<section class="view-category-items" style="padding:20px; width:40%; margin-left:30%; text-align:center;">
+
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ShowHiddenRecords" />
+    <h4 style="font-weight:700; font-size:35px; font-family:'PT Sans'">@Model.Name</h4>
+    <div class="divider-record-category"></div>
+    @foreach (var subCat in Model.SubCategories)
     {
 
 
+        <div class="sub-category-item-list" data-sub-category-id="@subCat.Id">
+            @*<h3>@subCat.Name</h3>*@
+            <div class="row">
+                <div class="col span-3-of-10" style="font-weight:bold; text-align:left; margin-left:15px; font-size:18px;">
+                    @subCat.Name
+                </div>
+                <div class="col span-6-of-10" style="text-align:right; font-weight:bold; padding-right:18px;font-size:18px;">
+                    @subCat.ValueColumnHeader
+                </div>
+            </div>
+            <div class="sub-category-item-list-container" style="margin-top:10px;" data-sub-category-id="@subCat.Id">
+                @Html.Partial("_ItemUserListItemContainer", subCat.Items)
+            </div>
+        </div>
+        <div class="row centered add-sub-category-item" data-sub-category-id="@subCat.Id"></div>
+        <div class="divider-record-category"></div>
+
+
+
+
+    }
+    <div class="row" style="height:43px;"></div>
+    @if (Model.SubCategories.Count > 0)
+    {
+
+        <h3>Other</h3>
     }
 
-    <ul>
-        <li>
-            <div style="float:left;">@Model.NameColumnHeader</div>
-            <div style="float:right;">@Model.ValueColumnHeader</div>
-        </li>
-        @foreach (var item in Model.Items)
+    <div class="row">
+        <div class="col span-3-of-10" style="font-weight:bold;text-align:left; margin-left:15px;font-size:18px;">
+            @Model.NameColumnHeader
+        </div>
+        <div class="col span-6-of-10" style="text-align:right;font-weight:bold; padding-right:18px;font-size:18px;">
+            @Model.ValueColumnHeader
+        </div>
+    </div>
+    <div class="category-item-list-container" style="margin-top:10px;" data-category-id="@Model.Id">
+        @Html.Partial("_ItemUserListItemContainer", Model.Items)
+    </div>
+    @*@foreach (var item in Model.Items)
         {
-            <div style="float:left;">@item.Name</div>
-            <div style="float:right;">@item.Value</div>
+            @Html.Partial("_ItemUserListItem", item)
+
+        }*@
+    <div class="divider-record-category"></div>
+    <div class="row centered add-category-item" style="margin-top:50px;" data-category-id="@Model.Id"></div>
+    <div class="row centered" style="margin-top:50px;">
+        <button class="btn btn-primary add-new-record-item" data-category-id="@Model.Id" style="width:50%;">Add New</button>
+
+    </div>
+    <div class="row centered" style="margin-top:25px;">
+        <button class="btn btn-ghost" style="width:50%;">Export</button>
+    </div>
+    <div style="margin-top:50px;">
+
+
+        @if (Model.ShowHiddenRecords)
+        {
+
+            <a asp-controller="Records" asp-action="ViewCategory" asp-route-categoryId="@Model.Id" asp-route-showHidden="false">Hide Hidden Records</a>
+        }
+        else
+        {
+            <a asp-controller="Records" asp-action="ViewCategory" asp-route-categoryId="@Model.Id" asp-route-showHidden="true">Show Hidden Records</a>
 
         }
-    </ul>
-
+    </div>
+    <div class="row centered" style="margin-top:20px;">
+        <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
+            <a asp-controller="Records" asp-action="Dashboard">Back</a>
+        </div>
+    </div>
 </section>
+
+@section scripts{
+    <script type="text/javascript" src="~/content/scripts/records/user-record.js"></script>
+}

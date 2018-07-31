@@ -1,0 +1,198 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemUserDataModel
+@{
+    Layout = null;
+}
+
+@functions{
+    public DateTime? TryGetDate(object obj)
+    {
+        if (obj == null) return null;
+        if (string.IsNullOrEmpty(obj.ToString())) return null;
+        DateTime outDate;
+        if (DateTime.TryParse(obj.ToString(), out outDate))
+        {
+            return outDate;
+
+        }
+        return null;
+
+    }
+}
+@if (Model is CreateItemUserDataModel)
+{
+    <div data-element-id="@((Model as CreateItemUserDataModel).ElementId)" data-input-type="datetimepicker">
+
+        <div class="row">
+
+                <div class="col span-4-of-10">
+                    <input type="text" class="width-100">
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-hour>
+                        <option value="12" selected>12</option>
+                        @for (int hour = 1; hour <= 11; hour++)
+                        {
+                            <option value="@hour">@hour.ToString()</option>
+                        }
+                    </select>
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-min>
+                        @for (var min = 0; min < 60; min = min + 15)
+                        {
+                            @if (min < 10)
+                            {
+                                <option value="@min">@("0" + min.ToString())</option>
+
+                            }
+                            else
+                            {
+                                <option value="@min">@min.ToString()</option>
+                            }
+
+                        }
+                    </select>
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-am-pm>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+
+        </div>
+    </div>
+
+}
+else
+{
+    <div data-element-id="@Model.Id" data-input-type="datetimepicker">
+        @{DateTime? modelDate = TryGetDate(Model.Value); }
+        <div class="row">
+            @if (modelDate.HasValue)
+            {
+                <div class="col span-4-of-10">
+                    <input value="@modelDate.Value.ToString("MM/dd/yyyy")" type="text" class="width-100">
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-hour>
+                        @if (modelDate.Value.Hour == 0)
+                        {
+                            <option value="12" selected>12</option>
+
+                        }
+                        else
+                        {
+                            <option value="12">12</option>
+
+                        }
+
+                        @for (int hour = 1; hour <= 11; hour++)
+                        {
+                            @if (modelDate.Value.Hour == hour || modelDate.Value.Hour - 12 == hour)
+                            {
+                                <option selected value="@hour">@hour.ToString()</option>
+
+                            }
+                            else
+                            {
+                                <option value="@hour">@hour.ToString()</option>
+
+                            }
+
+                        }
+                    </select>
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-min>
+                        @for (var min = 0; min < 60; min = min + 15)
+                        {
+                            @if (min < 10)
+                            {
+                                if (modelDate.Value.Minute == min)
+                                {
+                                    <option selected value="@min">@("0" + min.ToString())</option>
+                                }
+                                else
+                                {
+                                    <option value="@min">@("0" + min.ToString())</option>
+                                }
+                            }
+                            else
+                            {
+                                if (modelDate.Value.Minute == min)
+                                {
+                                    <option selected value="@min">@min.ToString()</option>
+                                }
+                                else
+                                {
+                                    <option value="@min">@min.ToString()</option>
+                                }
+
+                            }
+
+                        }
+                    </select>
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-am-pm>
+                        @if (modelDate.Value.Hour < 12)
+                        {
+                            <option selected value="AM">AM</option>
+                            <option value="PM">PM</option>
+
+                        }
+                        else
+                        {
+                            <option value="AM">AM</option>
+                            <option selected value="PM">PM</option>
+
+                        }
+
+                    </select>
+                </div>
+            }
+            else
+            {
+                <div class="col span-4-of-10">
+                    <input type="text" class="width-100">
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-hour>
+                        <option value="12" selected>12</option>
+                        @for (int hour = 1; hour <= 11; hour++)
+                        {
+                            <option value="@hour">@hour.ToString()</option>
+                        }
+                    </select>
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-min>
+                        @for (var min = 0; min < 60; min = min + 15)
+                        {
+                            @if (min < 10)
+                            {
+                                <option value="@min">@("0" + min.ToString())</option>
+
+                            }
+                            else
+                            {
+                                <option value="@min">@min.ToString()</option>
+                            }
+
+                        }
+                    </select>
+                </div>
+                <div class="col span-2-of-10">
+                    <select data-am-pm>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+            }
+        </div>
+    </div>
+
+}

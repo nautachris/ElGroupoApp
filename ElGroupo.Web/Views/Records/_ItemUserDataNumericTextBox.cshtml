@@ -1,0 +1,22 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemUserDataModel
+@{
+    Layout = null;
+}
+
+@if (Model is CreateItemUserDataModel)
+{
+    <div data-element-id="@((Model as CreateItemUserDataModel).ElementId)" data-input-type="numerictextbox">
+        <input type="number" style="width:100%;" />
+    </div>
+
+}
+else
+{
+    <div data-element-id="@Model.Id" data-input-type="numerictextbox">
+        <input type="number" value="@Model.Value" style="width:100%;" />
+    </div>
+
+}
+

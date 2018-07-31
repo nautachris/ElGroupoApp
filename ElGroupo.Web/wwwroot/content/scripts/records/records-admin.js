@@ -59,6 +59,20 @@ RecordsAdmin = {
         });
     },
 
+    CreateItemType: function (name, categoryId, subCategoryId, cb) {
+        var _cb = cb;
+        Ajax.Post("/Records/itemtype/create", { name: name, categoryId: categoryId, subCategoryId: subCategoryId, returnView: true }).done(function (results) {
+            _cb(results);
+        });
+    },
+
+    DeleteItemType: function (id, cb) {
+        var _cb = cb;
+        Ajax.Delete("/Records/itemtype/delete", { id: id, returnView: true }).done(function (results) {
+            _cb(results);
+        });
+    },
+
     AddItemToRecordElementLookupTable: function (id, value, cb) {
         var _cb = cb;
         Ajax.Post("/Records/lookuptable/editadd", { id: id, value: value, returnView:true }).done(function (results) {
@@ -129,15 +143,15 @@ RecordsAdmin = {
     },
 
 
-    CreateRecordElement: function (name, displayName, dataTypeId, lookupTableId, inputTypeId, cb) {
+    CreateRecordElement: function (name, displayName, dataTypeId, lookupTableId, inputTypeId, sameRow,cb) {
         var _cb = cb;
-        Ajax.Post("/Records/element/create", { name: name, displayName: displayName, dataTypeId: dataTypeId, lookupTableId: lookupTableId, inputTypeId: inputTypeId, returnView:true }).done(function (results) {
+        Ajax.Post("/Records/element/create", { name: name, displayName: displayName, dataTypeId: dataTypeId, lookupTableId: lookupTableId, inputTypeId: inputTypeId, sameRow: sameRow, returnView:true }).done(function (results) {
             _cb(results);
         });
     },
-    EditRecordElement: function (id, name, displayName,dataTypeId, lookupTableId, inputTypeId, cb) {
+    EditRecordElement: function (id, name, displayName,dataTypeId, lookupTableId, inputTypeId, sameRow, cb) {
         var _cb = cb;
-        Ajax.Post("/Records/element/edit", { id: id, name: name, displayName: displayName, dataTypeId: dataTypeId, lookupTableId: lookupTableId, inputTypeId: inputTypeId, returnView: true }).done(function (results) {
+        Ajax.Post("/Records/element/edit", { id: id, name: name, displayName: displayName, dataTypeId: dataTypeId, lookupTableId: lookupTableId, inputTypeId: inputTypeId, sameRow:sameRow, returnView: true }).done(function (results) {
             _cb(results);
         });
     },

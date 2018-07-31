@@ -1,0 +1,42 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemUserDataModel
+@{
+    Layout = null;
+}
+
+@if (Model is CreateItemUserDataModel)
+{
+    <div data-element-id="@((Model as CreateItemUserDataModel).ElementId)" data-input-type="dropdownlist">
+        <select style="width:100%;">
+            @foreach (var opt in Model.Options)
+            {
+            <option value="@opt.Id">@opt.Value</option>
+
+            }
+        </select>
+    </div>
+
+}
+else
+{
+
+    <div data-element-id="@Model.Id"  data-input-type="dropdownlist">
+        <select style="width:100%;">
+            @foreach (var opt in Model.Options)
+            {
+                if (opt.Id.ToString() == Model.Value.ToString())
+                {
+                    <option selected value="@opt.Id">@opt.Value</option>
+                }
+                else
+                {
+                    <option value="@opt.Id">@opt.Value</option>
+
+                }
+
+            }
+        </select>
+    </div>
+}
+

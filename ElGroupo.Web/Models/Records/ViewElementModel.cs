@@ -7,6 +7,7 @@ namespace ElGroupo.Web.Models.Records
 {
     public class ViewElementModel
     {
+        public bool LabelOnSameRow { get; set; }
         public string DisplayName { get; set; }
         public bool PrimaryDisplay { get; set; }
         public long Id { get; set; }

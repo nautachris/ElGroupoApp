@@ -14,6 +14,7 @@
             <th style="min-width:150px; text-align:center;">Data Type</th>
             <th style="min-width:150px; text-align:center;">Input Control</th>
             <th style="min-width:150px; text-align:center;">Lookup Table</th>
+            <th style="min-width:150px; text-align:center;">Label on Same Row?</th>
             <th style="min-width:150px; text-align:center;"></th>
             <th style="min-width:150px; text-align:center;"></th>
         </tr>
@@ -46,6 +47,21 @@
         <td data-lookup-table-id="@item.LookupTable?.Id">
             <div id="divLookupTableView">@item.LookupTable?.Description</div>
             <div id="divLookupTableEdit" style="display:none">
+            </div>
+        </td>
+        <td data-on-same-row="@item.LabelOnSameRow">
+            @if (item.LabelOnSameRow)
+            {
+                <div id="divLabelOnSameRowView">Yes</div>
+
+            }
+            else
+            {
+                <div id="divLabelOnSameRowView">No</div>
+
+            }
+
+            <div id="divLabelOnSameRowEdit" style="display:none">
             </div>
         </td>
         <td>

@@ -1,13 +1,19 @@
 ﻿@using ElGroupo.Web.Models.Shared
 @model IEnumerable<IdValueModel>
 
+
+<div class="row centered"><a asp-controller="Records" asp-action="Dashboard">Return to Dashboard</a>
+    </div>
 <div style="text-align:center;">
     <h2>Records Admin</h2>
     <div style="width:100%">
         <a asp-controller="Records" asp-action="Categories">Edit Categories</a>
     </div>
     <div style="width:100%">
-        <a asp-controller="Records" asp-action="Elements">Edit Elements</a>
+        <a asp-controller="Records" asp-action="Elements">Edit Questions</a>
+    </div>
+    <div style="width:100%">
+        <a asp-controller="Records" asp-action="ItemTypes">Edit Item Types</a>
     </div>
     <div style="width:100%">
         <a asp-controller="Records" asp-action="LookupTables">Edit Lookup Tables</a>

@@ -55,7 +55,8 @@ EditElements = {
             }
             var itId = Number($("#selAddInputType").val());
             if (!itId) return;
-            RecordsAdmin.CreateRecordElement(name, displayName, dataTypeId, ltId, itId, function (results) {
+            var sameRow = $("#chkSameLine").is(":checked");
+            RecordsAdmin.CreateRecordElement(name, displayName, dataTypeId, ltId, itId, sameLine, function (results) {
                 $("#element-list").empty().html(results);
                 $("#txtAddElement").val('');
                 $("#txtAddDisplayName").val('');
@@ -94,6 +95,9 @@ EditElements = {
             $(this).closest('tr').find('#divDisplayNameEdit').hide();
             $(this).closest('tr').find('#divInputTypeView').show();
             $(this).closest('tr').find('#divInputTypeEdit').hide();
+            $(this).closest('tr').find('#divLabelOnSameRowView').show();
+            $(this).closest('tr').find('#divLabelOnSameRowEdit').hide();
+
 
         });
 
@@ -105,15 +109,28 @@ EditElements = {
             var inputTypeId = $(this).closest('tr').find('#selEditInputType').val();
             var name = $(this).closest('tr').find('#txtElementName').val();
             var displayName = $(this).closest('tr').find('#txtDisplayName').val();
+            var sameRow = $(this).closest('tr').find('#chkSameRow').is(':checked');
+
+
             var id = $(this).closest('tr').attr('data-element-id');
 
-            RecordsAdmin.EditRecordElement(id, name, displayName, dataTypeId, lookupTableId === '-1' ? null : lookupTableId, inputTypeId, function (results) {
+
+            $(this).closest('tr').find('td[data-input-type-id]').attr('data-input-type-id', inputTypeId);
+            $(this).closest('tr').find('td[data-data-type-id]').attr('data-data-type-id', dataTypeId);
+            RecordsAdmin.EditRecordElement(id, name, displayName, dataTypeId, lookupTableId === '-1' ? null : lookupTableId, inputTypeId, sameRow, function (results) {
 
                 $this.closest('tr').find("#selEditDataType").off("change");
                 $this.closest('tr').find('#divDataTypeView').text($this.closest('tr').find('#selEditDataType option[value=' + dataTypeId + ']').text());
-                $this.closest('tr').find('#divLookupTableView').text($this.closest('tr').find('#selEditLookupTable option[value=' + lookupTableId +']').text());
+                $this.closest('tr').find('#divLookupTableView').text($this.closest('tr').find('#selEditLookupTable option[value=' + lookupTableId + ']').text());
+                $this.closest('tr').find('#divInputTypeView').text($this.closest('tr').find('#selEditInputType option[value=' + inputTypeId + ']').text());
                 $this.closest('tr').find('#divElementNameView').text($this.closest('tr').find('#txtElementName').val());
                 $this.closest('tr').find('#divDisplayNameView').text($this.closest('tr').find('#txtDisplayName').val());
+                if ($this.closest('tr').find('#chkSameRow').is(':checked')) {
+                    $this.closest('tr').find('#divLabelOnSameRowView').text('Yes');
+                }
+                else {
+                    $this.closest('tr').find('#divLabelOnSameRowView').text('No');
+                }
                 $('a[data-edit]').show();
                 $('a[data-delete]').show();
                 $('a[data-save]').hide();
@@ -129,6 +146,10 @@ EditElements = {
                 $this.closest('tr').find('#divInputTypeEdit').hide();
                 $this.closest('tr').find('#divDataTypeView').show();
                 $this.closest('tr').find('#divDataTypeEdit').hide();
+
+
+                $this.closest('tr').find('#divLabelOnSameRowView').show();
+                $this.closest('tr').find('#divLabelOnSameRowEdit').hide();
             });
 
 
@@ -148,6 +169,14 @@ EditElements = {
                 }
                 else {
 
+                    $(this).find("#divLabelOnSameRowEdit").empty();
+                    if ($(this).find('td[data-on-same-row]').attr('data-on-same-row') == 'True') {
+                        $(this).find("#divLabelOnSameRowEdit").append('<input type="checkbox" id="chkSameRow" checked/>');
+                    }
+                    else {
+                        $(this).find("#divLabelOnSameRowEdit").append('<input type="checkbox" id="chkSameRow"/>');
+                    }
+
                     $(this).find("#divElementNameEdit").empty();
                     $(this).find("#divElementNameEdit").append('<input type="text" id="txtElementName" value="' + $(this).find('#divElementNameView').text() + '" style="width:200px;"/>');
 
@@ -157,6 +186,9 @@ EditElements = {
                     $(this).find("#divInputTypeEdit").empty();
                     $("#selAddInputType").clone().appendTo($(this).find("#divInputTypeEdit"));
                     $(this).find("#selAddInputType").attr('id', 'selEditInputType');
+                    var $this = $(this);
+
+                    console.log('before get input types - input-type-id = ' + $this.find('td[data-input-type-id]').attr('data-input-type-id'));
                     RecordsAdmin.GetInputTypesByDataTypeId($(this).find('td[data-data-type-id]').attr('data-data-type-id'), function (results) {
                         console.log('input types');
                         console.log(results);
@@ -164,8 +196,15 @@ EditElements = {
                         for (var x = 0; x < results.length; x++) {
                             $("#selEditInputType").append('<option value="' + results[x].id + '">' + results[x].name + '</option>');
                         }
-                        console.log($("#selEditInputType option").length);
+                        console.log($this.find('td[data-input-type-id]').attr('data-input-type-id'));
+                        $this.find("#selEditInputType").val($this.find('td[data-input-type-id]').attr('data-input-type-id'));
+
                     });
+
+
+                    
+
+
 
                     $(this).find("#divDataTypeEdit").empty();
                     $("#selAddDataType").clone().appendTo($(this).find("#divDataTypeEdit"));
@@ -209,6 +248,10 @@ EditElements = {
                     $(this).find('#divDisplayNameEdit').show();
                     $(this).find('#divInputTypeView').hide();
                     $(this).find('#divInputTypeEdit').show();
+
+                    console.log('divLabelOnSameRowEdit length', $(this).find('#divLabelOnSameRowEdit').length);
+                    $(this).find('#divLabelOnSameRowView').hide();
+                    $(this).find('#divLabelOnSameRowEdit').show();
                 }
             });
            

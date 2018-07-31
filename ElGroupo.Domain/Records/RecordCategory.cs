@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElGroupo.Domain.Lookups;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,11 +17,13 @@ namespace ElGroupo.Domain.Records
         public virtual ICollection<RecordDefaultElement> DefaultElements { get; set; }
         public virtual ICollection<RecordItem> Items { get; set; }
         public virtual ICollection<RecordSubCategory> SubCategories { get; set; }
+
+        public virtual ICollection<RecordItemType> ItemTypes { get; set; }
     }
 
     public class RecordSubCategory : ClassBase
     {
-                public string ItemDescriptionColumnHeader { get; set; }
+        public string ItemDescriptionColumnHeader { get; set; }
         //i.e. "#"
         public string ItemValueColumnHeader { get; set; }
         public string Name { get; set; }
@@ -28,6 +31,8 @@ namespace ElGroupo.Domain.Records
         public long ParentCategoryId { get; set; }
         public virtual ICollection<RecordItem> Items { get; set; }
         public virtual ICollection<RecordDefaultElement> DefaultElements { get; set; }
+
+        public virtual ICollection<RecordItemType> ItemTypes { get; set; }
     }
 
     public class RecordDefaultElement : ClassBase
@@ -43,32 +48,51 @@ namespace ElGroupo.Domain.Records
 
     public class RecordItem : ClassBase
     {
+        public RecordItemType ItemType { get; set; }
+        public long? ItemTypeId { get; set; }
         public long? CategoryId { get; set; }
         public long? SubCategoryId { get; set; }
         public string Name { get; set; }
         public RecordCategory Category { get; set; }
         public RecordSubCategory SubCategory { get; set; }
         public virtual ICollection<RecordItemElement> Elements { get; set; }
-        public virtual ICollection<RecordItemUser> Users { get; set; }
+        //public virtual ICollection<RecordItemUser> Users { get; set; }
 
-        public User User { get; set; }
-        public long? UserId { get; set; }
-
-    }
-    public class RecordItemUser : ClassBase
-    {
-        public bool Visible { get; set; } = true;
-        public RecordItem Item { get; set; }
-        public long ItemId { get; set; }
         public User User { get; set; }
         public long UserId { get; set; }
-        public virtual ICollection<RecordItemUserDocument> Documents { get; set; }
-        public virtual ICollection<RecordItemUserData> UserData { get; set; }
+        public bool Visible { get; set; } = true;
+
+        public virtual ICollection<RecordItemDocument> Documents { get; set; }
+        //public virtual ICollection<RecordItemUserData> UserData { get; set; }
+
     }
-    public class RecordItemUserDocument : ClassBase
+
+    public class RecordItemType : ClassBase
     {
-        public RecordItemUser ItemUser { get; set; }
-        public long ItemUserId { get; set; }
+        public RecordCategory Category { get; set; }
+        public long? CategoryId { get; set; }
+        public RecordSubCategory SubCategory { get; set; }
+        public long? SubCategoryId { get; set; }
+        public string Name { get; set; }
+        public virtual ICollection<RecordItem> Items { get; set; }
+
+    }
+    //public class RecordItemUser : ClassBase
+    //{
+
+
+
+    //    public bool Visible { get; set; } = true;
+    //    public RecordItem Item { get; set; }
+    //    public long ItemId { get; set; }
+    //    public User User { get; set; }
+    //    public long UserId { get; set; }
+
+    //}
+    public class RecordItemDocument : ClassBase
+    {
+        public RecordItem Item { get; set; }
+        public long ItemId { get; set; }
         public string FileName { get; set; }
         public string Description { get; set; }
         public string ContentType { get; set; }
@@ -98,6 +122,8 @@ namespace ElGroupo.Domain.Records
 
     public class RecordElement : ClassBase
     {
+        public bool LabelOnSameRow { get; set; } = false;
+
         public string DisplayName { get; set; }
         //basic things like "date of issue", "license #"- a lookup table
         public string Name { get; set; }
@@ -137,20 +163,22 @@ namespace ElGroupo.Domain.Records
     {
         public RecordElement Element { get; set; }
         public RecordItem Item { get; set; }
-        public virtual ICollection<RecordItemUserData> UserData { get; set; }
+        //public virtual ICollection<RecordItemUserData> UserData { get; set; }
         public long ItemId { get; set; }
         public long ElementId { get; set; }
         public bool PrimaryDisplay { get; set; }
-
-
-    }
-
-    public class RecordItemUserData : ClassBase
-    {
-        public long ItemUserId { get; set; }
-        public RecordItemUser ItemUser { get; set; }
-        public RecordItemElement Element { get; set; }
-        public long ElementId { get; set; }
         public string Value { get; set; }
+
+
     }
+
+    //public class RecordItemUserData : ClassBase
+    //{
+
+    //    public long ItemUserId { get; set; }
+    //    public RecordItemUser ItemUser { get; set; }
+    //    public RecordItemElement Element { get; set; }
+    //    public long ElementId { get; set; }
+    //    public string Value { get; set; }
+    //}
 }

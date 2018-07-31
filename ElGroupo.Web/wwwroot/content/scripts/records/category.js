@@ -5,6 +5,49 @@
 RecordCategory = {
     Init: function () {
 
+
+        $("div.view-description-column a").on("click", function () {
+            console.log('edit clicked');
+            $(".view-description-column").hide();
+            $(".edit-description-column").show();
+
+        });
+        $(".cancel-description-column a").on("click", function () {
+            $(".view-description-column").show();
+            $(".edit-description-column").hide();
+        });
+
+        $("a.save-description-column").on("click", function () {
+            console.log('save description clicked');
+            Ajax.Post("/Records/category/updateDescriptionColumn", {
+                id: Number($("#Id").val()), value: $("#txtDescriptionColumn").val(), returnView: false
+            }).done(function (results) {
+                $("#divDescriptionColumn").text($("#txtDescriptionColumn").val());
+                $(".view-description-column").show();
+                $(".edit-description-column").hide();
+            });
+        });
+
+        $("a.save-value-column").on("click", function () {
+            Ajax.Post("/Records/category/updateValueColumn", {
+                id: Number($("#Id").val()), value: $("#txtValueColumn").val(), returnView: false
+            }).done(function (results) {
+                $("#divValueColumn").text($("#txtValueColumn").val());
+                $(".view-value-column").show();
+                $(".edit-value-column").hide();
+            });
+        });
+
+        $("div.view-value-column a").on("click", function () {
+            $(".view-value-column").hide();
+            $(".edit-value-column").show();
+
+        });
+        $(".cancel-value-column a").on("click", function () {
+            $("view-value-column").show();
+            $("edit-value-column").hide();
+        });
+
         $("button.add-subcategory-btn").on("click", function () {
             console.log('bark');
             $("div.add-subcategory").show();

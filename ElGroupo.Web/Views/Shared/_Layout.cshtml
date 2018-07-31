@@ -1,6 +1,6 @@
 ﻿<html>
 <head>
-    <title>Footprint</title>
+    <title>Scatterbrain</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="~/content/vendors/css/normalize.css">
     <link rel="stylesheet" type="text/css" href="~/content/vendors/css/Grid.css">
@@ -11,6 +11,7 @@
     <link href="~/content/lib/css/jquery-ui.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,300i,400" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,700" rel="stylesheet">
     @*font-family: 'Raleway', sans-serif;*@
     @*font-family: 'Source Sans Pro', sans-serif;*@
     <link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
@@ -50,15 +51,8 @@
             @RenderBody()
         </div>
         <div id="divSpinner" style="display:none; z-index:999; height:100%;width:100%;position:fixed;top:0px;left:0px;">
-            <div id="fountainG">
-                @*<div id="fountainG_1" class="fountainG"></div>
-                    <div id="fountainG_2" class="fountainG"></div>
-                    <div id="fountainG_3" class="fountainG"></div>
-                    <div id="fountainG_4" class="fountainG"></div>
-                    <div id="fountainG_5" class="fountainG"></div>
-                    <div id="fountainG_6" class="fountainG"></div>
-                    <div id="fountainG_7" class="fountainG"></div>
-                    <div id="fountainG_8" class="fountainG"></div>*@
+            @*<button class="btn btn-primary" id="btnStopLoad">Close</button>*@
+            @*<div id="fountainG">
                 <div id="fountainG_1"></div>
                 <div id="fountainG_2"></div>
                 <div id="fountainG_3"></div>
@@ -67,7 +61,14 @@
                 <div id="fountainG_6"></div>
                 <div id="fountainG_7"></div>
                 <div id="fountainG_8"></div>
+            </div>*@
+            <div style="position:absolute; top:40%; height:20%; left:40%; width:20%;">
+                <div id="divSpinLogo">
+                    <img id="imgSpinLogo" style="width:250px; border-top-left-radius:100%; border-top-right-radius:70%; border-bottom-left-radius:70%; border-bottom-right-radius:100%; border: 5px solid #ECB2B0;" src="~/content/images/new-logo.png" />
+                </div>
             </div>
+            
+            
         </div>
 
 

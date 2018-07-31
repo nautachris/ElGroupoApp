@@ -1,0 +1,111 @@
+﻿
+@using ElGroupo.Web.Models.Records
+@model EditItemUserDataModel
+@{
+    Layout = null;
+}
+
+@if (Model.LabelOnSameRow)
+{
+    <div class="row" style="margin-top:15px;">
+        <div class="col span-1-of-3" style="text-align:left;">@Model.Description</div>
+        <div class="col span-2-of-3">
+            @if (Model.ControlType == InputControlTypes.CheckBox)
+            {
+                @Html.Partial("_ItemUserDataCheckBox", Model)
+
+            }
+            else if (Model.ControlType == InputControlTypes.DatePicker)
+            {
+
+                @Html.Partial("_ItemUserDataDatePicker", Model)
+            }
+            else if (Model.ControlType == InputControlTypes.DateTimePicker)
+            {
+                @Html.Partial("_ItemUserDataDateTimePicker", Model)
+
+            }
+            else if (Model.ControlType == InputControlTypes.DropdownList)
+            {
+                @Html.Partial("_ItemUserDataDropDownList", Model)
+
+            }
+            else if (Model.ControlType == InputControlTypes.NumericTextBox)
+            {
+                @Html.Partial("_ItemUserDataNumericTextBox", Model)
+
+            }
+            else if (Model.ControlType == InputControlTypes.RadioButtonList)
+            {
+                @Html.Partial("_ItemUserDataRadioButtonList", Model)
+
+            }
+            else if (Model.ControlType == InputControlTypes.AutoComplete)
+            {
+                @Html.Partial("_ItemUserDataAutoComplete", Model)
+
+            }
+            else if (Model.ControlType == InputControlTypes.TextBox)
+            {
+                @Html.Partial("_ItemUserDataTextBox", Model)
+
+            }
+        </div>
+    </div>
+
+}
+else
+{
+    <div class="row" style="text-align:left; margin-top:15px;">@Model.Description</div>
+    <div class="row">
+        @if (Model.ControlType == InputControlTypes.CheckBox)
+        {
+            @Html.Partial("_ItemUserDataCheckBox", Model)
+
+        }
+        else if (Model.ControlType == InputControlTypes.DatePicker)
+        {
+
+            @Html.Partial("_ItemUserDataDatePicker", Model)
+        }
+        else if (Model.ControlType == InputControlTypes.DateTimePicker)
+        {
+            @Html.Partial("_ItemUserDataDateTimePicker", Model)
+
+        }
+        else if (Model.ControlType == InputControlTypes.DropdownList)
+        {
+            @Html.Partial("_ItemUserDataDropDownList", Model)
+
+        }
+        else if (Model.ControlType == InputControlTypes.NumericTextBox)
+        {
+            @Html.Partial("_ItemUserDataNumericTextBox", Model)
+
+        }
+        else if (Model.ControlType == InputControlTypes.RadioButtonList)
+        {
+            @Html.Partial("_ItemUserDataRadioButtonList", Model)
+
+        }
+        else if (Model.ControlType == InputControlTypes.AutoComplete)
+        {
+            @Html.Partial("_ItemUserDataAutoComplete", Model)
+
+        }
+        else if (Model.ControlType == InputControlTypes.TextBox)
+        {
+            @Html.Partial("_ItemUserDataTextBox", Model)
+
+        }
+
+    </div>
+
+}
+
+
+        @*//todos
+        //    autocomplete /records/lookupautocomplete
+//radiobuttonlist bool
+        //    datepicker
+        //    datetimepicker*@
