@@ -36,7 +36,7 @@
     @if (Model.ItemTypes.Count > 1)
     {
         <div class="row">
-            <div class="col span-1-of-3" style="text-align:left;">Name:</div>
+            <div class="col span-1-of-3" style="text-align:left;">Nickname:</div>
             <div class="col span-2-of-3">
                 <select id="selItemType">
 
@@ -71,19 +71,39 @@
         </div>
         @if (!Model.ItemTypeId.HasValue)
         {
-            <div class="row" id="divCustomName">
-                <div class="col span-1-of-3" style="text-align:left;">Name:</div>
-                <div class="col span-2-of-3" style="text-align:left;">
-                    <input type="text" style="width:100%;" id="txtCustomName" value="@Model.Name" />
+            @*<div class="row" id="divCustomName">
+                    <div class="col span-1-of-3" style="text-align:left;">Name:</div>
+                    <div class="col span-2-of-3" style="text-align:left;">
+                        <input type="text" style="width:100%;" id="txtCustomName" value="@Model.Name" />
+                    </div>
+                </div>*@
+            <div class="row" id="divCustomName" style="text-align:left; margin-top:15px;">
+                <div class="row">Nickname:</div>
+                <div class="row">
+                    <div style="text-align:left;">
+                        <input type="text" style="width:100%;" id="txtCustomName" />
+                    </div>
+
                 </div>
             </div>
+
+
         }
         else
         {
-            <div class="row" id="divCustomName" style="display:none;">
-                <div class="col span-1-of-3" style="text-align:left;">Name:</div>
-                <div class="col span-2-of-3" style="text-align:left;">
-                    <input type="text" style="width:100%;" id="txtCustomName" />
+            @*<div class="row" id="divCustomName" style="display:none;">
+                    <div class="col span-1-of-3" style="text-align:left;">Name:</div>
+                    <div class="col span-2-of-3" style="text-align:left;">
+                        <input type="text" style="width:100%;" id="txtCustomName" />
+                    </div>
+                </div>*@
+            <div class="row" id="divCustomName" style="text-align:left; margin-top:15px; display:none;">
+                <div class="row">Nickname:</div>
+                <div class="row">
+                    <div style="text-align:left;">
+                        <input type="text" style="width:100%;" id="txtCustomName" />
+                    </div>
+
                 </div>
             </div>
 
@@ -93,16 +113,20 @@
     }
     else
     {
-        <div class="row" id="divCustomName">
-            <div class="col span-1-of-3" style="text-align:left;">Name:</div>
-            <div class="col span-2-of-3" style="text-align:left;">
+        @*<div class="row" id="divCustomName">
+                <div class="col span-1-of-3" style="text-align:left;">Name:</div>
+                <div class="col span-2-of-3" style="text-align:left;">
+                    <input type="text" style="width:100%;" id="txtCustomName" value="@Model.Name" />
+                </div>
+            </div>*@
+        <div class="row" id="divCustomName" style="text-align:left; margin-top:15px;">Nickname:</div>
+        <div class="row">
+            <div style="text-align:left;">
                 <input type="text" style="width:100%;" id="txtCustomName" value="@Model.Name" />
             </div>
+
         </div>
-
     }
-
-
 
     @foreach (var item in Model.UserData)
     {
@@ -130,9 +154,20 @@
             <a class="cancel-user-data">Cancel</a>
         </div>
     </div>
+
     <div class="row centered" style="width:75%; margin-top:25px;">
         <div class="col" style="text-align:center; font-size:0.7em; width:100%;">
-            <a class="hide-user-data">Hide</a>
+            @if (Model.Visible)
+            {
+                <a class="hide-user-data">Hide</a>
+
+            }
+            else
+            {
+                <a class="show-user-data">Show</a>
+
+            }
+
         </div>
     </div>
     <div class="row centered" style="width:75%; margin-top:25px;">

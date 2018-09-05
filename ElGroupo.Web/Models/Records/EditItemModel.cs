@@ -16,5 +16,7 @@ namespace ElGroupo.Web.Models.Records
         public List<EditItemUserDataModel> UserData { get; set; } = new List<EditItemUserDataModel>();
         public long ItemId { get; set; }
         public List<RecordDocumentListModel> Documents { get; set; } = new List<RecordDocumentListModel>();
+        public bool ShowHidden { get; set; }
+        public bool Visible { get; set; }
     }
 }

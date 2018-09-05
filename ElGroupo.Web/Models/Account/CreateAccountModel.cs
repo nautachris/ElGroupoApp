@@ -9,9 +9,11 @@ namespace ElGroupo.Web.Models.Account
 {
     public class CreateAccountModel
     {
-        public List<OrganizationListModel> Organizations { get; set; } = new List<OrganizationListModel>();
+        //public List<OrganizationListModel> Organizations { get; set; } = new List<OrganizationListModel>();
 
-        public int OrganizationId { get; set; }
+        //public int OrganizationId { get; set; }
+                public string TimeZoneId { get; set; }
+        public List<TimeZoneModel> TimeZones { get; set; }
         public bool InvitedFromEvent { get; set; }
         public string InviteName { get; set; }
         public string EventName { get; set; }
@@ -28,8 +30,8 @@ namespace ElGroupo.Web.Models.Account
         }
         public string Title { get; set; }
 
-        [Display(Description = "User Name")]
-        public string UserName { get; set; }
+        //[Display(Description = "User Name")]
+        //public string UserName { get; set; }
         public string Name { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -44,7 +46,7 @@ namespace ElGroupo.Web.Models.Account
         [Compare("Password", ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; }
 
-        [Display(Description ="Phone Number")]
+        [Display(Description = "Phone Number")]
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 

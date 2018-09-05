@@ -204,39 +204,142 @@ UserRecord = {
             //category-item-list-container
             //sub-category-item-list-container
             let $container = $(this).closest('div[data-item-details-container-id]');
+            //let recordType = null;
+            let id = -1;
+            if ($container.closest('div.category-item-list-container').length > 0) {
+                recordType = 'category';
+                id = Number($container.closest('div.category-item-list-container').attr('data-category-id'));
+            }
+            else {
+                recordType = 'subCategory';
+                id = Number($container.closest('div.sub-category-item-list-container').attr('data-sub-category-id'));
+            }
             let $list = $(this).closest('.category-item-list-container').length > 0 ? $(this).closest('.category-item-list-container') : $(this).closest('.sub-category-item-list-container');
             let idToDelete = Number($(this).closest('div[data-item-details-container-id]').attr('data-item-details-container-id'));
             let $this = $(this);
             Confirm("Do you want to delete this record and all associated documents?", function () {
-                Ajax.Delete("/Records/item/delete", { id:idToDelete, returnView: true }).done(function (results) {
+                Ajax.Delete("/Records/item/delete", { id: idToDelete, showHidden: $('#ShowHiddenRecords').val(), returnView: true }).done(function (results) {
 
                     //replace the list 
                     UserRecord.InitRowClickEvents(true);
                     $container.remove();
-                    $list.empty().html(results);
-                });              
+                    //$list.empty().html(results);
+                    if (recordType === 'category') {
+                        $('div.category-container').empty().html(results);
+                    }
+                    else {
+                        $('div.sub-category-container[data-sub-category-id=' + id + ']').empty().html(results);
+                    }
+                });
             });
-            
+
+
+
+
+
+
+            //var containerId = Number($container.attr('data-item-details-container-id'));
+            //var _$container = $container;
+            //$.ajax({
+            //    url: '/Records/SaveUserData',
+            //    type: 'POST',
+            //    data: JSON.stringify(UserRecord.GetUserData($container)),
+            //    async: true,
+            //    cache: false,
+            //    //dataType: 'application/json',
+            //    contentType: 'application/json',
+            //    success: function success(results) {
+            //        //$("div[data-item-user-id=" + containerId + "]").replaceWith(results);
+            //        //$("div[data-record-item-id=" + containerId + "] > div.primary-display").text(results.displayValue);
+            //        if (recordType === 'category') {
+            //            $('div.category-item-list-container[data-category-id=' + id + ']').empty().html(results);
+            //        }
+            //        else {
+            //            $('div.sub-category-container[data-sub0category-id=' + id + ']').empty().html(results);
+            //        }
+            //        UserRecord.InitRowClickEvents(true);
+            //        _$container.remove();
+            //    },
+            //    error: function error(err) {
+            //        console.log(err);
+            //        alert('error');
+            //    }
+            //});
+
         });
 
         $("html").on("click", "a.hide-user-data", function () {
             //setting to inactive
             let $container = $(this).closest('div[data-item-details-container-id]');
-            let $list = $(this).closest('.category-item-list-container').length > 0 ? $(this).closest('.category-item-list-container') : $(this).closest('.sub-category-item-list-container');
+            //let $list = $(this).closest('.category-item-list-container').length > 0 ? $(this).closest('.category-item-list-container') : $(this).closest('.sub-category-item-list-container');
+
+            let recordType = null;
+            let id = -1;
+            if ($container.closest('div.category-item-list-container').length > 0) {
+                recordType = 'category';
+                id = Number($container.closest('div.category-item-list-container').attr('data-category-id'));
+            }
+            else {
+                recordType = 'subCategory';
+                id = Number($container.closest('div.sub-category-item-list-container').attr('data-sub-category-id'));
+            }
+
+
+
             let idToHide = Number($(this).closest('div[data-item-details-container-id]').attr('data-item-details-container-id'));
             let $this = $(this);
             Confirm("Do you want to hide this record?", function () {
-                Ajax.Post("/Records/item/hide", { id: idToHide, returnView: true }).done(function (results) {
+                Ajax.Post("/Records/item/hide", { id: idToHide, showHidden: $('#ShowHiddenRecords').val(), returnView: true }).done(function (results) {
 
                     //replace the list 
                     UserRecord.InitRowClickEvents(true);
                     $container.remove();
-                    $list.empty().html(results);
+                    if (recordType === 'category') {
+                        $('div.category-container').empty().html(results);
+                    }
+                    else {
+                        $('div.sub-category-container[data-sub-category-id=' + id + ']').empty().html(results);
+                    }
                 });
             });
 
         });
+        $("html").on("click", "a.show-user-data", function () {
+            //setting to inactive
+            let $container = $(this).closest('div[data-item-details-container-id]');
+            //let $list = $(this).closest('.category-item-list-container').length > 0 ? $(this).closest('.category-item-list-container') : $(this).closest('.sub-category-item-list-container');
 
+            let recordType = null;
+            let id = -1;
+            if ($container.closest('div.category-item-list-container').length > 0) {
+                recordType = 'category';
+                id = Number($container.closest('div.category-item-list-container').attr('data-category-id'));
+            }
+            else {
+                recordType = 'subCategory';
+                id = Number($container.closest('div.sub-category-item-list-container').attr('data-sub-category-id'));
+            }
+
+
+
+            let idToHide = Number($(this).closest('div[data-item-details-container-id]').attr('data-item-details-container-id'));
+            let $this = $(this);
+            Confirm("Do you want to show this record?", function () {
+                Ajax.Post("/Records/item/show", { id: idToHide, showHidden: $('#ShowHiddenRecords').val(), returnView: true }).done(function (results) {
+
+                    //replace the list 
+                    UserRecord.InitRowClickEvents(true);
+                    $container.remove();
+                    if (recordType === 'category') {
+                        $('div.category-container').empty().html(results);
+                    }
+                    else {
+                        $('div.sub-category-container[data-sub-category-id=' + id + ']').empty().html(results);
+                    }
+                });
+            });
+
+        });
         $("html").on("click", "button.add-documents-btn", function () {
             console.log('add doc btn');
             $("#iptFileExistingRecord").click();
@@ -419,6 +522,7 @@ UserRecord = {
             itemId: Number($container.attr('data-item-details-container-id')),
             itemTypeId: $container.find('#selItemType').val(),
             name: $container.find('#txtCustomName').val(),
+            showHidden: $('#ShowHiddenRecords').val(),
             userData: []
         };
 
@@ -487,7 +591,16 @@ UserRecord = {
     },
     SaveDetails: function ($container) {
 
-
+        let recordType = null;
+        let id = -1;
+        if ($container.closest('div.category-item-list-container').length > 0) {
+            recordType = 'category';
+            id = Number($container.closest('div.category-item-list-container').attr('data-category-id'));
+        }
+        else {
+            recordType = 'subCategory';
+            id = Number($container.closest('div.sub-category-item-list-container').attr('data-sub-category-id'));
+        }
 
         var containerId = Number($container.attr('data-item-details-container-id'));
         var _$container = $container;
@@ -501,7 +614,13 @@ UserRecord = {
             contentType: 'application/json',
             success: function success(results) {
                 //$("div[data-item-user-id=" + containerId + "]").replaceWith(results);
-                $("div[data-record-item-id=" + containerId + "] > div.primary-display").text(results.displayValue);
+                //$("div[data-record-item-id=" + containerId + "] > div.primary-display").text(results.displayValue);
+                if (recordType === 'category') {
+                    $('div.category-container').empty().html(results);
+                }
+                else {
+                    $('div.sub-category-container[data-sub-category-id=' + id + ']').empty().html(results);
+                }
                 UserRecord.InitRowClickEvents(true);
                 _$container.remove();
             },
@@ -517,6 +636,7 @@ UserRecord = {
         let _id = id;
         let _$container = $container;
         let postObj = UserRecord.GetNewUserData($container);
+        postObj.showHidden = $('#ShowHiddenRecords').val();
         postObj.returnView = false;
         $.ajax({
             url: '/Records/userrecord/savenew',
@@ -539,6 +659,7 @@ UserRecord = {
                         }
                     }
                     newDocFormData.append('description_' + fileId, desc);
+                    newDocFormData.append('show-hidden', $('#ShowHiddenRecords').val());
                 });
                 console.log(newDocFormData);
                 $.ajax({
@@ -551,11 +672,11 @@ UserRecord = {
                     contentType: false,
                     success: function success(results) {
                         if (_parentType === 'category') {
-                            $('div.category-item-list-container[data-category-id=' + _id + ']').empty().html(results);
-                            
+                            $('div.category-container').empty().html(results);
+
                         }
                         else {
-                            $('div.sub-category-item-list-container[data-sub-category-id=' + _id + ']').empty().html(results);
+                            $('div.sub-category-container[data-sub-category-id=' + _id + ']').empty().html(results);
                         }
                         UserRecord.InitRowClickEvents(true);
                         _$container.remove();
@@ -576,12 +697,13 @@ UserRecord = {
         });
     },
     SaveNewDetails: function ($container, parentType, id) {
-
+        console.log('showhidden', $('#ShowHiddenRecords').val());
         let _parentType = parentType;
         let _id = id;
         let _$container = $container;
         let postObj = UserRecord.GetNewUserData($container);
         postObj.returnView = true;
+        postObj.showHidden = $('#ShowHiddenRecords').val();
         $.ajax({
             url: '/Records/userrecord/savenew',
             type: 'POST',
@@ -591,10 +713,10 @@ UserRecord = {
             contentType: 'application/json',
             success: function success(results) {
                 if (_parentType === 'category') {
-                    $('div.category-item-list-container[data-category-id=' + _id + ']').empty().html(results);
+                    $('div.category-container').empty().html(results);
                 }
                 else {
-                    $('div.sub-category-item-list-container[data-sub-category-id=' + _id + ']').empty().html(results);
+                    $('div.sub-category-container[data-sub-category-id=' + _id + ']').empty().html(results);
                 }
                 UserRecord.InitRowClickEvents(true);
                 _$container.remove();
@@ -688,7 +810,7 @@ UserRecord = {
         var $el = $container.find('input[type=text]');
         var tableName = $el.attr('data-autocomplete-source');
         $el.autocomplete({
-            minLength: 3,
+            minLength: 4,
             autoFocus: true,
             delay: 300,
             select: function (e, i) {

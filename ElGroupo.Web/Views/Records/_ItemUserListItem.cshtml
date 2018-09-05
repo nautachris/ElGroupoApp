@@ -6,12 +6,27 @@
 }
 
 <div class="row" data-record-item-id="@Model.RecordItemId" style="border-radius:10px; padding-left:15px; line-height:40px;">
-    <div class="col span-4-of-10" style="text-align:left; margin: 0 0 0 0;">
-        @Model.Name
-    </div>
-    <div class="col span-5-of-10 primary-display" style="text-align:right;margin: 0 0 0 0;">
-        @Model.Value
-    </div>
+    @if (Model.Visible)
+    {
+        <div class="col span-4-of-10" style="text-align:left; margin: 0 0 0 0;">
+            @Model.Name
+        </div>
+        <div class="col span-5-of-10 primary-display" style="text-align:right;margin: 0 0 0 0;">
+            @Model.Value
+        </div>
+
+    }
+    else
+    {
+        <div class="col span-4-of-10" style="text-align:left; margin: 0 0 0 0; font-style:italic; color:darkgray;">
+            @Model.Name
+        </div>
+        <div class="col span-5-of-10 primary-display" style="text-align:right;margin: 0 0 0 0;font-style:italic; color:darkgray;">
+            @Model.Value
+        </div>
+
+    }
+
     @if (Model.DocumentId.HasValue)
     {
         <div class="col span-1-of-10" style="margin:0 0 0 0;">

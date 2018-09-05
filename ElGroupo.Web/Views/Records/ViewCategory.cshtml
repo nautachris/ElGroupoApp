@@ -10,60 +10,18 @@
     <div class="divider-record-category"></div>
     @foreach (var subCat in Model.SubCategories)
     {
-
-
-        <div class="sub-category-item-list" data-sub-category-id="@subCat.Id">
-            @*<h3>@subCat.Name</h3>*@
-            <div class="row">
-                <div class="col span-3-of-10" style="font-weight:bold; text-align:left; margin-left:15px; font-size:18px;">
-                    @subCat.Name
-                </div>
-                <div class="col span-6-of-10" style="text-align:right; font-weight:bold; padding-right:18px;font-size:18px;">
-                    @subCat.ValueColumnHeader
-                </div>
-            </div>
-            <div class="sub-category-item-list-container" style="margin-top:10px;" data-sub-category-id="@subCat.Id">
-                @Html.Partial("_ItemUserListItemContainer", subCat.Items)
-            </div>
-        </div>
-        <div class="row centered add-sub-category-item" data-sub-category-id="@subCat.Id"></div>
-        <div class="divider-record-category"></div>
-
+        @Html.Partial("_SubCategory", subCat);
 
 
 
     }
     <div class="row" style="height:43px;"></div>
-    @if (Model.SubCategories.Count > 0)
-    {
 
-        <h3>Other</h3>
-    }
 
-    <div class="row">
-        <div class="col span-3-of-10" style="font-weight:bold;text-align:left; margin-left:15px;font-size:18px;">
-            @Model.NameColumnHeader
-        </div>
-        <div class="col span-6-of-10" style="text-align:right;font-weight:bold; padding-right:18px;font-size:18px;">
-            @Model.ValueColumnHeader
-        </div>
-    </div>
-    <div class="category-item-list-container" style="margin-top:10px;" data-category-id="@Model.Id">
-        @Html.Partial("_ItemUserListItemContainer", Model.Items)
-    </div>
-    @*@foreach (var item in Model.Items)
-        {
-            @Html.Partial("_ItemUserListItem", item)
 
-        }*@
-    <div class="divider-record-category"></div>
-    <div class="row centered add-category-item" style="margin-top:50px;" data-category-id="@Model.Id"></div>
+    @Html.Partial("_Category", Model)
     <div class="row centered" style="margin-top:50px;">
         <button class="btn btn-primary add-new-record-item" data-category-id="@Model.Id" style="width:50%;">Add New</button>
-
-    </div>
-    <div class="row centered" style="margin-top:25px;">
-        <button class="btn btn-ghost" style="width:50%;">Export</button>
     </div>
     <div style="margin-top:50px;">
 

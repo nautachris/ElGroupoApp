@@ -405,7 +405,7 @@ namespace ElGroupo.Domain.Data
             builder.Entity<RecordItemType>().HasKey(x => x.Id);
             builder.Entity<RecordItemType>().Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<RecordItemType>().HasOne(x => x.Category).WithMany(x => x.ItemTypes).HasForeignKey(x => x.CategoryId);
-            builder.Entity<RecordItemType>().HasOne(x => x.SubCategory).WithMany(x => x.ItemTypes).HasForeignKey(x=>x.SubCategoryId);
+            builder.Entity<RecordItemType>().HasOne(x => x.SubCategory).WithMany(x => x.ItemTypes).HasForeignKey(x => x.SubCategoryId);
 
             //builder.Entity<RecordItemUserData>().ToTable("RecordItemUserData");
             //builder.Entity<RecordItemUserData>().HasKey(x => x.Id);
@@ -443,7 +443,7 @@ namespace ElGroupo.Domain.Data
             ctx.Add(ddd);
 
 
-            foreach(var aaa in ctx.RecordElements.Include(x=>x.DataType).Include(x=>x.LookupTable).Include(x=>x.InputType).Where(x=>x.LookupTable != null))
+            foreach (var aaa in ctx.RecordElements.Include(x => x.DataType).Include(x => x.LookupTable).Include(x => x.InputType).Where(x => x.LookupTable != null))
             {
                 aaa.InputType = ddd;
                 ctx.Update(aaa);
@@ -464,7 +464,7 @@ namespace ElGroupo.Domain.Data
             ttt = new RecordElementDataTypeInputType
             {
                 DataType = intDt,
-                InputType = ctx.RecordElementInputTypes.First(x=>x.Name == "Numeric Text Box")
+                InputType = ctx.RecordElementInputTypes.First(x => x.Name == "Numeric Text Box")
             };
             ctx.Add(ttt);
 
@@ -473,7 +473,7 @@ namespace ElGroupo.Domain.Data
             ttt = new RecordElementDataTypeInputType
             {
                 DataType = boolDt,
-                InputType = ctx.RecordElementInputTypes.First(x=>x.Name == "Radio Button List")
+                InputType = ctx.RecordElementInputTypes.First(x => x.Name == "Radio Button List")
             };
             ctx.Add(ttt);
             await ctx.SaveChangesAsync();
@@ -781,6 +781,120 @@ namespace ElGroupo.Domain.Data
             ctx.Add(rdtit);
 
             await ctx.SaveChangesAsync();
+        }
+                public static void SeedStates(IServiceProvider provider)
+        {
+
+            var list = new List<string>();
+            list.Add("Alabama");
+            list.Add("Alaska");
+            list.Add("Arizona");
+            list.Add("Arkansas");
+            list.Add("California");
+            list.Add("Colorado");
+            list.Add("Connecticut");
+            list.Add("Delaware");
+            list.Add("District of Columbia");
+            list.Add("Florida");
+            list.Add("Georgia");
+            list.Add("Hawaii");
+            list.Add("Idaho");
+            list.Add("Illinois");
+            list.Add("Indiana");
+            list.Add("Iowa");
+            list.Add("Kansas");
+            list.Add("Kentucky");
+            list.Add("Louisiana");
+            list.Add("Maine");
+            list.Add("Massachusetts");
+            list.Add("Michigan");
+            list.Add("Minnesota");
+            list.Add("Mississippi");
+            list.Add("Missouri");
+            list.Add("Montana");
+            list.Add("Nebraska");
+            list.Add("Nevada");
+            list.Add("New Hampshire");
+            list.Add("New Jersey");
+            list.Add("New York");
+            list.Add("North Carolina");
+            list.Add("North Dakota");
+            list.Add("Ohio");
+            list.Add("Oklahoma");
+            list.Add("Oregon");
+            list.Add("Pennsylvania");
+            list.Add("Rhode Island");
+            list.Add("South Dakota");
+            list.Add("Tennessee");
+            list.Add("Texas");
+            list.Add("Utah");
+            list.Add("Vermont");
+            list.Add("Washington");
+            list.Add("West Virginia");
+            list.Add("Wisconsin");
+            list.Add("Wyoming");
+
+
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+            var conn = ctx.Database.GetDbConnection() as SqlConnection;
+            if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+            foreach (var value in list)
+            {
+                var sqlCmd = new SqlCommand
+                {
+                    Connection = conn,
+                    CommandType = System.Data.CommandType.Text,
+                    CommandText = "insert into LU_STATES ([Value]) values('" + value + "');"
+                };
+                try
+                {
+                    sqlCmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    var fff = 4;
+                }
+
+            }
+
+        }
+
+        public static void SeedCollegeList(IServiceProvider provider)
+        {
+            string path = @"C:\Users\saylor\Downloads\Accreditation_2017_04 (1)\Accreditation_04_2017.csv";
+            var list = new List<string>();
+            var reader = File.OpenText(path);
+            reader.ReadLine();
+            var line = reader.ReadLine();
+            while (line != null)
+            {
+                var ary = line.Split(',');
+                if (!list.Contains(ary[1])) list.Add(ary[1]);
+                line = reader.ReadLine();
+            }
+
+            var ctx = provider.GetRequiredService<ElGroupoDbContext>();
+            var conn = ctx.Database.GetDbConnection() as SqlConnection;
+            if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+            foreach (var value in list)
+            {
+                var sqlCmd = new SqlCommand
+                {
+                    Connection = conn,
+                    CommandType = System.Data.CommandType.Text,
+                    CommandText = "insert into LU_SCHOOLS ([Value]) values('" + value.Replace("'", "''") + "');"
+                };
+                try
+                {
+                    sqlCmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    var fff = 4;
+                }
+
+            }
+
         }
         public static async Task SeedRecordTables(IServiceProvider provider)
         {

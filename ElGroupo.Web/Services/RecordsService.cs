@@ -56,9 +56,11 @@ namespace ElGroupo.Web.Services
                 Include(x => x.Category).
                 Where(x => (x.Category != null && x.Category.Id == categoryId) && (x.User != null && x.User.Id == userId));
             if (!showHidden) items = items.Where(x => x.Visible);
+            var defaultElementId = _ctx.RecordDefaultElements.FirstOrDefault(x => x.CategoryId == categoryId && x.PrimaryDisplay)?.ElementId;
             foreach (var recordItem in items)
             {
                 var itemListModel = new UserItemListModel();
+                itemListModel.Visible = recordItem.Visible;
                 itemListModel.RecordItemId = recordItem.Id;
                 itemListModel.Name = recordItem.Name;
 
@@ -66,7 +68,16 @@ namespace ElGroupo.Web.Services
                 if (recordItem.Documents.Any()) itemListModel.DocumentId = recordItem.Documents.First().Id;
 
 
-                var primaryElement = recordItem.Elements.Any(x => x.PrimaryDisplay) ? recordItem.Elements.First(x => x.PrimaryDisplay) : recordItem.Elements.FirstOrDefault();
+                RecordItemElement primaryElement = null;
+                if (defaultElementId.HasValue)
+                {
+                    primaryElement = recordItem.Elements.Any(x => x.ElementId == defaultElementId.Value) ? recordItem.Elements.First(x => x.ElementId == defaultElementId.Value) : recordItem.Elements.FirstOrDefault();
+                }
+                else
+                {
+                    primaryElement = recordItem.Elements.FirstOrDefault();
+                }
+
                 //itemListModel.Value = userItem.us
                 itemListModel.Value = GetUserDataDisplayValueByElement(primaryElement);
 
@@ -94,9 +105,13 @@ namespace ElGroupo.Web.Services
 
             return itemListModel;
         }
-        public List<UserItemListModel> GetUserItemsBySubCategoryId(long subCategoryId, long userId, bool showHidden)
+        public UserSubCategoryModel GetUserSubCategoryModel(long subCategoryId, long userId, bool showHidden)
         {
-            var list = new List<UserItemListModel>();
+            var model = new UserSubCategoryModel { Id = subCategoryId };
+            model.Items = new List<UserItemListModel>();
+            var subCat = _ctx.RecordSubCategories.First(x => x.Id == subCategoryId);
+            model.Name = subCat.Name;
+            model.ValueColumnHeader = subCat.ItemValueColumnHeader;
             var items = _ctx.RecordItems.
                 Include(x => x.User).
                 Include(x => x.Documents).
@@ -109,44 +124,60 @@ namespace ElGroupo.Web.Services
                 Include(x => x.SubCategory).
                 Where(x => (x.SubCategory != null && x.SubCategory.Id == subCategoryId) && x.User.Id == userId);
             if (!showHidden) items = items.Where(x => x.Visible);
+            var defaultElementId = _ctx.RecordDefaultElements.FirstOrDefault(x => x.SubCategoryId == subCategoryId && x.PrimaryDisplay)?.ElementId;
             foreach (var recordItem in items)
             {
                 var itemListModel = new UserItemListModel();
+                itemListModel.Visible = recordItem.Visible;
                 itemListModel.Name = recordItem.Name;
                 itemListModel.RecordItemId = recordItem.Id;
                 //var userItem = recordItem.Users.FirstOrDefault(x => x.UserId == userId);
 
 
                 if (recordItem.Documents.Any()) itemListModel.DocumentId = recordItem.Documents.First().Id;
-
+                RecordItemElement primaryDisplayElement = null;
                 if (recordItem.Elements.Any())
                 {
-                    var primaryDisplayElement = recordItem.Elements.Any(x => x.PrimaryDisplay) ? recordItem.Elements.First(x => x.PrimaryDisplay) : recordItem.Elements.FirstOrDefault();
+
+
+                    if (defaultElementId.HasValue)
+                    {
+                        primaryDisplayElement = recordItem.Elements.Any(x => x.ElementId == defaultElementId.Value) ? recordItem.Elements.First(x => x.ElementId == defaultElementId.Value) : recordItem.Elements.FirstOrDefault();
+                    }
+                    else
+                    {
+                        primaryDisplayElement = recordItem.Elements.FirstOrDefault();
+                    }
+
+
+
+
+                    //var primaryDisplayElement = recordItem.Elements.Any(x => x.PrimaryDisplay) ? recordItem.Elements.First(x => x.PrimaryDisplay) : recordItem.Elements.FirstOrDefault();
                     //itemListModel.Value = userItem.us
                     itemListModel.Value = GetUserDataDisplayValueByElement(primaryDisplayElement);
 
                 }
 
-                list.Add(itemListModel);
+                model.Items.Add(itemListModel);
             }
-            return list;
-        }
-        public UserSubCategoryModel GetUserSubCategoryModel(long subCategoryId, long userId, bool showHidden)
-        {
-            //do we show all record items all the time?
-            //or only if they've been associated with a user already
-            //why don't we just populate the recorduseritem after the user has accessed it for the first time?
-            var cat = _ctx.RecordSubCategories.First(x => x.Id == subCategoryId);
-            var model = new UserSubCategoryModel
-            {
-                Id = cat.Id,
-                Name = cat.Name,
-                NameColumnHeader = cat.ItemDescriptionColumnHeader,
-                ValueColumnHeader = cat.ItemValueColumnHeader,
-                Items = this.GetUserItemsBySubCategoryId(subCategoryId, userId, showHidden)
-            };
             return model;
         }
+        //public UserSubCategoryModel GetUserSubCategoryModel(long subCategoryId, long userId, bool showHidden)
+        //{
+        //    //do we show all record items all the time?
+        //    //or only if they've been associated with a user already
+        //    //why don't we just populate the recorduseritem after the user has accessed it for the first time?
+        //    var cat = _ctx.RecordSubCategories.First(x => x.Id == subCategoryId);
+        //    var model = new UserSubCategoryModel
+        //    {
+        //        Id = cat.Id,
+        //        Name = cat.Name,
+        //        NameColumnHeader = cat.ItemDescriptionColumnHeader,
+        //        ValueColumnHeader = cat.ItemValueColumnHeader,
+        //        Items = this.GetUserItemsBySubCategoryId(subCategoryId, userId, showHidden)
+        //    };
+        //    return model;
+        //}
 
 
         public EditItemModel GetAddNewItemModel(long? categoryId, long? subCategoryId, long userId)
@@ -154,7 +185,7 @@ namespace ElGroupo.Web.Services
             return null;
         }
 
-        public UserCategoryModel GetUserCategoryModel(long categoryId, long userId, bool showHidden)
+        public UserCategoryModel GetUserCategoryModel(long categoryId, long userId, bool showHidden, bool includeSubcategories = true)
         {
             //do we show all record items all the time?
             //or only if they've been associated with a user already
@@ -166,9 +197,10 @@ namespace ElGroupo.Web.Services
                 Name = cat.Name,
                 NameColumnHeader = cat.ItemDescriptionColumnHeader,
                 ValueColumnHeader = cat.ItemValueColumnHeader,
-                Items = this.GetUserItemsByCategoryId(categoryId, userId, showHidden),
-                SubCategories = cat.SubCategories.Select(x => this.GetUserSubCategoryModel(x.Id, userId, showHidden)).ToList()
+                Items = this.GetUserItemsByCategoryId(categoryId, userId, showHidden)
+
             };
+            if (includeSubcategories) model.SubCategories = cat.SubCategories.Select(x => this.GetUserSubCategoryModel(x.Id, userId, showHidden)).ToList();
             return model;
         }
 
@@ -230,13 +262,15 @@ namespace ElGroupo.Web.Services
 
 
                 var recordItem = _ctx.RecordItems.
+                    Include(x => x.SubCategory).
+                    Include(x => x.Category).
                     Include(x => x.Elements).
                         ThenInclude(x => x.Element).
                         ThenInclude(x => x.DataType).
                     Include(x => x.Elements).
                         ThenInclude(x => x.Element).
                         ThenInclude(x => x.LookupTable).First(x => x.Id == model.ItemId);
-                if (model.ItemTypeId.HasValue)
+                if (model.ItemTypeId.HasValue && model.ItemTypeId != -1)
                 {
                     recordItem.ItemType = _ctx.RecordItemTypes.First(x => x.Id == model.ItemTypeId.Value);
                     recordItem.Name = recordItem.ItemType.Name;
@@ -279,10 +313,10 @@ namespace ElGroupo.Web.Services
 
                 await _ctx.SaveChangesAsync();
 
-
-                var primaryElement = recordItem.Elements.Any(x => x.PrimaryDisplay) ? recordItem.Elements.First(x => x.PrimaryDisplay) : recordItem.Elements.First();
-                var newPrimaryDisplay = GetUserDataDisplayValueByElement(primaryElement);
-                return SaveDataResponse.IncludeData(newPrimaryDisplay);
+                var kvp = new KeyValuePair<string, long>();
+                if (recordItem.Category != null) kvp = new KeyValuePair<string, long>("category", recordItem.Category.Id);
+                else kvp = new KeyValuePair<string, long>("subCategory", recordItem.SubCategory.Id);
+                return SaveDataResponse.IncludeData(kvp);
             }
             catch (Exception ex)
             {
@@ -456,12 +490,13 @@ namespace ElGroupo.Web.Services
         public EditLookupTableModel GetLookupTable(long id)
         {
             var item = _ctx.RecordElementLookupTables.First(x => x.Id == id);
+            //if (!_lookupTableService.Tables.ContainsKey(item.TableName)) _lookupTableService.LoadTable(item.TableName);
             return new EditLookupTableModel
             {
                 Id = item.Id,
                 TableName = item.TableName,
                 Description = item.Description,
-                Values = _lookupTableService.Tables.ContainsKey(item.TableName) ? _lookupTableService.Tables[item.TableName] : new List<IdValueModel>()
+                Values = _lookupTableService.LoadTable(item.TableName)
             };
         }
 
@@ -625,7 +660,7 @@ namespace ElGroupo.Web.Services
                 model.ItemTypes = _ctx.RecordItemTypes.Where(x => x.SubCategoryId.HasValue && x.SubCategoryId.Value == model.SubCategoryId).OrderBy(x => x.Name).Select(x => new Domain.Lookups.IdValueModel { Id = x.Id, Value = x.Name }).ToList();
             }
             if (recordItem.ItemType != null) model.ItemTypeId = recordItem.ItemType.Id;
-
+            model.Visible = recordItem.Visible;
             foreach (var itemElement in recordItem.Elements)
             {
                 var item = new EditItemUserDataModel
@@ -1169,11 +1204,28 @@ namespace ElGroupo.Web.Services
                         var entry = archive.CreateEntry(doc.FileName, CompressionLevel.Fastest);
                         using (var zipStream = entry.Open()) zipStream.Write(doc.ImageData, 0, doc.ImageData.Length);
                     }
-
                 }
                 return ms;
             }
-            
+
+        }
+        public async Task<MemoryStream> ExportCategory(long categoryId, long userId)
+        {
+            var documents = _ctx.RecordItems.Include(x => x.User).Include(x => x.Category).Include(x => x.Documents).Where(x => x.Category != null && x.Category.Id == categoryId && x.User.Id == userId).SelectMany(x => x.Documents).ToList();
+            if (documents.Count == 0) return null;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+                {
+                    foreach (var doc in documents)
+                    {
+                        var entry = archive.CreateEntry(doc.FileName, CompressionLevel.Fastest);
+                        using (var zipStream = entry.Open()) zipStream.Write(doc.ImageData, 0, doc.ImageData.Length);
+                    }
+                }
+                return ms;
+            }
+
         }
 
         public async Task<SaveDataResponse> CreateRecordElement(string name, string displayName, long dataTypeId, long? lookupTableId, long inputTypeId, bool labelOnSameRow)

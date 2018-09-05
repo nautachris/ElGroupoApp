@@ -8,5 +8,6 @@ namespace ElGroupo.Web.Models.Shared
     public abstract class ReturnViewModel
     {
         public bool ReturnView { get; set; }
+        public bool ShowHidden { get; set; }
     }
 }

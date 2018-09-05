@@ -48,27 +48,37 @@
 
 
     </div>
-    <div class="row centered">
-        <a asp-controller="Records" asp-action="Admin">Records Admin</a>
-    </div>
+    @if (Model.IsAdmin)
+    {
+        <div class="row centered">
+            <a asp-controller="Records" asp-action="Admin">Records Admin</a>
+        </div>
+
+    }
+
 
     @foreach (var row in SplitList<IdValueModel>(Model.Categories, 4))
     {
         <div class="row" style="height:186px; margin-top:26px;">
             @foreach (var item in row)
             {
-                <div class="col span-1-of-4">
-                    <a asp-controller="Records" asp-action="ViewCategory" asp-route-categoryId="@item.Id" class="no-decoration">
-                        <div class="user-dashboard-link">
+                
+                    string imgUrl = "~/content/images/categories/" + item.Id + ".png";
+                    <div class="col span-1-of-4">
+                        <a asp-controller="Records" asp-action="ViewCategory" asp-route-categoryId="@item.Id" class="no-decoration">
+                            <div class="user-dashboard-link">
+                                <img src="@Url.Content(imgUrl)" style="height:125px; width:125px;" />
+                                @*<img src="~/content/images/categories/@item.Id@.png" style="height:75px; width:75px;" />*@
 
-                            <img src="~/content/images/logactivity.png" style="height:75px; width:75px;" />
 
-                            <div>@item.Value</div>
+                                <div>@item.Value</div>
 
 
-                        </div>
-                    </a>
-                </div>
+                            </div>
+                        </a>
+                    </div>
+                
+
 
             }
         </div>

@@ -48,7 +48,7 @@ namespace ElGroupo.Web
                 opts.Password.RequireNonAlphanumeric = false;
                 opts.Password.RequireLowercase = false;
                 opts.Password.RequireUppercase = false;
-                opts.SignIn.RequireConfirmedEmail = true;
+                //opts.SignIn.RequireConfirmedEmail = true;
                 opts.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             }).AddEntityFrameworkStores<ElGroupoDbContext, long>();
             services.AddMvc();
@@ -125,7 +125,8 @@ namespace ElGroupo.Web
 
             });
             app.UseMvcWithDefaultRoute();
-
+            //ElGroupoDbContext.SeedStates(app.ApplicationServices);
+            //ElGroupoDbContext.SeedCollegeList(app.ApplicationServices);
             //ElGroupoDbContext.SeedNewInputTypes(app.ApplicationServices).Wait();
             //var sm = app.ApplicationServices.GetRequiredService<SignInManager<User>>();
             //ElGroupoDbContext.SeedDataTypes(app.ApplicationServices).Wait();

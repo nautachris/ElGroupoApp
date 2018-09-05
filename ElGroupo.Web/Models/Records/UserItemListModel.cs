@@ -13,5 +13,7 @@ namespace ElGroupo.Web.Models.Records
         public long RecordItemId { get; set; }
 
         public long? DocumentId { get; set; }
+        public bool Visible { get; set; }
+
     }
 }

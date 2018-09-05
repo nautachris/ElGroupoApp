@@ -8,6 +8,7 @@ namespace ElGroupo.Web.Models.Records
 {
     public class RecordsDashboardModel
     {
+        public bool IsAdmin { get; set; }
         public string FirstName { get; set; }
         public long UserId { get; set; }
         public List<IdValueModel> Categories { get; set; }

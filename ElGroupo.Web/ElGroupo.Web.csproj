@@ -81,6 +81,7 @@
     <Folder Include="Models\NewFolder\" />
     <Folder Include="NewFolder\" />
     <Folder Include="wwwroot\content\lib\css\images\" />
+    <Folder Include="wwwroot\content\images\categories\" />
     <Folder Include="wwwroot\content\resources\data\" />
     <Folder Include="wwwroot\content\scripts\tstest2\" />
     <Folder Include="wwwroot\content\tstest2\" />

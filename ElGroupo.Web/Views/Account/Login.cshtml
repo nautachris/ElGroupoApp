@@ -64,11 +64,11 @@
                     <a  asp-controller="Account" asp-action="ForgotUsername">Forgot Username?</a>
                 </div>*@
             </div>
-            <hr />
+            @*<hr />
             <div class="row" style="margin-top:30px;">
 
                 <a asp-route="GoogleLogin"><img src="~/content/images/btn_google_signin_light_focus_web.png" /></a>
-            </div>
+            </div>*@
             <div class="row" style="margin:30px;">
                 <button class="btn btn-primary" style="width:50%;" type="submit">Log In</button>
                 @*<div class="ion-checkmark-circled"></div>*@
@@ -87,8 +87,10 @@
 @section Scripts{
 
     <script type="text/javascript">
-        var offset = new Date().getTimezoneOffset();
+        var offset = new Date().getTimezoneOffset() * -1;    
         document.getElementById('UtcOffset').value = offset.toString();
+        var currentTz = $("#selTimeZoneId option[data-offset=" + offset + "]").attr('value');
+        $("#selTimeZoneId").val(currentTz);
 
         $("#divSidebar").hide();
     </script>

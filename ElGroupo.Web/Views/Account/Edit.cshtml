@@ -5,7 +5,7 @@
 
 <section id="sectionEditAccount" class="section-form">
     <div class="row">
-        <h2>Edit your account!</h2>
+        <h2>Edit your account</h2>
     </div>
     @if (Model.IsAdminEditing)
     {
@@ -15,13 +15,13 @@
         </div>
 
     }
-    <div class="page-nav row">
-        <div class="col span-1-of-4"><a href="#" class="links bold" data-link-type="details">My Details</</a></div>
-        <div class="col span-1-of-4"><a href="#" class="links" data-link-type="contact-methods">My Contact Methods</a></div>
-        <div class="col span-1-of-4"><a href="#" class="links" data-link-type="connections">My Connections</a></div>
-        <div class="col span-1-of-4"><a href="#" class="links" data-link-type="attendee-groups">My Groups</a></div>
+    @*<div class="page-nav row">
+            <div class="col span-1-of-4"><a href="#" class="links bold" data-link-type="details">My Details</</a></div>
+            <div class="col span-1-of-4"><a href="#" class="links" data-link-type="contact-methods">My Contact Methods</a></div>
+            <div class="col span-1-of-4"><a href="#" class="links" data-link-type="connections">My Connections</a></div>
+            <div class="col span-1-of-4"><a href="#" class="links" data-link-type="attendee-groups">My Groups</a></div>
 
-    </div>
+        </div>*@
     <div class="row tab details">
         <div asp-validation-summary="All" class="text-danger"></div>
         <form asp-controller="Account" asp-action="Edit" enctype="multipart/form-data" method="post" id="frmEditAccount" class="contact-form">
@@ -71,14 +71,14 @@
                     <input class="input-transparent" type="text" asp-for="LastName" placeholder="Enter Last Name...">
                 </div>
             </div>
-            <div class="row line-after">
-                <div class="col span-1-of-3">
-                    <label asp-for="Specialty">Specialty:</label>
-                </div>
-                <div class="col span-2-of-3">
-                    <input class="input-transparent" type="text" asp-for="Specialty" placeholder="Enter Specialty...">
-                </div>
-            </div>
+            @*<div class="row line-after">
+                    <div class="col span-1-of-3">
+                        <label asp-for="Specialty">Specialty:</label>
+                    </div>
+                    <div class="col span-2-of-3">
+                        <input class="input-transparent" type="text" asp-for="Specialty" placeholder="Enter Specialty...">
+                    </div>
+                </div>*@
             <div class="row line-after">
                 <div class="col span-1-of-3">
                     <label asp-for="EmailAddress">Email:</label>
@@ -103,15 +103,21 @@
                     <input class="input-transparent" type="text" asp-for="ZipCode" placeholder="Enter Zip Code...">
                 </div>
             </div>
-            <div class="row">
-                <label asp-for="TimeZoneId">Time Zone:</label>
-                <select asp-for="TimeZoneId">
-                    @foreach (var tz in Model.TimeZones)
-                    {
-                        <option value="@tz.Key">@tz.Value</option>
+            <div class="row line-after">
+                <div class="col span-1-of-3">
+                    <label asp-for="TimeZoneId">Time Zone:</label>
+                </div>
+                <div class="col span-2-of-3">
+                    <select asp-for="TimeZoneId">
+                        @foreach (var tz in Model.TimeZones)
+                        {
+                            <option value="@tz.Key">@tz.Value</option>
 
-                    }
-                </select>
+                        }
+                    </select>
+
+                </div>
+
             </div>
 
             <div class="row">
@@ -127,7 +133,7 @@
                     <label>&nbsp;</label>
                 </div>
                 <div class="col span-2-of-4">
-                    <input class="btn btn-primary" type="submit" value="Save Account Changes!">
+                    <input class="btn btn-primary width-100" type="submit" value="Save Account Changes">
                 </div>
                 <div class="col span-1-of-4">
                     <label>&nbsp;</label>
@@ -135,40 +141,40 @@
             </div>
         </form>
     </div>
-    <div style="display:none;" class="row tab contact-methods">
-        <h2>My Contact Information</h2>
-        <div class="row">
-            <div class="col span-2-of-10">Select Contact Type:</div>
+    @*<div style="display:none;" class="row tab contact-methods">
+            <h2>My Contact Information</h2>
+            <div class="row">
+                <div class="col span-2-of-10">Select Contact Type:</div>
 
-            <select class="col span-3-of-10" id="selContactType">
-                <option selected></option>
-                @foreach (var ct in Model.ContactTypes)
-                {
-                    <option value="@ct.Key">@ct.Value</option>
+                <select class="col span-3-of-10" id="selContactType">
+                    <option selected></option>
+                    @foreach (var ct in Model.ContactTypes)
+                    {
+                        <option value="@ct.Key">@ct.Value</option>
 
-                }
-            </select>
-            <input class="col span-4-of-10" type="text" id="txtContactValue" />
-            <a class="btn btn-primary span-1-of-10" id="btnAddNewContact">Add New Contact</a>
+                    }
+                </select>
+                <input class="col span-4-of-10" type="text" id="txtContactValue" />
+                <a class="btn btn-primary span-1-of-10" id="btnAddNewContact">Add New Contact</a>
+            </div>
+            <div class="row" id="divContactList">
+                @Html.Partial("_ContactMethods", Model.Contacts)
+            </div>
         </div>
-        <div class="row" id="divContactList">
-            @Html.Partial("_ContactMethods", Model.Contacts)
-        </div>
-    </div>
-    <div style="display:none;" id="divConnections" class="row tab connections">
-        @Html.Partial("_Connections", Model.Connections)
+        <div style="display:none;" id="divConnections" class="row tab connections">
+            @Html.Partial("_Connections", Model.Connections)
 
-
-    </div>
-    <div style="display:none;" id="divAttendeeGroups" class="row tab attendee-groups">
-        <div id="divViewAttendeeGroups">
-            @Html.Partial("_AttendeeGroupList", Model.AttendeeGroups)
-        </div>
-        <div id="divEditAttendeeGroup" style="display:none;">
 
         </div>
+        <div style="display:none;" id="divAttendeeGroups" class="row tab attendee-groups">
+            <div id="divViewAttendeeGroups">
+                @Html.Partial("_AttendeeGroupList", Model.AttendeeGroups)
+            </div>
+            <div id="divEditAttendeeGroup" style="display:none;">
 
-    </div>
+            </div>
+
+        </div>*@
 </section>
 
 

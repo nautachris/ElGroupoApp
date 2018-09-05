@@ -1,0 +1,37 @@
+﻿@using ElGroupo.Web.Models.Records
+@model UserSubCategoryModel
+
+@{
+    Layout = null;
+}
+
+<div class="sub-category-container" data-sub-category-id="@Model.Id">
+    @if (Model.Items.Count > 0)
+    {
+
+        <div class="sub-category-item-list" data-sub-category-id="@Model.Id">
+            @*<h3>@subCat.Name</h3>*@
+            <div class="row">
+                <div class="col span-3-of-10" style="font-weight:bold; text-align:left; margin-left:15px; font-size:18px;">
+                    @Model.Name
+                </div>
+                <div class="col span-6-of-10" style="text-align:right; font-weight:bold; padding-right:18px;font-size:18px;">
+                    @Model.ValueColumnHeader
+                </div>
+            </div>
+            <div class="sub-category-item-list-container" style="margin-top:10px;" data-sub-category-id="@Model.Id">
+                @Html.Partial("_ItemUserListItemContainer", Model.Items)
+            </div>
+        </div>
+        @if (Model.Items.Any(x => x.DocumentId.HasValue))
+        {
+            <div class="row centered">
+                <a asp-controller="Records" asp-action="ExportSubCategory" asp-route-subCategoryId="@Model.Id">Export</a>
+            </div>
+
+        }
+
+        <div class="row centered add-sub-category-item" data-sub-category-id="@Model.Id"></div>
+        <div class="divider-record-category"></div>
+    }
+    </div>

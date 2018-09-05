@@ -67,7 +67,7 @@ div[data-item-details-container-id] {
     text-align: center;
     position: relative;
     border-radius: 8px;
-    border: 1px solid #232323;
+    /*border: 1px solid #232323;*/
 }
     .user-dashboard-link:hover {
         color: white;

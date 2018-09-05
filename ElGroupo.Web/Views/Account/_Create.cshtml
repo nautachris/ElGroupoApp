@@ -35,7 +35,7 @@
     <form asp-controller="Account" asp-action="Create" enctype="multipart/form-data" method="post" class="contact-form sans-pro uppercase left" style="margin-top:50px;">
         <div asp-validation-summary="All" class="text-danger"></div>
         <input asp-for="InviteId" type="hidden" />
-        @if (Model.InvitedFromEvent)
+        @*@if (Model.InvitedFromEvent)
         {
             <div class="row">
                 <span>Welcome @Model.InviteName !!</span>
@@ -43,7 +43,7 @@
             <div class="row">
                 <span>You've been invited to @Model.EventName !!</span>
             </div>
-        }
+        }*@
 
         <div class="row line-after">
             <div class="col span-1-of-3">
@@ -112,14 +112,14 @@
                 <input asp-for="ConfirmPassword" placeholder="Enter Password">
             </div>
         </div>
-        <div class="row line-after">
+        @*<div class="row line-after">
             <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
                 <label asp-for="UserName">Username:</label>
             </div>
             <div class="col span-2-of-3">
                 <input asp-for="UserName" placeholder="Enter Username">
             </div>
-        </div>
+        </div>*@
         <div class="row line-after">
             <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
                 <label asp-for="PhoneNumber">Phone Number:</label>
@@ -136,24 +136,24 @@
                 <input asp-for="ZipCode" placeholder="Enter Zip Code">
             </div>
         </div>
+
         <div class="row line-after">
-            <div class="col span-1-of-3" style="text-align:left; margin-top:14px; text-transform:uppercase;">
-                <label asp-for="Title">Organization:</label>
+            <div class="col span-1-of-3">
+                <label asp-for="TimeZoneId">Time Zone:</label>
             </div>
             <div class="col span-2-of-3">
-                <select asp-for="OrganizationId">
-                    <option value="-1" selected></option>
-                    @foreach (var org in Model.Organizations)
+                <select id="selTimeZoneId" asp-for="TimeZoneId">
+                    @foreach (var tz in Model.TimeZones)
                     {
-
-                        <option value="@org.Id">@org.Name</option>
-
+                        <option data-offset="@tz.OffsetMinutes" value="@tz.Id">@tz.DisplayName</option>
 
                     }
                 </select>
 
             </div>
+
         </div>
+
         <div class="row line-after" id="divSelectDepartments" style="display:none;">
 
         </div>

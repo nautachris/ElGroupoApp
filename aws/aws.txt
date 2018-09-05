@@ -82,3 +82,7 @@ Authentication:	Your SMTP credentials - see below.
 godaddy
 scatterbrain.pro
 pw: R2d2c3po!
+
+godadday email
+chris@scatterbrain.pro
+041518SLCjfkLHR

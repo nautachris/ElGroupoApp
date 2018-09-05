@@ -239,12 +239,23 @@ namespace ElGroupo.Web.Controllers
         [HttpGet]
         public IActionResult Login(string returnUrl)
         {
+
+
             if (_userService.IsSignedIn(HttpContext.User)) return Redirect("/Home/Dashboard");
             ViewBag.returnUrl = returnUrl;
-            return View(new LoginModel {
-                CreateModel = new CreateAccountModel {
-                    Organizations = _accountService.GetOrganizations()
-                } });
+            return View(new LoginModel
+            {
+                CreateModel = new CreateAccountModel
+                {
+
+                    TimeZones = TimeZoneInfo.GetSystemTimeZones().Select(x=> new TimeZoneModel
+                    {
+                        Id = x.Id,
+                        DisplayName = x.DisplayName,
+                        OffsetMinutes = x.GetUtcOffset(DateTime.Now).TotalMinutes
+                    }).ToList()
+                }
+            });
         }
 
         [Route("AccessDenied")]
@@ -258,7 +269,8 @@ namespace ElGroupo.Web.Controllers
         [Route("Create")]
         public IActionResult Create()
         {
-            return View(new CreateAccountModel { Organizations = _accountService.GetOrganizations() });
+            //return View(new CreateAccountModel { Organizations = _accountService.GetOrganizations() });
+            return View(new CreateAccountModel());
         }
 
         [AllowAnonymous]
@@ -334,11 +346,11 @@ namespace ElGroupo.Web.Controllers
         [Route("Create")]
         public async Task<IActionResult> Create([FromForm]CreateAccountModel model)
         {
-            if (model.InviteId.HasValue)
-            {
-                if (!await _accountService.VerifyInviteToken(model.InviteId.Value)) return AccessDenied();
-                model.EmailAddress = model.InvitedEmail;
-            }
+            //if (model.InviteId.HasValue)
+            //{
+            //    if (!await _accountService.VerifyInviteToken(model.InviteId.Value)) return AccessDenied();
+            //    model.EmailAddress = model.InvitedEmail;
+            //}
 
             if (ModelState.IsValid)
             {
@@ -349,13 +361,14 @@ namespace ElGroupo.Web.Controllers
                     {
                         Title = model.Title,
                         Email = model.EmailAddress,
-                        UserName = model.UserName,
+                        UserName = model.EmailAddress,
                         Name = model.Name,
                         FirstName = model.FirstName,
                         LastName = model.LastName,
                         ZipCode = model.ZipCode,
                         PhoneNumber = model.PhoneNumber,
-                        EmailConfirmed = model.InviteId.HasValue
+                        EmailConfirmed = true,
+                        TimeZoneId = model.TimeZoneId
                     };
 
                     //need to attempt to add first in case we get any password validation errors or something -
@@ -393,33 +406,40 @@ namespace ElGroupo.Web.Controllers
 
                     }
 
+                    var loginResponse = await _userService.Login(newUser.Email, model.Password, false);
+                    if (!loginResponse.Success) return BadRequest(new { message = loginResponse.ErrorMessage });
+                    //deal with time zone shit
+                    //var tzChanged = await TimeZoneChanged(details.UtcOffset, Convert.ToInt64(loginResponse.ResponseData));
+                    return RedirectToAction("Dashboard", "Records", new { confirmTimeZone = false });
+
+
                     //what about converting unregistereduserconnection to userconnection??
-                    await _accountService.UpdateConnectionRecordsForNewUser(newUser);
-                    await _accountService.UpdateAttendeeRecordsForNewUser(newUser);
-                    if (model.InviteId.HasValue)
-                    {
-                        //no need to verify email
+                    //await _accountService.UpdateConnectionRecordsForNewUser(newUser);
+                    //await _accountService.UpdateAttendeeRecordsForNewUser(newUser);
+                    //if (model.InviteId.HasValue)
+                    //{
+                    //    //no need to verify email
 
 
-                        return Redirect("/Account/Edit");
-                    }
-                    else
-                    {
-                        var tokenResponse = await _accountService.CreateVerifyEmailToken(newUser);
-                        if (!tokenResponse.Success) return BadRequest(new { message = tokenResponse.ErrorMessage });
-                        var mailModel = new VerifyEmailModel
-                        {
-                            Recipient = newUser.Name,
-                            CallbackUrl = Url.Action("VerifyEmail", "Account", new { code = tokenResponse.ResponseData.ToString() }, HttpContext.Request.Scheme)
-                        };
-                        var mailMetadata = new MailMetadata
-                        {
-                            To = new List<string> { newUser.Email },
-                            Subject = "Welcome To Footprint!"
-                        };
-                        await this.emailService.SendEmail(mailMetadata, mailModel);
-                        return Redirect("/Account/PendingEmailConfirmation");
-                    }
+                    //    return Redirect("/Account/Edit");
+                    //}
+                    //else
+                    //{
+                    //var tokenResponse = await _accountService.CreateVerifyEmailToken(newUser);
+                    //if (!tokenResponse.Success) return BadRequest(new { message = tokenResponse.ErrorMessage });
+                    //var mailModel = new VerifyEmailModel
+                    //{
+                    //    Recipient = newUser.Name,
+                    //    CallbackUrl = Url.Action("VerifyEmail", "Account", new { code = tokenResponse.ResponseData.ToString() }, HttpContext.Request.Scheme)
+                    //};
+                    //var mailMetadata = new MailMetadata
+                    //{
+                    //    To = new List<string> { newUser.Email },
+                    //    Subject = "Welcome To Footprint!"
+                    //};
+                    //await this.emailService.SendEmail(mailMetadata, mailModel);
+                    //return Redirect("/Account/PendingEmailConfirmation");
+                    //}
 
 
 

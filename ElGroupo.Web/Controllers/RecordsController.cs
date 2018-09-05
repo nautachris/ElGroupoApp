@@ -66,7 +66,12 @@ namespace ElGroupo.Web.Controllers
         {
             var user = await CurrentUser();
             var response = await _recordsService.SaveUserData(user.Id, items);
-            if (response.Success) return Json(new { displayValue = response.ResponseData.ToString() });
+            if (response.Success)
+            {
+                var kvp = (KeyValuePair<string, long>)response.ResponseData;
+                if (kvp.Key == "subCategory") return PartialView("_SubCategory", _recordsService.GetUserSubCategoryModel(kvp.Value, user.Id, items.ShowHidden));
+                else return PartialView("_Category", _recordsService.GetUserCategoryModel(kvp.Value, user.Id, items.ShowHidden, false));
+            }
             else return BadRequest();
             //this needs to return the primary display value for the record
 
@@ -90,6 +95,7 @@ namespace ElGroupo.Web.Controllers
             {
                 var currentUser = await CurrentUser();
                 if (Request.Form.Files.Count == 0) return BadRequest();
+                var showHidden = Convert.ToBoolean(Request.Form["show-hidden"]);
                 if (!Request.Form.Keys.Contains("item-id")) return BadRequest("record-item-id was not included in the form data");
                 var recordItemId = Convert.ToInt64(Request.Form["item-id"]);
                 var response = await _recordsService.SaveDocument(ParseDocumentRequest(Request));
@@ -99,13 +105,13 @@ namespace ElGroupo.Web.Controllers
                     //return whatever is returned after saving new record
                     if (newItem.Category != null)
                     {
-                        var catItems = _recordsService.GetUserItemsByCategoryId(newItem.Category.Id, currentUser.Id, false);
-                        return PartialView("_ItemUserListItemContainer", catItems);
+                        var catItems = _recordsService.GetUserCategoryModel(newItem.Category.Id, currentUser.Id, showHidden, false);
+                        return PartialView("_Category", catItems);
                     }
                     else
                     {
-                        var subCatItems = _recordsService.GetUserItemsBySubCategoryId(newItem.SubCategory.Id, currentUser.Id, false);
-                        return PartialView("_ItemUserListItemContainer", subCatItems);
+                        var subCatItems = _recordsService.GetUserSubCategoryModel(newItem.SubCategory.Id, currentUser.Id, showHidden);
+                        return PartialView("_SubCategory", subCatItems);
                     }
 
                 }
@@ -198,7 +204,7 @@ namespace ElGroupo.Web.Controllers
             var model = _recordsService.GetItemTypes();
             return View(model);
         }
-
+        [Authorize(Roles = "admin")]
         [HttpGet("Admin")]
         public IActionResult Admin()
         {
@@ -530,13 +536,13 @@ namespace ElGroupo.Web.Controllers
                 {
                     if (model.CategoryId.HasValue)
                     {
-                        var catItems = _recordsService.GetUserItemsByCategoryId(model.CategoryId.Value, user.Id, false);
-                        return PartialView("_ItemUserListItemContainer", catItems);
+                        var catItems = _recordsService.GetUserCategoryModel(model.CategoryId.Value, user.Id, model.ShowHidden, false);
+                        return PartialView("_Category", catItems);
                     }
                     else
                     {
-                        var subCatItems = _recordsService.GetUserItemsBySubCategoryId(model.SubCategoryId.Value, user.Id, false);
-                        return PartialView("_ItemUserListItemContainer", subCatItems);
+                        var subCatItems = _recordsService.GetUserSubCategoryModel(model.SubCategoryId.Value, user.Id, model.ShowHidden);
+                        return PartialView("_SubCategory", subCatItems);
                     }
                 }
                 else
@@ -627,8 +633,8 @@ namespace ElGroupo.Web.Controllers
                 if (model.ReturnView)
                 {
                     var kvp = (KeyValuePair<string, long>)response.ResponseData;
-                    if (kvp.Key == "category") return View("_ItemUserListItemContainer", _recordsService.GetUserItemsByCategoryId(kvp.Value, user.Id, false));
-                    return View("_ItemUserListItemContainer", _recordsService.GetUserItemsBySubCategoryId(kvp.Value, user.Id, false));
+                    if (kvp.Key == "category") return PartialView("_Category", _recordsService.GetUserCategoryModel(kvp.Value, user.Id, model.ShowHidden, false));
+                    return PartialView("_SubCategory", _recordsService.GetUserSubCategoryModel(kvp.Value, user.Id, model.ShowHidden));
                 }
                 return Ok();
             }
@@ -647,8 +653,8 @@ namespace ElGroupo.Web.Controllers
                 if (model.ReturnView)
                 {
                     var kvp = (KeyValuePair<string, long>)response.ResponseData;
-                    if (kvp.Key == "category") return View("_ItemUserListItemContainer", _recordsService.GetUserItemsByCategoryId(kvp.Value, user.Id, false));
-                    return View("_ItemUserListItemContainer", _recordsService.GetUserItemsBySubCategoryId(kvp.Value, user.Id, false));
+                    if (kvp.Key == "category") return View("_Category", _recordsService.GetUserCategoryModel(kvp.Value, user.Id, model.ShowHidden, false));
+                    return View("_SubCategory", _recordsService.GetUserSubCategoryModel(kvp.Value, user.Id, model.ShowHidden));
                 }
                 return Ok();
             }
@@ -665,28 +671,31 @@ namespace ElGroupo.Web.Controllers
                 if (model.ReturnView)
                 {
                     var kvp = (KeyValuePair<string, long>)response.ResponseData;
-                    if (kvp.Key == "category") return View("_ItemUserListItemContainer", _recordsService.GetUserItemsByCategoryId(kvp.Value, user.Id, false));
-                    return View("_ItemUserListItemContainer", _recordsService.GetUserItemsBySubCategoryId(kvp.Value, user.Id, false));
+                    if (kvp.Key == "category") return View("_Category", _recordsService.GetUserCategoryModel(kvp.Value, user.Id, model.ShowHidden, false));
+                    return View("_SubCategory", _recordsService.GetUserSubCategoryModel(kvp.Value, user.Id, model.ShowHidden));
                 }
                 return Ok();
             }
             return BadRequest(new { message = response.ErrorMessage });
         }
 
-        //[HttpPost]
-        //[Route("export/subcategory/{subCategoryId}")]
-        //public async Task<IActionResult> ExportSubCategory([FromRoute]long subCategoryId)
-        //{
-        //    var user = await CurrentUser();
+        [HttpGet]
+        [Route("export/subcategory/{subCategoryId}")]
+        public async Task<IActionResult> ExportSubCategory([FromRoute]long subCategoryId)
+        {
+            var user = await CurrentUser();
+            var ms = await _recordsService.ExportSubCategory(subCategoryId, user.Id);
+            return File(ms.ToArray(), "application/zip", "export.zip");
 
-        //}
-        //[HttpPost]
-        //[Route("export/subcategory/{categoryId}")]
-        //public async Task<IActionResult> ExportCategory([FromRoute]long categoryId)
-        //{
-        //    var user = await CurrentUser();
-
-        //}
+        }
+        [HttpGet]
+        [Route("export/category/{categoryId}")]
+        public async Task<IActionResult> ExportCategory([FromRoute]long categoryId)
+        {
+            var user = await CurrentUser();
+            var ms = await _recordsService.ExportCategory(categoryId, user.Id);
+            return File(ms.ToArray(), "application/zip", "export.zip");
+        }
 
 
 
@@ -784,6 +793,7 @@ namespace ElGroupo.Web.Controllers
         {
             var model = _recordsService.GetDashboardModel();
             var user = await CurrentUser();
+            model.IsAdmin = HttpContext.User.IsInRole("admin");
             model.UserId = user.Id;
             model.FirstName = user.FirstName;
             return View(model);

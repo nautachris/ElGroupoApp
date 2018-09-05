@@ -160,7 +160,7 @@ RecordCategory = {
 
         $("html").on("click", "a[data-toggle-primary]", function () {
             var id = Number($(this).attr('data-element-id'));
-            RecordsAdmin.SetRecordItemElementPrimary(id, function (results) {
+            RecordsAdmin.SetDefaultElementPrimary(id, function (results) {
                 $("#element-list").empty().html(results);
             });
         });

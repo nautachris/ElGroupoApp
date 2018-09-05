@@ -1,0 +1,35 @@
+﻿@using ElGroupo.Web.Models.Records
+@model UserCategoryModel
+
+@{
+    Layout = null;
+}
+
+<div class="category-container" data-category-id="@Model.Id">
+    @if (Model.Items.Any())
+    {
+        <div class="row">
+            <div class="col span-3-of-10" style="font-weight:bold;text-align:left; margin-left:15px;font-size:18px;">
+                @Model.NameColumnHeader
+            </div>
+            <div class="col span-6-of-10" style="text-align:right;font-weight:bold; padding-right:18px;font-size:18px;">
+                @Model.ValueColumnHeader
+            </div>
+        </div>
+        <div class="category-item-list-container" style="margin-top:10px;" data-category-id="@Model.Id">
+            @Html.Partial("_ItemUserListItemContainer", Model.Items)
+        </div>
+        <div class="divider-record-category"></div>
+
+
+        @if (Model.Items.Any(x => x.DocumentId.HasValue))
+        {
+            <div class="row centered">
+                <a asp-controller="Records" asp-action="ExportCategory" asp-route-categoryId="@Model.Id">Export</a>
+            </div>
+
+        }
+
+    }
+    <div class="row centered add-category-item" style="margin-top:50px;" data-category-id="@Model.Id"></div>
+</div>
