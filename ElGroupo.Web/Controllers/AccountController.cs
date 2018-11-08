@@ -381,7 +381,6 @@ namespace ElGroupo.Web.Controllers
                         ModelState.AddModelError("", createResponse.ErrorMessage);
                         return View(model);
                     }
-
                     if (model.Photo != null)
                     {
                         var newUserId = Convert.ToInt64(createResponse.ResponseData);

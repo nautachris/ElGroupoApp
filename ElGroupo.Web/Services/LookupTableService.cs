@@ -99,7 +99,7 @@ namespace ElGroupo.Web.Services
         {
             var list = new List<IdValueModel>();
             var sqlCmd = new SqlCommand { Connection = _ctx.Database.GetDbConnection() as SqlConnection };
-
+            if (sqlCmd.Connection.State != System.Data.ConnectionState.Open) sqlCmd.Connection.Open();
             sqlCmd.CommandText = "select * from " + tableName + " order by Value asc";
             try
             {
